@@ -1,5 +1,7 @@
 import * as React from "react";
 import { ResponsiveContainer, Tooltip, Legend } from "recharts";
+import type { Payload } from "recharts/types/component/DefaultTooltipContent";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 import { cn } from "@/lib/utils";
 
@@ -15,6 +17,10 @@ export type ChartConfig = {
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
   );
 };
+
+// recharts' own tooltip payload entry, which is what both the tooltip and the
+// legend hand these renderers.
+type ChartPayloadItem = Payload<ValueType, NameType>;
 
 type ChartContextProps = {
   config: ChartConfig;
@@ -115,7 +121,7 @@ function ChartTooltipContent({
     indicator?: "line" | "dot" | "dashed";
     nameKey?: string;
     labelKey?: string;
-    payload?: any[];
+    payload?: ChartPayloadItem[];
     label?: string;
   }) {
   const { config } = useChart();
@@ -239,7 +245,7 @@ function ChartLegendContent({
   verticalAlign = "bottom",
   nameKey,
 }: React.ComponentProps<"div"> & {
-  payload?: any[];
+  payload?: ChartPayloadItem[];
   verticalAlign?: string;
   hideIcon?: boolean;
   nameKey?: string;

@@ -35,6 +35,7 @@ interface CommandContextValue {
   registerItem: (reg: ItemReg) => () => void;
   itemsRef: React.MutableRefObject<ItemReg[]>;
   version: number;
+  hasVisibleItems: boolean;
 }
 
 const CommandContext = React.createContext<CommandContextValue | null>(null);
@@ -57,6 +58,7 @@ function Command({
   const [search, setSearch] = React.useState("");
   const [activeValue, setActiveValue] = React.useState<string | null>(null);
   const [version, setVersion] = React.useState(0);
+  const [hasVisibleItems, setHasVisibleItems] = React.useState(true);
   const itemsRef = React.useRef<ItemReg[]>([]);
   const listRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -79,15 +81,18 @@ function Command({
     [isVisible],
   );
 
-  // Keep the active (highlighted) item on something that is actually visible.
+  // Keep the active (highlighted) item on something that is actually visible,
+  // and publish whether the filter matched anything so CommandEmpty can render
+  // from state rather than reading the item ref mid-render.
   React.useEffect(() => {
     const vis = visibleValues();
+    setHasVisibleItems(itemsRef.current.some((i) => isVisible(i.value)));
     if (vis.length === 0) {
       setActiveValue(null);
       return;
     }
     setActiveValue((cur) => (cur && vis.includes(cur) ? cur : vis[0]));
-  }, [search, version, visibleValues]);
+  }, [search, version, visibleValues, isVisible]);
 
   const scrollIntoView = (value: string | null) => {
     if (!value || !listRef.current) return;
@@ -130,6 +135,7 @@ function Command({
     registerItem,
     itemsRef,
     version,
+    hasVisibleItems,
   };
 
   return (
@@ -240,10 +246,8 @@ function CommandList({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CommandEmpty({ className, ...props }: React.ComponentProps<"div">) {
-  // Re-renders whenever search/version change (context value identity changes).
-  const { itemsRef, isVisible } = useCommandContext();
-  const anyVisible = itemsRef.current.some((i) => isVisible(i.value));
-  if (anyVisible) return null;
+  const { hasVisibleItems } = useCommandContext();
+  if (hasVisibleItems) return null;
   return <div data-slot="command-empty" className={cn("py-6 text-center text-sm", className)} {...props} />;
 }
 
@@ -287,7 +291,9 @@ function CommandItem({
 }) {
   const { isVisible, activeValue, setActiveValue, registerItem } = useCommandContext();
   const onSelectRef = React.useRef(onSelect);
-  onSelectRef.current = onSelect;
+  React.useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
 
   // Register so keyboard nav / Enter can find this item even while filtered.
   React.useLayoutEffect(() => {
