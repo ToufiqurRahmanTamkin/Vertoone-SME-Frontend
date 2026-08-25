@@ -42,7 +42,6 @@ const emptyValues = (currency: string): PlanFormValues => ({
   limitBranches: "",
   limitStorageGb: "",
   trialDays: 0,
-  sortOrder: 0,
   isActive: true,
   isPopular: false,
 });
@@ -58,7 +57,6 @@ const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   limitBranches: plan.limits?.branches ?? "",
   limitStorageGb: plan.limits?.storageGb ?? "",
   trialDays: plan.trialDays ?? 0,
-  sortOrder: plan.sortOrder ?? 0,
   isActive: plan.isActive,
   isPopular: plan.isPopular,
 });
@@ -100,7 +98,6 @@ export function PlanFormModal({
         storageGb: toLimit(values.limitStorageGb),
       },
       trialDays: values.trialDays,
-      sortOrder: values.sortOrder,
       isActive: values.isActive,
       isPopular: values.isPopular,
     };
@@ -172,14 +169,7 @@ export function PlanFormModal({
                 name="trialDays"
                 label="Trial days"
                 type="number"
-                className="col-span-3 sm:col-span-1"
-              />
-              <FormInput
-                control={form.control}
-                name="sortOrder"
-                label="Sort order"
-                type="number"
-                className="col-span-3 sm:col-span-1"
+                className="col-span-3 sm:col-span-2"
               />
 
               <FormTextarea

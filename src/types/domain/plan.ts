@@ -20,7 +20,6 @@ export interface SubscriptionPlan {
   trialDays: number;
   isActive: boolean;
   isPopular: boolean;
-  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,5 +45,4 @@ export interface PlanPayload {
   trialDays?: number;
   isActive?: boolean;
   isPopular?: boolean;
-  sortOrder?: number;
 }
