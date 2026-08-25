@@ -10,7 +10,6 @@ export const systemConfigApi = baseApi.injectEndpoints({
 
     updateSystemConfig: builder.mutation<SystemConfig, SystemConfigUpdate>({
       query: (body) => ({ url: "/system-config", method: "PATCH", body }),
-      // The dashboard reads defaultCurrency from here, so refresh it too.
       invalidatesTags: ["SystemConfig", "Dashboard"],
     }),
   }),

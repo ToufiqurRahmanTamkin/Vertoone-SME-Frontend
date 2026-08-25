@@ -1,4 +1,3 @@
-/** Currency formatting that degrades gracefully for non-ISO codes. */
 export const formatCurrency = (amount: number, currency = "BDT"): string => {
   try {
     return new Intl.NumberFormat("en-US", {
@@ -7,7 +6,6 @@ export const formatCurrency = (amount: number, currency = "BDT"): string => {
       maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
     }).format(amount);
   } catch {
-    // Intl throws on an unknown currency code rather than falling back.
     return `${currency} ${amount.toLocaleString()}`;
   }
 };
@@ -34,7 +32,6 @@ export const formatDateTime = (value: string | Date | null | undefined): string 
   });
 };
 
-/** `2026-08` → `Aug 26`, for the revenue chart's axis. */
 export const formatMonthKey = (month: string): string => {
   const [year, monthPart] = month.split("-");
   const date = new Date(Number(year), Number(monthPart) - 1, 1);
@@ -42,7 +39,6 @@ export const formatMonthKey = (month: string): string => {
   return date.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
 };
 
-/** `HALF_YEARLY` → `Half Yearly`. */
 export const humanizeEnum = (value: string): string =>
   value
     .toLowerCase()

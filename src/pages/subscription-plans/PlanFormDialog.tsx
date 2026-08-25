@@ -23,7 +23,6 @@ import {
 } from "@/redux/apis/subscriptionPlanApi";
 import { BILLING_CYCLES, type SubscriptionPlan } from "@/types";
 
-/** `null` means unlimited; an empty input means the same thing. */
 const limitField = z
   .union([z.number().int().min(0), z.literal("")])
   .transform((value) => (value === "" || value === undefined ? null : Number(value)))
@@ -39,7 +38,6 @@ const schema = z.object({
     .length(3, "Use a 3-letter ISO currency code")
     .transform((value) => value.toUpperCase()),
   billingCycle: z.enum(BILLING_CYCLES),
-  // One feature per line — far easier to edit than a tag input.
   featuresText: z.string(),
   limitUsers: limitField,
   limitBranches: limitField,
@@ -87,7 +85,6 @@ const toFormValues = (plan: SubscriptionPlan): FormValues => ({
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** `undefined` puts the dialog in create mode. */
   plan?: SubscriptionPlan;
 }
 
@@ -103,7 +100,6 @@ export function PlanFormDialog({ open, onOpenChange, plan }: Props) {
 
   const { reset } = form;
 
-  // Reseed on every open so a cancelled edit never leaks into the next one.
   React.useEffect(() => {
     if (open) reset(plan ? toFormValues(plan) : EMPTY_VALUES);
   }, [open, plan, reset]);

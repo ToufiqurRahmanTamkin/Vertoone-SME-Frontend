@@ -29,7 +29,6 @@ const schema = z.object({
   content: z.string().trim().min(1, "Content is required"),
   category: z.enum(GUIDE_CATEGORIES),
   audience: z.enum(GUIDE_AUDIENCES),
-  // Comma-separated in the UI, an array over the wire.
   tagsText: z.string(),
   sortOrder: z.number().int(),
   isPublished: z.boolean(),
@@ -62,7 +61,6 @@ const toFormValues = (guide: UserGuide): FormValues => ({
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** `undefined` puts the dialog in create mode. */
   guide?: UserGuide;
 }
 

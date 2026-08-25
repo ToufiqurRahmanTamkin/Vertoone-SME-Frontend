@@ -12,11 +12,6 @@ const subscribe = (onChange: () => void) => {
 
 const getSnapshot = () => window.matchMedia(MOBILE_QUERY).matches;
 
-/**
- * Tracks the mobile breakpoint via `useSyncExternalStore`, so the first render
- * already has the right value — no effect, no setState-in-effect cascade, and
- * no flash of the desktop layout on a phone.
- */
 export function useIsMobile(): boolean {
   return React.useSyncExternalStore(subscribe, getSnapshot, () => false);
 }

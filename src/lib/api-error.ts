@@ -1,10 +1,5 @@
 import type { ApiErrorResponse } from "@/types";
 
-/**
- * Pulls a human-readable message out of whatever RTK Query threw — the API's
- * envelope when there is one, the first field error when the failure was a
- * validation error, and a generic fallback otherwise.
- */
 export const getApiErrorMessage = (error: unknown, fallback = "Something went wrong"): string => {
   const candidate = error as ApiErrorResponse | undefined;
   const data = candidate?.data;

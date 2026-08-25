@@ -20,11 +20,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
-/**
- * Thin react-hook-form wrappers around the shadcn primitives. They exist so
- * every form in the app renders labels, descriptions and validation messages
- * identically without repeating the FormField render-prop dance.
- */
 interface BaseFieldProps<TValues extends FieldValues> {
   control: Control<TValues>;
   name: FieldPath<TValues>;
@@ -58,8 +53,6 @@ export function FormInput<TValues extends FieldValues>({
               type={type}
               placeholder={placeholder}
               disabled={disabled}
-              // A number input must hand RHF a number, not the string the DOM
-              // gives us, or zod's number schema rejects every keystroke.
               value={field.value ?? ""}
               onChange={(event) =>
                 field.onChange(

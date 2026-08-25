@@ -34,13 +34,7 @@ export function ProfileDropdown() {
   const [passwordOpen, setPasswordOpen] = React.useState(false);
 
   const handleLogout = async () => {
-    // The server call is best-effort — tokens are stateless, so the local
-    // session must be dropped whether or not the request lands.
-    try {
-      await logout().unwrap();
-    } catch {
-      // Ignored on purpose.
-    }
+    await logout().unwrap().catch(() => undefined);
     dispatch(logOut());
     dispatch(baseApi.util.resetApiState());
     toast.success("Signed out");

@@ -9,7 +9,6 @@ import { env } from "@/config/env";
 import type { AuthUser, PaginationMeta } from "@/types";
 import { logOut, setCredentials } from "./authSlice";
 
-/** The envelope every endpoint returns. */
 export interface ApiEnvelope<T = unknown> {
   success: boolean;
   message: string;
@@ -30,11 +29,6 @@ const rawBaseQuery = fetchBaseQuery({
 
 type QueryResult = Awaited<ReturnType<typeof rawBaseQuery>>;
 
-/**
- * Collapses `{ success, message, data, meta }` down to what the endpoint asked
- * for. Lists keep `{ data, meta }`; everything else becomes the bare payload,
- * so components never reach through an envelope.
- */
 const unwrap = (result: QueryResult): void => {
   if (!result.data) return;
   const envelope = result.data as ApiEnvelope;
@@ -42,7 +36,6 @@ const unwrap = (result: QueryResult): void => {
   result.data = envelope.meta ? { data: envelope.data, meta: envelope.meta } : envelope.data;
 };
 
-// A single in-flight refresh, shared by every 401 that arrives while it runs.
 let refreshPromise: Promise<string | null> | null = null;
 
 const baseQueryWithReauth: BaseQueryFn<
@@ -65,8 +58,6 @@ const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
-  // Concurrent 401s must not each burn a refresh token — the first one starts
-  // the refresh and the rest await the same promise.
   refreshPromise ??= (async () => {
     try {
       const refreshResult = await rawBaseQuery(

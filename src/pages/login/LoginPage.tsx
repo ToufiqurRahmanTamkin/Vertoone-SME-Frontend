@@ -52,7 +52,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-10 text-foreground">
-      {/* Ambient background wash — pure decoration, hidden from assistive tech. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 left-1/2 size-[36rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-48 -right-24 size-[28rem] rounded-full bg-primary/5 blur-3xl" />

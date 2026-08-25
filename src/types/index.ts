@@ -1,4 +1,3 @@
-/** Pagination block the API returns alongside every list. */
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -16,7 +15,6 @@ export interface ApiErrorItem {
   message: string;
 }
 
-/** The error shape RTK Query surfaces from a failed request. */
 export interface ApiErrorResponse {
   status: number;
   data?: {
@@ -45,8 +43,6 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
-/* ── System config ─────────────────────────────────────────────────────── */
-
 export interface SystemConfig {
   _id: string;
   key: "GLOBAL";
@@ -67,13 +63,10 @@ export type SystemConfigUpdate = Partial<
   Omit<SystemConfig, "_id" | "key" | "createdAt" | "updatedAt">
 >;
 
-/* ── Subscription plans ────────────────────────────────────────────────── */
-
 export const BILLING_CYCLES = ["MONTHLY", "QUARTERLY", "HALF_YEARLY", "YEARLY"] as const;
 export type BillingCycle = (typeof BILLING_CYCLES)[number];
 
 export interface PlanLimits {
-  /** `null` means unlimited. */
   users: number | null;
   branches: number | null;
   storageGb: number | null;
@@ -111,8 +104,6 @@ export interface PlanListQuery {
   sortOrder?: "asc" | "desc";
 }
 
-/* ── Sold subscriptions ────────────────────────────────────────────────── */
-
 export const SUBSCRIPTION_STATUSES = [
   "PENDING",
   "ACTIVE",
@@ -135,7 +126,6 @@ export const PAYMENT_METHODS = [
 ] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
-/** `planId` arrives populated on list/detail reads and as a raw id elsewhere. */
 export type PopulatedPlan = Pick<
   SubscriptionPlan,
   "_id" | "name" | "price" | "currency" | "billingCycle"
@@ -200,8 +190,6 @@ export interface SoldSubscriptionSummary {
   totalRevenue: number;
 }
 
-/* ── User guides ───────────────────────────────────────────────────────── */
-
 export const GUIDE_CATEGORIES = [
   "GETTING_STARTED",
   "ACCOUNT",
@@ -254,8 +242,6 @@ export interface UserGuideListQuery {
   sortOrder?: "asc" | "desc";
 }
 
-/* ── Dashboard ─────────────────────────────────────────────────────────── */
-
 export interface DashboardStats {
   plans: { total: number; active: number };
   subscriptions: {
@@ -277,7 +263,6 @@ export interface DashboardStats {
 }
 
 export interface RevenuePoint {
-  /** `YYYY-MM` */
   month: string;
   revenue: number;
   sales: number;

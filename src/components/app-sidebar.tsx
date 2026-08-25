@@ -16,11 +16,9 @@ import { findNavItem, NAV_ITEMS } from "@/config/navigation";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { pathname } = useLocation();
-  // Actions only: this component must not re-render on every collapse toggle.
   const { isMobile, setOpenMobile } = useSidebarActions();
   const activeItem = findNavItem(pathname);
 
-  // On mobile the sidebar is a drawer over the page; navigating has to close it.
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false);
   };

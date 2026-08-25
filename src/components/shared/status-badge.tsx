@@ -2,10 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { humanizeEnum } from "@/lib/format";
 
-/**
- * Colour per domain state. Kept as explicit Tailwind class strings (not
- * interpolated) so the JIT compiler can see every class it must emit.
- */
 const TONE: Record<string, string> = {
   ACTIVE: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
   PAID: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",

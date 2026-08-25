@@ -25,7 +25,6 @@ const authSlice = createSlice({
       }: PayloadAction<{
         user: AuthUser;
         accessToken: string;
-        /** Omitted by the silent refresh, which keeps the stored one. */
         refreshToken?: string;
       }>
     ) => {

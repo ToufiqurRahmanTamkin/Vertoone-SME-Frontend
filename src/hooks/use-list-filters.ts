@@ -1,12 +1,5 @@
 import * as React from "react";
 
-/**
- * Filter + pagination state for a list screen.
- *
- * Changing any filter (or the page size) resets to page 1 in the same update.
- * Doing it here rather than in an effect avoids the extra render — and the
- * intermediate fetch of "old page, new filter" that an effect would cause.
- */
 export function useListFilters<TFilters extends Record<string, string>>(
   initialFilters: TFilters,
   initialLimit = 10

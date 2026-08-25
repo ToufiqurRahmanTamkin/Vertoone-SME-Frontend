@@ -88,7 +88,6 @@ export default function SubscriptionPlansPage() {
       toast.success("Plan deleted");
       setPendingDelete(undefined);
     } catch (deleteError) {
-      // The API refuses to delete a plan that has sales — surface that reason.
       toast.error(getApiErrorMessage(deleteError, "Could not delete the plan"));
     }
   };

@@ -14,8 +14,6 @@ if (!container) {
 createRoot(container).render(
   <StrictMode>
     <Provider store={store}>
-      {/* Hold rendering until the persisted session is rehydrated, or the route
-          guards would bounce a signed-in user to /login on every reload. */}
       <PersistGate loading={null} persistor={persistor}>
         <App />
       </PersistGate>

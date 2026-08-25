@@ -4,8 +4,6 @@ import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { ProtectedRoute, PublicRoute } from "@/components/router/route-guards";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-// Route-level code splitting: each screen is its own chunk, so the login page
-// does not ship the dashboard's chart library.
 const LoginPage = lazy(() => import("@/pages/login/LoginPage"));
 const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
 const SystemConfigPage = lazy(() => import("@/pages/system-config/SystemConfigPage"));

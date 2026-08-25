@@ -14,7 +14,6 @@ export function ModeToggle() {
       className="cursor-pointer"
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
-      {/* Shows the mode you can switch TO. */}
       {isDark ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
     </Button>
   );

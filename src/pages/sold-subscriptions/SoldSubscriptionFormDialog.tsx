@@ -40,7 +40,6 @@ const schema = z.object({
   paymentStatus: z.enum(PAYMENT_STATUSES),
   paymentMethod: z.enum(PAYMENT_METHODS),
   transactionId: z.string().trim().max(120),
-  // `<input type="date">` values; empty means "let the server decide".
   startDate: z.string(),
   endDate: z.string(),
   autoRenew: z.boolean(),
@@ -66,7 +65,6 @@ const EMPTY_VALUES: FormValues = {
   notes: "",
 };
 
-/** ISO timestamp → the `YYYY-MM-DD` a date input expects. */
 const toDateInput = (value: string | undefined): string => (value ? value.slice(0, 10) : "");
 
 const planIdOf = (record: SoldSubscription): string =>
@@ -92,7 +90,6 @@ const toFormValues = (record: SoldSubscription): FormValues => ({
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** `undefined` puts the dialog in create mode. */
   record?: SoldSubscription;
 }
 
@@ -123,8 +120,6 @@ export function SoldSubscriptionFormDialog({ open, onOpenChange, record }: Props
   );
 
   const onSubmit = async (values: FormValues) => {
-    // Omit blank optional fields entirely: the server fills amount, currency and
-    // endDate from the plan when they are absent, but would reject "".
     const body = {
       planId: values.planId,
       customerName: values.customerName,
@@ -176,7 +171,6 @@ export function SoldSubscriptionFormDialog({ open, onOpenChange, record }: Props
               label="Plan"
               placeholder="Select a plan"
               options={planOptions}
-              // The plan is the invoice's identity — the API ignores changes to it.
               disabled={Boolean(record)}
             />
 

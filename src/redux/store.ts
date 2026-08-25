@@ -23,8 +23,6 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "vertoone-sme",
   storage,
-  // Only the session and UI preferences survive a reload; the RTK Query cache
-  // is intentionally left in memory so a refresh always refetches.
   whitelist: ["auth", "settings"],
 };
 

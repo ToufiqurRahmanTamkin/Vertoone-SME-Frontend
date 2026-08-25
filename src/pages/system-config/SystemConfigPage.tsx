@@ -71,8 +71,6 @@ export default function SystemConfigPage() {
 
   const { reset } = form;
 
-  // The form mounts before the query resolves, so seed it once the config
-  // arrives (and again if it is refetched from elsewhere).
   React.useEffect(() => {
     if (config) reset(toFormValues(config));
   }, [config, reset]);

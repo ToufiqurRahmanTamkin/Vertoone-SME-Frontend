@@ -5,10 +5,6 @@ import { useAppDispatch, useAppSelector } from "./redux";
 const prefersDark = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-/**
- * The active theme plus a setter. `resolvedTheme` collapses "system" into the
- * concrete light/dark the user is actually seeing, and tracks OS changes.
- */
 export function useTheme() {
   const theme = useAppSelector(selectTheme);
   const dispatch = useAppDispatch();

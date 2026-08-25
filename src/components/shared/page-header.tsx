@@ -3,7 +3,6 @@ import type * as React from "react";
 interface PageHeaderProps {
   title: string;
   description?: string;
-  /** Primary actions, rendered right-aligned on desktop. */
   actions?: React.ReactNode;
 }
 

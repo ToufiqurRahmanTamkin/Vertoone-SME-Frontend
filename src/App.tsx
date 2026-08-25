@@ -9,7 +9,6 @@ export default function App() {
       <BrowserRouter>
         <AppRouter />
       </BrowserRouter>
-      {/* Outside the router: toasts must survive navigation. */}
       <Toaster position="top-right" richColors toastOptions={{ duration: 5000 }} />
     </ThemeProvider>
   );
