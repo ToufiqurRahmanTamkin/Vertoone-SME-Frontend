@@ -74,6 +74,9 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
 
   return (
     <FormItemContext.Provider value={{ id }}>
+      {/* `min-w-0` lets a field shrink inside a narrow grid/flex column instead of
+          forcing the column open with its content width and spilling over the
+          neighbouring field. */}
       <div data-slot="form-item" className={cn("grid min-w-0 gap-2", className)} {...props} />
     </FormItemContext.Provider>
   );

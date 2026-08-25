@@ -1,3 +1,5 @@
+import config from "@/config/envConfig";
+import type { Pagination } from "@/types";
 import {
   createApi,
   fetchBaseQuery,
@@ -5,21 +7,16 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
-import { env } from "@/config/env";
-import type { AuthUser, PaginationMeta } from "@/types";
-import { logOut, setCredentials } from "./authSlice";
+import { Mutex } from "async-mutex";
+import { logOut, setCredentials, type User } from "./authSlice";
 
-export interface ApiEnvelope<T = unknown> {
-  success: boolean;
-  message: string;
-  data: T;
-  meta?: PaginationMeta;
-}
+const mutex = new Mutex();
 
-const rawBaseQuery = fetchBaseQuery({
-  baseUrl: env.apiBaseUrl,
+const baseQuery = fetchBaseQuery({
+  baseUrl: config.apiBaseUrl,
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as { auth: { token: string | null } }).auth.token;
+    const state = getState() as { auth: { token: string | null } };
+    const token = state.auth.token;
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
@@ -27,79 +24,104 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
-type QueryResult = Awaited<ReturnType<typeof rawBaseQuery>>;
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  data: T;
+  meta?: Pagination;
+}
 
-const unwrap = (result: QueryResult): void => {
+export interface ApiErrorResponse {
+  status: number;
+  data: {
+    success: boolean;
+    message: string;
+  };
+}
+
+// The backend answers every route with `{ success, message, data, meta? }`.
+// Unwrap it to the inner payload so endpoints type against the domain shape,
+// and fold `meta` in alongside `data` for paginated lists.
+const unwrapEnvelope = (result: Awaited<ReturnType<typeof baseQuery>>) => {
   if (!result.data) return;
-  const envelope = result.data as ApiEnvelope;
+  const envelope = result.data as ApiResponse;
   if (!envelope.success) return;
   result.data = envelope.meta ? { data: envelope.data, meta: envelope.meta } : envelope.data;
 };
 
-let refreshPromise: Promise<string | null> | null = null;
-
-const baseQueryWithReauth: BaseQueryFn<
+export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  let result = await rawBaseQuery(args, api, extraOptions);
-  unwrap(result);
+  await mutex.waitForUnlock();
+  let result = await baseQuery(args, api, extraOptions);
+
+  unwrapEnvelope(result);
 
   if (result.error?.status !== 401) {
     return result;
   }
 
-  const state = api.getState() as { auth: { refreshToken: string | null; user: AuthUser | null } };
-  const { refreshToken, user } = state.auth;
-
-  if (!refreshToken || !user) {
-    api.dispatch(logOut());
+  // Another request is already refreshing — wait for it, then replay with the
+  // token it obtained rather than firing a second refresh.
+  if (mutex.isLocked()) {
+    await mutex.waitForUnlock();
+    result = await baseQuery(args, api, extraOptions);
+    unwrapEnvelope(result);
     return result;
   }
 
-  refreshPromise ??= (async () => {
-    try {
-      const refreshResult = await rawBaseQuery(
-        { url: "/auth/refresh", method: "POST", body: { refreshToken } },
-        api,
-        extraOptions
-      );
-      const envelope = refreshResult.data as
-        | ApiEnvelope<{ accessToken: string; refreshToken: string }>
-        | undefined;
+  const release = await mutex.acquire();
+  try {
+    const state = api.getState() as {
+      auth: { refreshToken: string | null; user: User | null };
+    };
+    const refreshToken = state.auth.refreshToken;
 
-      if (!envelope?.success) return null;
-
-      api.dispatch(
-        setCredentials({
-          user,
-          accessToken: envelope.data.accessToken,
-          refreshToken: envelope.data.refreshToken,
-        })
-      );
-      return envelope.data.accessToken;
-    } catch {
-      return null;
-    } finally {
-      refreshPromise = null;
+    if (!refreshToken || !state.auth.user) {
+      throw new Error("No refresh token available");
     }
-  })();
 
-  const newToken = await refreshPromise;
+    const refreshResult = await baseQuery(
+      { url: "/auth/refresh", method: "POST", body: { refreshToken } },
+      api,
+      extraOptions
+    );
 
-  if (!newToken) {
+    if (!refreshResult.data) {
+      throw new Error("Refresh rejected");
+    }
+
+    const tokens = (
+      refreshResult.data as ApiResponse<{ accessToken: string; refreshToken: string }>
+    ).data;
+
+    api.dispatch(
+      setCredentials({
+        user: state.auth.user,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      })
+    );
+
+    result = await baseQuery(args, api, extraOptions);
+    unwrapEnvelope(result);
+  } catch {
     api.dispatch(logOut());
-    return result;
+    if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+      window.location.href = "/login";
+    }
+  } finally {
+    release();
   }
 
-  result = await rawBaseQuery(args, api, extraOptions);
-  unwrap(result);
   return result;
 };
 
-export const TAG_TYPES = [
-  "Auth",
+// Cache tag types. Each new module adds its own here.
+export const ALL_TAG_TYPES = [
+  "Me",
   "Dashboard",
   "SystemConfig",
   "SubscriptionPlans",
@@ -110,6 +132,6 @@ export const TAG_TYPES = [
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: TAG_TYPES,
+  tagTypes: ALL_TAG_TYPES,
   endpoints: () => ({}),
 });

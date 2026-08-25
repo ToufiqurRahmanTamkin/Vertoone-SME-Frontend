@@ -1,15 +1,22 @@
-import { BrowserRouter } from "react-router-dom";
 import { AppRouter } from "@/components/router/app-router";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import { SidebarConfigProvider } from "@/contexts/sidebar-context";
+import { BrowserRouter as Router } from "react-router-dom";
 
-export default function App() {
+const basename = import.meta.env.VITE_BASENAME || "";
+
+function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
-      <Toaster position="top-right" richColors toastOptions={{ duration: 5000 }} />
-    </ThemeProvider>
+    <div className="font-sans antialiased" style={{ fontFamily: "var(--font-inter)" }}>
+      <ThemeProvider defaultTheme="light">
+        <SidebarConfigProvider>
+          <Router basename={basename}>
+            <AppRouter />
+          </Router>
+        </SidebarConfigProvider>
+      </ThemeProvider>
+    </div>
   );
 }
+
+export default App;

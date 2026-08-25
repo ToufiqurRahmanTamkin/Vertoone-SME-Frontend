@@ -1,74 +1,54 @@
-import { Link, useLocation } from "react-router-dom";
-import * as React from "react";
+import { NavMain } from "@/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  useSidebarActions,
 } from "@/components/ui/sidebar";
-import { env } from "@/config/env";
-import { findNavItem, NAV_ITEMS } from "@/config/navigation";
+import { getNavigationForRole } from "@/config/navigation";
+import { APP_NAME, APP_TAGLINE, BRAND_MARK } from "@/config/branding";
+import { selectCurrentUser } from "@/redux/authSlice";
+import * as React from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const { pathname } = useLocation();
-  const { isMobile, setOpenMobile } = useSidebarActions();
-  const activeItem = findNavItem(pathname);
+  const user = useSelector(selectCurrentUser);
+  const role = user?.role ?? "";
 
-  const closeOnMobile = () => {
-    if (isMobile) setOpenMobile(false);
-  };
+  const navGroups = React.useMemo(() => getNavigationForRole(role), [role]);
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="h-(--header-height) justify-center border-b border-sidebar-border px-2.5">
+    <Sidebar {...props}>
+      <SidebarHeader className="border-b border-sidebar-border px-2.5 h-(--header-height)">
         <SidebarMenu>
           <SidebarMenuItem>
             <Link
               to="/dashboard"
-              onClick={closeOnMobile}
-              className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+              className="group/brand flex items-center gap-3 rounded-xl px-1.5 transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1"
             >
-              <span className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-                V
-              </span>
+              <img
+                src={BRAND_MARK}
+                alt={APP_NAME}
+                className="size-8 shrink-0 object-contain group-data-[collapsible=icon]:size-7"
+              />
               <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
                 <p className="truncate text-sm font-bold leading-tight text-sidebar-foreground">
-                  {env.appName}
+                  {APP_NAME}
                 </p>
                 <p className="truncate text-[11px] leading-tight text-sidebar-foreground/55">
-                  Super Admin Console
+                  {APP_TAGLINE}
                 </p>
               </div>
             </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
-          <SidebarMenu>
-            {NAV_ITEMS.map((item) => (
-              <SidebarMenuItem key={item.path}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.title}
-                  isActive={activeItem?.path === item.path}
-                >
-                  <Link to={item.path} onClick={closeOnMobile}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+      <SidebarContent className="gap-0 py-2">
+        {navGroups.map((group) => (
+          <NavMain key={group.label} label={group.label} items={group.items} />
+        ))}
       </SidebarContent>
     </Sidebar>
   );

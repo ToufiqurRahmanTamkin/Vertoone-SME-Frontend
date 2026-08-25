@@ -14,19 +14,19 @@ import authReducer from "./authSlice";
 import { baseApi } from "./baseApi";
 import settingsReducer from "./settingsSlice";
 
+const rootPersistConfig = {
+  key: "vertoone-sme",
+  storage,
+  whitelist: ["auth", "settings"],
+};
+
 const rootReducer = combineReducers({
   [baseApi.reducerPath]: baseApi.reducer,
   auth: authReducer,
   settings: settingsReducer,
 });
 
-const persistConfig = {
-  key: "vertoone-sme",
-  storage,
-  whitelist: ["auth", "settings"],
-};
-
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -38,7 +38,7 @@ export const store = configureStore({
     }).concat(baseApi.middleware),
 });
 
-export const persistor = persistStore(store);
-
-export type RootState = ReturnType<typeof rootReducer>;
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+export const persistor = persistStore(store);

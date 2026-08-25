@@ -1,0 +1,20 @@
+{
+  "name": "Vertoone SME",
+  "short_name": "Vertoone",
+  "description": "Vertoone SME management platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
+  "icons": [
+    {
+      "src": "/brand-logo.png",
+      "sizes": "288x288",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

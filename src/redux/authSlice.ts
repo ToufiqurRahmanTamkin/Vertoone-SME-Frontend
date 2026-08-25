@@ -1,9 +1,11 @@
+import type { User } from "@/types/domain/auth";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { AuthUser } from "@/types";
 import type { RootState } from "./store";
 
+export type { Role, User, UserStatus } from "@/types/domain/auth";
+
 interface AuthState {
-  user: AuthUser | null;
+  user: User | null;
   token: string | null;
   refreshToken: string | null;
 }
@@ -21,20 +23,16 @@ const authSlice = createSlice({
     setCredentials: (
       state,
       {
-        payload,
-      }: PayloadAction<{
-        user: AuthUser;
-        accessToken: string;
-        refreshToken?: string;
-      }>
+        payload: { user, accessToken, refreshToken },
+      }: PayloadAction<{ user: User; accessToken: string; refreshToken?: string }>
     ) => {
-      state.user = payload.user;
-      state.token = payload.accessToken;
-      if (payload.refreshToken) {
-        state.refreshToken = payload.refreshToken;
+      state.user = user;
+      state.token = accessToken;
+      if (refreshToken) {
+        state.refreshToken = refreshToken;
       }
     },
-    setUser: (state, action: PayloadAction<AuthUser>) => {
+    setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
     },
     logOut: (state) => {
@@ -46,8 +44,10 @@ const authSlice = createSlice({
 });
 
 export const { setCredentials, setUser, logOut } = authSlice.actions;
+
 export default authSlice.reducer;
 
-export const selectCurrentUser = (state: RootState) => state.auth.user;
 export const selectCurrentToken = (state: RootState) => state.auth.token;
-export const selectIsAuthenticated = (state: RootState) => Boolean(state.auth.token);
+export const selectCurrentUser = (state: RootState) => state.auth.user;
+export const selectIsAuthenticated = (state: RootState) =>
+  Boolean(state.auth.token && state.auth.user);

@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+        {
+            "source": "/((?!assets|api|brand-logo.png).*)",
+            "destination": "/index.html"
+        }
+    ]
+}

@@ -1,50 +1,60 @@
-import { lazy, Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { ProtectedRoute, PublicRoute } from "@/components/router/route-guards";
+"use client";
+
+import { routes, type RouteConfig } from "@/config/routes";
+import { tweakcnThemes } from "@/config/theme-data";
+import { useThemeManager } from "@/hooks/use-theme-manager";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import type { RootState } from "@/redux/store";
+import { Suspense, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Route, Routes } from "react-router-dom";
 
-const LoginPage = lazy(() => import("@/pages/login/LoginPage"));
-const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
-const SystemConfigPage = lazy(() => import("@/pages/system-config/SystemConfigPage"));
-const SubscriptionPlansPage = lazy(
-  () => import("@/pages/subscription-plans/SubscriptionPlansPage")
-);
-const SoldSubscriptionsPage = lazy(
-  () => import("@/pages/sold-subscriptions/SoldSubscriptionsPage")
-);
-const UserGuidePage = lazy(() => import("@/pages/user-guide/UserGuidePage"));
-const NotFoundPage = lazy(() => import("@/pages/not-found/NotFoundPage"));
-
-function PageFallback() {
-  return (
-    <div className="flex min-h-[60vh] flex-1 items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  );
+function renderRoutes(routeConfigs: RouteConfig[]) {
+  return routeConfigs.map((route, index) => (
+    <Route
+      key={route.path + index}
+      path={route.path}
+      element={
+        <Suspense
+          fallback={
+            // Fill the layout's content area so the spinner centres vertically
+            // instead of sitting in the top 200px of the page.
+            <div className="flex min-h-[70vh] flex-1 items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          }
+        >
+          {route.element}
+        </Suspense>
+      }
+    >
+      {route.children && renderRoutes(route.children)}
+    </Route>
+  ));
 }
 
 export function AppRouter() {
-  return (
-    <Suspense fallback={<PageFallback />}>
-      <Routes>
-        <Route element={<PublicRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-        </Route>
+  const { isDarkMode, applyTheme, applyTweakcnTheme, applyRadius } = useThemeManager();
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<DashboardLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/system-config" element={<SystemConfigPage />} />
-            <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
-            <Route path="/sold-subscriptions" element={<SoldSubscriptionsPage />} />
-            <Route path="/user-guide" element={<UserGuidePage />} />
-          </Route>
-        </Route>
-
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Suspense>
+  const { selectedTheme, selectedTweakcnTheme, selectedRadius } = useSelector(
+    (state: RootState) => state.settings
   );
+
+  // Initialize and persist theme styles on app load/state change
+  useEffect(() => {
+    if (selectedTheme) {
+      applyTheme(selectedTheme, isDarkMode);
+    } else if (selectedTweakcnTheme) {
+      const selectedPreset = tweakcnThemes.find((t) => t.value === selectedTweakcnTheme)?.preset;
+      if (selectedPreset) {
+        applyTweakcnTheme(selectedPreset, isDarkMode);
+      }
+    }
+
+    if (selectedRadius) {
+      applyRadius(selectedRadius);
+    }
+  }, [isDarkMode, selectedTheme, selectedTweakcnTheme, selectedRadius]);
+
+  return <Routes>{renderRoutes(routes)}</Routes>;
 }
