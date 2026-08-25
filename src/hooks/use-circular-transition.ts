@@ -3,6 +3,12 @@
 import { useTheme } from "@/hooks/use-theme";
 import { useCallback, useRef } from "react";
 
+interface ViewTransitionLike {
+  finished: Promise<void>;
+  ready?: Promise<void>;
+  updateCallbackDone?: Promise<void>;
+}
+
 interface CircularTransitionHook {
   startTransition: (coords: { x: number; y: number }, callback: () => void) => void;
   toggleTheme: (event: React.MouseEvent) => void;
@@ -30,15 +36,23 @@ export function useCircularTransition(): CircularTransitionHook {
     if ("startViewTransition" in document) {
       const transition = (
         document as Document & {
-          startViewTransition: (callback: () => void) => { finished: Promise<void> };
+          startViewTransition: (callback: () => void) => ViewTransitionLike;
         }
       ).startViewTransition(() => {
         callback();
       });
 
-      transition.finished.finally(() => {
-        isTransitioningRef.current = false;
-      });
+      // Interrupting a transition (rapid toggling, a skipped transition) rejects
+      // every promise the browser hands back. All three are created whether or
+      // not we read them, so each needs a handler or it surfaces as an uncaught
+      // rejection in the console.
+      transition.ready?.catch(() => {});
+      transition.updateCallbackDone?.catch(() => {});
+      transition.finished
+        .catch(() => {})
+        .finally(() => {
+          isTransitioningRef.current = false;
+        });
     } else {
       // Fallback for browsers without View Transitions API
       callback();

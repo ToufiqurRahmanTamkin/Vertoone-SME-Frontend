@@ -54,6 +54,10 @@ function DialogContent({
         onInteractOutside={(e) => e.preventDefault()}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex flex-col w-full translate-x-[-50%] translate-y-[-50%] border gap-0 shadow-lg duration-200 overflow-y-auto",
+          // Reserve the scrollbar gutter on BOTH edges. Without this a
+          // scrolling dialog takes its track out of the right padding only,
+          // so the content sits visibly off-centre.
+          "[scrollbar-gutter:stable_both-edges]",
           fullScreenMobile
             ? "max-w-full max-h-full h-full rounded-none sm:max-w-lg sm:h-auto sm:rounded-lg"
             : "max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] rounded-lg sm:max-w-lg",

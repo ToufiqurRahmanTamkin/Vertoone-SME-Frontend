@@ -11,10 +11,26 @@ export interface QueryParams {
   [key: string]: string | number | undefined;
 }
 
+/**
+ * The URL is the filter state, so any page can read its own params off this.
+ * The index signature is declared explicitly: spreading the parsed params and
+ * then overriding known keys widens to an object literal type that drops it,
+ * which would make every module-specific filter a type error at the call site.
+ */
+export interface ResolvedFilters {
+  page: number;
+  limit: number;
+  skip: number;
+  sort: string;
+  search?: string;
+  status?: string;
+  [key: string]: string | number | undefined;
+}
+
 export const useQueryFilters = (defaultLimit = 10) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const filters = useMemo(() => {
+  const filters = useMemo<ResolvedFilters>(() => {
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || defaultLimit;
     const skip = (page - 1) * limit;

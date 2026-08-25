@@ -1,7 +1,19 @@
-import { LayoutDashboard, Settings, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  CreditCard,
+  LayoutDashboard,
+  Receipt,
+  Settings,
+  SlidersHorizontal,
+  type LucideIcon,
+} from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
+  CreditCard,
+  Receipt,
+  SlidersHorizontal,
+  BookOpen,
   Settings,
 };
 
@@ -41,10 +53,38 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ["SUPER_ADMIN"],
   },
   {
+    title: "Subscription Plans",
+    path: "/subscription-plans",
+    icon: "CreditCard",
+    section: "Billing",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "Sold Subscriptions",
+    path: "/sold-subscriptions",
+    icon: "Receipt",
+    section: null,
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "User Guides",
+    path: "/user-guides",
+    icon: "BookOpen",
+    section: "Content",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "System Config",
+    path: "/system-config",
+    icon: "SlidersHorizontal",
+    section: "Settings",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
     title: "Account",
     path: "/settings/account",
     icon: "Settings",
-    section: "Settings",
+    section: null,
     roles: ["SUPER_ADMIN"],
   },
 ];

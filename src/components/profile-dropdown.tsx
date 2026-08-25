@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLogoutMutation } from "@/redux/apis/authApis";
 import { logOut, selectCurrentUser } from "@/redux/authSlice";
-import { LogOut, ShieldCheck, Settings } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings, ShieldCheck } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -41,12 +41,25 @@ export default function ProfileDropdown() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
+        {/* Identity chip: avatar + name + email. The text collapses away below
+            `sm` so the navbar keeps its icon-only footprint on a phone. */}
         <button
           type="button"
-          aria-label="Account menu"
-          className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary via-primary/80 to-primary/60 p-0.5 transition-opacity hover:opacity-90 focus:outline-none"
+          aria-label={`Account menu — ${user.name}, ${user.email}`}
+          className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-transparent py-1 pr-1 pl-1 transition-colors hover:border-border hover:bg-accent focus:outline-none sm:pr-2.5"
         >
-          <span className="text-xs font-bold text-primary-foreground">{initials}</span>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary via-primary/80 to-primary/60 p-0.5">
+            <span className="text-xs font-bold text-primary-foreground">{initials}</span>
+          </span>
+          <span className="hidden min-w-0 flex-col items-start text-left leading-tight sm:flex">
+            <span className="max-w-[10rem] truncate text-xs font-semibold text-foreground">
+              {user.name}
+            </span>
+            <span className="max-w-[10rem] truncate text-[11px] text-muted-foreground">
+              {user.email}
+            </span>
+          </span>
+          <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 opacity-50 sm:block" />
         </button>
       </DropdownMenuTrigger>
 

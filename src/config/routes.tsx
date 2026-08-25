@@ -6,6 +6,10 @@ import { Navigate } from "react-router-dom";
 const Login = lazy(() => import("@/app/auth/login/LoginPage"));
 const Dashboard = lazy(() => import("@/app/dashboard/page"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
+const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
+const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscriptionsPage"));
+const UserGuides = lazy(() => import("@/app/guides/GuidesPage"));
+const SystemConfig = lazy(() => import("@/app/systemConfig/SystemConfigPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
 const InternalServerError = lazy(() => import("@/app/errors/internal-server-error/page"));
@@ -37,6 +41,10 @@ export const routes: RouteConfig[] = [
         element: <PrivateLayout />,
         children: [
           { path: "dashboard", element: <Dashboard /> },
+          { path: "subscription-plans", element: <SubscriptionPlans /> },
+          { path: "sold-subscriptions", element: <SoldSubscriptions /> },
+          { path: "user-guides", element: <UserGuides /> },
+          { path: "system-config", element: <SystemConfig /> },
           { path: "settings/account", element: <AccountSettings /> },
         ],
       },
