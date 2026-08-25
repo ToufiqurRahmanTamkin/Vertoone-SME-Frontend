@@ -9,6 +9,9 @@ export interface SystemConfig {
   maintenanceMessage: string;
   allowSignups: boolean;
   trialDays: number;
+  paymentQrUrl: string;
+  paymentQrPublicId: string;
+  paymentInstructions: string;
   createdAt: string;
   updatedAt: string;
 }

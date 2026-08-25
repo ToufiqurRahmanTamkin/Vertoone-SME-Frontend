@@ -2,6 +2,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
+import { moduleRefId } from "@/types/domain/appModule";
 import type { SubscriptionPlan } from "@/types/domain/plan";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Star, Trash2 } from "lucide-react";
@@ -59,6 +60,31 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
           <div>
             {formatLimit(branches)} branches · {formatLimit(storageGb)} GB
           </div>
+        </div>
+      );
+    },
+  },
+  {
+    id: "modules",
+    header: "Modules",
+    cell: ({ row }) => {
+      const modules = row.original.modules ?? [];
+      if (modules.length === 0) {
+        return <span className="text-xs text-muted-foreground">None</span>;
+      }
+      return (
+        <div className="flex max-w-[12rem] flex-wrap gap-1">
+          {modules.slice(0, 2).map((entry) => (
+            <span
+              key={moduleRefId(entry)}
+              className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
+            >
+              {typeof entry === "string" ? entry : entry.name}
+            </span>
+          ))}
+          {modules.length > 2 && (
+            <span className="text-[10px] text-muted-foreground">+{modules.length - 2}</span>
+          )}
         </div>
       );
     },

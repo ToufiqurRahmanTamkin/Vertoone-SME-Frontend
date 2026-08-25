@@ -23,6 +23,7 @@ export const PlanSchema = z.object({
   limitBranches: limitField,
   limitStorageGb: limitField,
   trialDays: z.number().int().min(0).max(365, "Trial can be at most 365 days"),
+  modules: z.array(z.string()),
   isActive: z.boolean(),
   isPopular: z.boolean(),
 });

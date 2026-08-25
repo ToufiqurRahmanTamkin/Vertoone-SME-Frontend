@@ -58,12 +58,10 @@ export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, StatusColor> = {
 };
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  CASH: "Cash",
+  CARD: "Card",
   BKASH: "bKash",
   NAGAD: "Nagad",
-  BANK_TRANSFER: "Bank transfer",
-  CARD: "Card",
-  CASH: "Cash",
-  OTHER: "Other",
 };
 
 export const PAYMENT_REVIEW_ACTION_LABELS: Record<PaymentReviewAction, string> = {

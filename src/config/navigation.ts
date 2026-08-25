@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  Boxes,
   CreditCard,
   LayoutDashboard,
   Receipt,
@@ -17,6 +18,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   BookOpen,
   Settings,
   Wallet,
+  Boxes,
 };
 
 export interface NavItem {
@@ -55,10 +57,17 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ["SUPER_ADMIN"],
   },
   {
+    title: "Modules",
+    path: "/modules",
+    icon: "Boxes",
+    section: "Catalog",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
     title: "Subscription Plans",
     path: "/subscription-plans",
     icon: "CreditCard",
-    section: "Billing",
+    section: null,
     roles: ["SUPER_ADMIN"],
   },
   {

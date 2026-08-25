@@ -2,6 +2,7 @@ import {
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
   SUBSCRIPTION_STATUSES,
+  requiresTransactionId,
 } from "@/types/domain/soldSubscription";
 import { z } from "zod";
 import { optionalPhone } from "./phone";
@@ -32,6 +33,13 @@ export const SoldSubscriptionSchema = z
   .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
     message: "End date must be after the start date",
     path: ["endDate"],
-  });
+  })
+  .refine(
+    (data) => !requiresTransactionId(data.paymentMethod) || data.transactionId.trim().length > 0,
+    {
+      message: "A transaction ID is required for every non-cash payment",
+      path: ["transactionId"],
+    }
+  );
 
 export type SoldSubscriptionFormValues = z.infer<typeof SoldSubscriptionSchema>;

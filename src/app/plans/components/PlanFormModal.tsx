@@ -13,8 +13,10 @@ import { Form } from "@/components/ui/form";
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import { moduleRefId } from "@/types/domain/appModule";
 import type { SubscriptionPlan } from "@/types/domain/plan";
 import { parseFeatures, PlanSchema, toLimit, type PlanFormValues } from "@/validations/plan";
+import { PlanModulesField } from "./PlanModulesField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
@@ -42,6 +44,7 @@ const emptyValues = (currency: string): PlanFormValues => ({
   limitBranches: "",
   limitStorageGb: "",
   trialDays: 0,
+  modules: [],
   isActive: true,
   isPopular: false,
 });
@@ -57,6 +60,7 @@ const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   limitBranches: plan.limits?.branches ?? "",
   limitStorageGb: plan.limits?.storageGb ?? "",
   trialDays: plan.trialDays ?? 0,
+  modules: (plan.modules ?? []).map(moduleRefId),
   isActive: plan.isActive,
   isPopular: plan.isPopular,
 });
@@ -98,6 +102,7 @@ export function PlanFormModal({
         storageGb: toLimit(values.limitStorageGb),
       },
       trialDays: values.trialDays,
+      modules: values.modules,
       isActive: values.isActive,
       isPopular: values.isPopular,
     };
@@ -177,8 +182,9 @@ export function PlanFormModal({
                 name="description"
                 label="Description"
                 placeholder="A short summary shown alongside the plan."
+                description="Shown alongside the plan name."
                 showCharCount={false}
-                rows={2}
+                rows={3}
                 className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
               />
               <FormTextarea
@@ -188,9 +194,11 @@ export function PlanFormModal({
                 placeholder={"Unlimited invoices\nPriority support"}
                 description="One per line, up to 50."
                 showCharCount={false}
-                rows={2}
+                rows={3}
                 className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
               />
+
+              <PlanModulesField control={form.control} name="modules" className="col-span-6" />
 
               <FormInput
                 control={form.control}

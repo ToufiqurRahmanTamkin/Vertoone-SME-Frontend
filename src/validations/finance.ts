@@ -1,5 +1,5 @@
 import { FINANCE_CATEGORY_TYPES } from "@/types/domain/finance";
-import { PAYMENT_METHODS } from "@/types/domain/soldSubscription";
+import { PAYMENT_METHODS, requiresTransactionId } from "@/types/domain/soldSubscription";
 import { z } from "zod";
 
 export const FinanceCategorySchema = z.object({
@@ -29,14 +29,25 @@ export const FinanceEntrySchema = z.object({
 
 export type FinanceEntryFormValues = z.infer<typeof FinanceEntrySchema>;
 
-export const PaymentReviewSchema = z.object({
-  note: z.string().trim().max(500),
-  paymentMethod: z.enum(PAYMENT_METHODS),
-  transactionId: z.string().trim().max(120),
-});
+export const PaymentReviewSchema = z
+  .object({
+    note: z.string().trim().max(500),
+    paymentMethod: z.enum(PAYMENT_METHODS),
+    transactionId: z.string().trim().max(120),
+  })
+  .refine(
+    (data) => !requiresTransactionId(data.paymentMethod) || data.transactionId.trim().length > 0,
+    {
+      message: "A transaction ID is required for every non-cash payment",
+      path: ["transactionId"],
+    }
+  );
 
-export const PaymentReviewReasonSchema = PaymentReviewSchema.extend({
-  note: z.string().trim().min(3, "A reason is required").max(500),
-});
+export const PaymentReviewReasonSchema = z
+  .object({
+    note: z.string().trim().min(3, "A reason is required").max(500),
+    paymentMethod: z.enum(PAYMENT_METHODS),
+    transactionId: z.string().trim().max(120),
+  });
 
 export type PaymentReviewFormValues = z.infer<typeof PaymentReviewSchema>;

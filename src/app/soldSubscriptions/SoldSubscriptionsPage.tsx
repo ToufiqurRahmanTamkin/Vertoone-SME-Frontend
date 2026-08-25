@@ -230,6 +230,23 @@ export default function SoldSubscriptionsPage() {
               <span className="text-muted-foreground">Auto renew</span>
               <span className="font-medium">{record.autoRenew ? "Yes" : "No"}</span>
             </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <span className="text-muted-foreground">Modules granted</span>
+              {record.grantedModules?.length ? (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {record.grantedModules.map((entry) => (
+                    <span
+                      key={entry.key}
+                      className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
+                    >
+                      {entry.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-0.5 font-medium">None</p>
+              )}
+            </div>
             {record.paymentReviewAction && (
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">Payment review</span>

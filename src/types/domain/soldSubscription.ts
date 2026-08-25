@@ -1,3 +1,4 @@
+import type { GrantedModule } from "./appModule";
 import type { BillingCycle } from "./plan";
 
 export const SUBSCRIPTION_STATUSES = [
@@ -12,15 +13,13 @@ export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
 export const PAYMENT_STATUSES = ["UNPAID", "PAID", "REFUNDED", "FAILED"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export const PAYMENT_METHODS = [
-  "BKASH",
-  "NAGAD",
-  "BANK_TRANSFER",
-  "CARD",
-  "CASH",
-  "OTHER",
-] as const;
+export const PAYMENT_METHODS = ["CASH", "CARD", "BKASH", "NAGAD"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const CASH_PAYMENT_METHOD: PaymentMethod = "CASH";
+
+export const requiresTransactionId = (method: PaymentMethod): boolean =>
+  method !== CASH_PAYMENT_METHOD;
 
 export const PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED", "REFUNDED"] as const;
 export type PaymentReviewAction = (typeof PAYMENT_REVIEW_ACTIONS)[number];
@@ -64,6 +63,7 @@ export interface SoldSubscription {
   paymentReviewedBy: string | null;
   paymentReviewedAt: string | null;
   paymentReviewNote: string;
+  grantedModules: GrantedModule[];
   createdAt: string;
   updatedAt: string;
 }

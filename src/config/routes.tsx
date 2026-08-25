@@ -6,6 +6,7 @@ import { Navigate } from "react-router-dom";
 const Login = lazy(() => import("@/app/auth/login/LoginPage"));
 const Dashboard = lazy(() => import("@/app/dashboard/page"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
+const Modules = lazy(() => import("@/app/modules/ModulesPage"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
 const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscriptionsPage"));
 const UserGuides = lazy(() => import("@/app/guides/GuidesPage"));
@@ -44,6 +45,7 @@ export const routes: RouteConfig[] = [
         element: <PrivateLayout />,
         children: [
           { path: "dashboard", element: <Dashboard /> },
+          { path: "modules", element: <Modules /> },
           { path: "subscription-plans", element: <SubscriptionPlans /> },
           { path: "sold-subscriptions", element: <SoldSubscriptions /> },
           { path: "user-guides", element: <UserGuides /> },

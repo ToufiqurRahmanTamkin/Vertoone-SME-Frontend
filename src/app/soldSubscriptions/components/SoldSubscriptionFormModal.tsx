@@ -1,6 +1,7 @@
 import {
   FormDate,
   FormInput,
+  FormPayment,
   FormPhone,
   FormSelect,
   FormSwitch,
@@ -20,7 +21,6 @@ import { Form } from "@/components/ui/form";
 import {
   BILLING_CYCLE_LABELS,
   BILLING_CYCLE_MONTHS,
-  PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
   SUBSCRIPTION_STATUS_LABELS,
   toOptions,
@@ -54,7 +54,6 @@ interface SoldSubscriptionFormModalProps {
 
 const STATUS_OPTIONS = toOptions(SUBSCRIPTION_STATUS_LABELS);
 const PAYMENT_STATUS_OPTIONS = toOptions(PAYMENT_STATUS_LABELS);
-const PAYMENT_METHOD_OPTIONS = toOptions(PAYMENT_METHOD_LABELS);
 
 const toDateInput = (value: Date): string => {
   const offset = value.getTimezoneOffset();
@@ -80,7 +79,7 @@ const emptyValues = (currency: string): SoldSubscriptionFormValues => ({
   currency,
   status: "PENDING",
   paymentStatus: "UNPAID",
-  paymentMethod: "OTHER",
+  paymentMethod: "CASH",
   transactionId: "",
   startDate: toDateInput(new Date()),
   endDate: toDateInput(addMonths(new Date(), 1)),
@@ -251,7 +250,7 @@ export function SoldSubscriptionFormModal({
                 <FormDate control={form.control} name="endDate" label="End date" dateOnly />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormSelect
                   control={form.control}
                   name="status"
@@ -264,19 +263,13 @@ export function SoldSubscriptionFormModal({
                   label="Payment"
                   options={PAYMENT_STATUS_OPTIONS}
                 />
-                <FormSelect
-                  control={form.control}
-                  name="paymentMethod"
-                  label="Method"
-                  options={PAYMENT_METHOD_OPTIONS}
-                />
               </div>
 
-              <FormInput
+              <FormPayment
                 control={form.control}
-                name="transactionId"
-                label="Transaction ID"
-                placeholder="Optional"
+                methodName="paymentMethod"
+                transactionIdName="transactionId"
+                showQr
               />
 
               <FormTextarea

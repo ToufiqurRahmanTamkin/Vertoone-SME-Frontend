@@ -15,6 +15,9 @@ export const SystemConfigSchema = z.object({
   maintenanceMessage: z.string().trim().max(500, "Message must be 500 characters or fewer"),
   allowSignups: z.boolean(),
   trialDays: z.number().int().min(0).max(365, "Trial can be at most 365 days"),
+  paymentQrUrl: z.string().trim().max(600),
+  paymentQrPublicId: z.string().trim().max(300),
+  paymentInstructions: z.string().trim().max(500, "Message must be 500 characters or fewer"),
 });
 
 export type SystemConfigFormValues = z.infer<typeof SystemConfigSchema>;

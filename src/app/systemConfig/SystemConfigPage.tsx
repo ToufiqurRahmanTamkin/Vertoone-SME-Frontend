@@ -1,3 +1,4 @@
+import { FileUploader } from "@/components/shared/file-uploader";
 import { FormInput, FormPhone, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { SystemConfigSchema, type SystemConfigFormValues } from "@/validations/s
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, RotateCcw } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 const toFormValues = (config: SystemConfig): SystemConfigFormValues => ({
@@ -27,6 +28,9 @@ const toFormValues = (config: SystemConfig): SystemConfigFormValues => ({
   maintenanceMessage: config.maintenanceMessage ?? "",
   allowSignups: config.allowSignups,
   trialDays: config.trialDays,
+  paymentQrUrl: config.paymentQrUrl ?? "",
+  paymentQrPublicId: config.paymentQrPublicId ?? "",
+  paymentInstructions: config.paymentInstructions ?? "",
 });
 
 export default function SystemConfigPage() {
@@ -45,6 +49,9 @@ export default function SystemConfigPage() {
       maintenanceMessage: "",
       allowSignups: true,
       trialDays: 14,
+      paymentQrUrl: "",
+      paymentQrPublicId: "",
+      paymentInstructions: "",
     },
   });
 
@@ -53,6 +60,9 @@ export default function SystemConfigPage() {
   React.useEffect(() => {
     if (config) form.reset(toFormValues(config));
   }, [config, form]);
+
+  const paymentQrUrl = useWatch({ control: form.control, name: "paymentQrUrl" });
+  const paymentQrPublicId = useWatch({ control: form.control, name: "paymentQrPublicId" });
 
   const onSubmit = async (values: SystemConfigFormValues) => {
     try {
@@ -141,6 +151,39 @@ export default function SystemConfigPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Payment QR</CardTitle>
+              <CardDescription>
+                Shown to the buyer whenever a non-cash payment method is picked, so they can pay
+                and hand back a transaction ID for you to approve.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <FileUploader
+                value={paymentQrUrl}
+                publicId={paymentQrPublicId}
+                folder="payment-qr"
+                label="QR image"
+                description="PNG or JPG works best. Keep the code high-contrast and uncropped."
+                onChange={(asset) => {
+                  form.setValue("paymentQrUrl", asset?.url ?? "", { shouldDirty: true });
+                  form.setValue("paymentQrPublicId", asset?.publicId ?? "", {
+                    shouldDirty: true,
+                  });
+                }}
+              />
+              <FormTextarea
+                control={form.control}
+                name="paymentInstructions"
+                label="Payment instructions"
+                placeholder="Scan the QR with your mobile wallet, then enter the transaction ID below."
+                showCharCount={false}
+                rows={2}
+              />
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>

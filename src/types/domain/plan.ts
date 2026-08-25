@@ -1,3 +1,5 @@
+import type { AppModuleRef } from "./appModule";
+
 export const BILLING_CYCLES = ["MONTHLY", "QUARTERLY", "HALF_YEARLY", "YEARLY"] as const;
 export type BillingCycle = (typeof BILLING_CYCLES)[number];
 
@@ -11,6 +13,7 @@ export interface PlanLimits {
 export interface SubscriptionPlan {
   _id: string;
   name: string;
+  modules: AppModuleRef[];
   description: string;
   price: number;
   currency: string;
@@ -36,6 +39,7 @@ export interface PlanListQuery {
 
 export interface PlanPayload {
   name: string;
+  modules?: string[];
   description?: string;
   price: number;
   currency?: string;

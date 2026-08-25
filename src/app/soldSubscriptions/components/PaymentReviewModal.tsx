@@ -1,4 +1,4 @@
-import { FormInput, FormSelect, FormTextarea } from "@/components/shared/form-fields";
+import { FormPayment, FormTextarea } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { PAYMENT_METHOD_LABELS, toOptions } from "@/constant";
 import { formatAmount } from "@/lib/amount";
 import {
   useApprovePaymentMutation,
@@ -38,8 +37,6 @@ interface PaymentReviewModalProps {
   mode: PaymentReviewMode;
   record: SoldSubscription | null;
 }
-
-const PAYMENT_METHOD_OPTIONS = toOptions(PAYMENT_METHOD_LABELS);
 
 const MODE_COPY: Record<
   PaymentReviewMode,
@@ -108,7 +105,7 @@ export function PaymentReviewModal({
 
   const form = useForm<PaymentReviewFormValues>({
     resolver: zodResolver(copy.requiresNote ? PaymentReviewReasonSchema : PaymentReviewSchema),
-    defaultValues: { note: "", paymentMethod: "OTHER", transactionId: "" },
+    defaultValues: { note: "", paymentMethod: "CASH", transactionId: "" },
   });
 
   React.useEffect(() => {
@@ -171,20 +168,12 @@ export function PaymentReviewModal({
               )}
 
               {isApprove && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormSelect
-                    control={form.control}
-                    name="paymentMethod"
-                    label="Method"
-                    options={PAYMENT_METHOD_OPTIONS}
-                  />
-                  <FormInput
-                    control={form.control}
-                    name="transactionId"
-                    label="Transaction ID"
-                    placeholder="Optional"
-                  />
-                </div>
+                <FormPayment
+                  control={form.control}
+                  methodName="paymentMethod"
+                  transactionIdName="transactionId"
+                  showQr
+                />
               )}
 
               <FormTextarea

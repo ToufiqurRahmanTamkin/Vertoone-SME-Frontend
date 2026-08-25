@@ -1,4 +1,5 @@
 import type { Pagination } from "@/types";
+import type { GrantedModuleAccess } from "@/types/domain/appModule";
 import type {
   PaymentReviewPayload,
   SoldSubscription,
@@ -46,6 +47,10 @@ const soldSubscriptionApi = baseApi.injectEndpoints({
       query: ({ id, body }) => ({ url: `/sold-subscriptions/${id}`, method: "PATCH", body }),
       invalidatesTags: ["SoldSubscriptions", "Dashboard"],
     }),
+    getGrantedModules: builder.query<GrantedModuleAccess, string>({
+      query: (id) => ({ url: `/sold-subscriptions/${id}/modules`, method: "GET" }),
+      providesTags: ["SoldSubscriptions"],
+    }),
     approvePayment: builder.mutation<
       SoldSubscription,
       { id: string; body: PaymentReviewPayload }
@@ -86,6 +91,7 @@ export const {
   useGetSoldSubscriptionQuery,
   useCreateSoldSubscriptionMutation,
   useUpdateSoldSubscriptionMutation,
+  useGetGrantedModulesQuery,
   useApprovePaymentMutation,
   useRejectPaymentMutation,
   useRefundPaymentMutation,
