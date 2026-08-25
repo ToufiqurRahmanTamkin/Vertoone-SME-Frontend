@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { optionalPhone } from "./phone";
 
 export const SystemConfigSchema = z.object({
   appName: z.string().trim().min(1, "App name is required").max(80),
   supportEmail: z.string().trim().email("Enter a valid email address"),
-  supportPhone: z.string().trim().max(32),
+  supportPhone: optionalPhone,
   defaultCurrency: z
     .string()
     .trim()

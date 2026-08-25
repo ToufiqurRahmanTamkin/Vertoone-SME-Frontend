@@ -4,13 +4,14 @@ import {
   SUBSCRIPTION_STATUSES,
 } from "@/types/domain/soldSubscription";
 import { z } from "zod";
+import { optionalPhone } from "./phone";
 
 export const SoldSubscriptionSchema = z
   .object({
     planId: z.string().min(1, "Select a plan"),
     customerName: z.string().trim().min(2, "Customer name must be at least 2 characters").max(120),
     customerEmail: z.string().trim().email("Enter a valid email address"),
-    customerPhone: z.string().trim().max(32),
+    customerPhone: optionalPhone,
     companyName: z.string().trim().max(120),
     amount: z.number().min(0, "Amount cannot be negative"),
     currency: z

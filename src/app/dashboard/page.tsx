@@ -158,7 +158,15 @@ export default function DashboardPage() {
                       />
                     }
                   />
-                  <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="revenue"
+                    fill="var(--color-revenue)"
+                    radius={[4, 4, 0, 0]}
+                    // The entry animation is driven by requestAnimationFrame,
+                    // which never fires in a hidden/background tab — the bars
+                    // would then stay unrendered until the tab is focused.
+                    isAnimationActive={false}
+                  />
                 </BarChart>
               </ChartContainer>
             )}

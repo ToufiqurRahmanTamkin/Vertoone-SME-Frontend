@@ -1,4 +1,4 @@
-import { FormInput, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
+import { FormInput, FormPhone, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,12 +100,7 @@ export default function SystemConfigPage() {
               <CardContent className="grid gap-4">
                 <FormInput control={form.control} name="appName" label="App name" />
                 <FormInput control={form.control} name="supportEmail" label="Support email" />
-                <FormInput
-                  control={form.control}
-                  name="supportPhone"
-                  label="Support phone"
-                  placeholder="Optional"
-                />
+                <FormPhone control={form.control} name="supportPhone" label="Support phone" />
               </CardContent>
             </Card>
 

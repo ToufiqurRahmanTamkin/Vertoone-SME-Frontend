@@ -3,8 +3,8 @@
 React 19 + Vite + TypeScript super admin console for the Vertoone SME platform.
 
 This is the shared Vertoone console template. It ships with the theme system,
-the colour system and super admin authentication wired end to end; every
-business module is built on top of it.
+the colour system and super admin authentication wired end to end, plus a
+console module for every backend module.
 
 ## Running it
 
@@ -62,6 +62,56 @@ Customizer automatically.
 behind a mutex before replaying the request — falling back to a logout and a
 bounce to `/login`. `ProtectedRoute` gates every private route and
 `PublicRoute` keeps a signed-in user off `/login`.
+
+## Modules
+
+| Route                  | Backend module      | What it does                                                     |
+| ---------------------- | ------------------- | ---------------------------------------------------------------- |
+| `/dashboard`           | `dashboard`         | Revenue, subscription, plan and guide stats; 12-month revenue chart; top plans; recent sales |
+| `/subscription-plans`  | `subscriptionPlan`  | Full CRUD. Price, cycle, features, limits, trial, active/popular  |
+| `/sold-subscriptions`  | `soldSubscription`  | Full CRUD + summary tiles. Invoice, customer, term, payment state |
+| `/user-guides`         | `userGuide`         | Full CRUD. Category, audience, tags, draft/published              |
+| `/system-config`       | `systemConfig`      | The single GLOBAL config document                                 |
+| `/settings/account`    | `auth`              | Profile and change password                                       |
+
+Notes that matter when extending these:
+
+- **Pagination** comes back as `meta` (`page`/`limit`/`total`/`totalPages`),
+  not `pagination`. `DataTable` wants `pages`, so pass `pages: meta.totalPages`.
+- **Boolean list filters** (`isActive`, `isPublished`) are validated server-side
+  as the literal strings `"true"`/`"false"`, so they are forwarded as-is from the
+  URL rather than coerced. `buildQuery` drops empty values — sending `?status=`
+  would be a 400, not "no filter".
+- **Selling a plan** pre-fills price, currency and end date from the plan's
+  billing cycle, mirroring the server's own defaults. On update the server
+  ignores `planId`, `planName` and `invoiceNumber`, so the form locks the plan.
+- **Deleting a plan** with sales returns 409; the page surfaces the server's
+  message rather than a generic failure.
+- **Form number fields** use plain `z.number()`, not `z.coerce.number()` —
+  `FormInput` already emits numbers, and `coerce` types its input as `unknown`,
+  which breaks `zodResolver`'s generic.
+
+## Phone numbers
+
+`FormPhone` (used by the customer phone on a sale and the support phone in
+system config) pairs a searchable country picker — flag, name and dial code —
+with the number input, and stores the result as E.164 (`+8801711223344`), so the
+dial code travels with the number and the backend needs no country column.
+`optionalPhone` in `validations/phone.ts` allows an empty value but rejects a
+half-entered one. It defaults to Bangladesh; pass `defaultCountry` to change it.
+
+The libphonenumber metadata it needs is split into its own `vendor-phone` chunk
+so it is only fetched by the pages that have a phone field.
+
+## Modals
+
+Every dialog must clear its panel edges equally on both sides:
+
+- Put fields in `<DialogBody>` — `DialogContent` itself has no padding. Keep
+  `<DialogFooter>` a sibling of the body so its top border spans the panel.
+- `DialogContent` and `AlertDialogContent` set
+  `scrollbar-gutter: stable both-edges`, so a scrolling dialog reserves the
+  scrollbar track on both edges instead of stealing it from the right padding.
 
 ## Adding a module
 

@@ -30,6 +30,12 @@ export default defineConfig({
           if (id.includes("@tanstack")) {
             return "vendor-table";
           }
+          // The phone field carries libphonenumber metadata. Keep it in its own
+          // chunk so it is fetched by the two pages that have a phone input,
+          // rather than riding along in a shared chunk the login page pulls.
+          if (id.includes("react-phone-number-input") || id.includes("libphonenumber-js")) {
+            return "vendor-phone";
+          }
           if (id.includes("@radix-ui") || id.includes("/radix-ui/")) {
             return "vendor-radix";
           }

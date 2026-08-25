@@ -1,6 +1,7 @@
 import {
   FormDate,
   FormInput,
+  FormPhone,
   FormSelect,
   FormSwitch,
   FormTextarea,
@@ -234,12 +235,7 @@ export function SoldSubscriptionFormModal({
                   label="Customer email"
                   placeholder="jane@example.com"
                 />
-                <FormInput
-                  control={form.control}
-                  name="customerPhone"
-                  label="Phone"
-                  placeholder="Optional"
-                />
+                <FormPhone control={form.control} name="customerPhone" label="Phone" />
                 <FormInput
                   control={form.control}
                   name="companyName"

@@ -134,80 +134,103 @@ export function PlanFormModal({
 
         <Form {...form}>
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput control={form.control} name="name" label="Name" placeholder="Starter" />
-                <FormSelect
-                  control={form.control}
-                  name="billingCycle"
-                  label="Billing cycle"
-                  options={BILLING_CYCLE_OPTIONS}
-                />
-                <FormInput control={form.control} name="price" label="Price" type="number" />
-                <FormInput
-                  control={form.control}
-                  name="currency"
-                  label="Currency"
-                  placeholder="BDT"
-                />
-              </div>
+            {/* Compact layout: a 6-column grid lets the short numeric fields
+                share rows instead of each taking a full one, which keeps the
+                whole plan form on screen without scrolling on a laptop. */}
+            <DialogBody className="grid grid-cols-6 gap-x-3 gap-y-3">
+              <FormInput
+                control={form.control}
+                name="name"
+                label="Name"
+                placeholder="Starter"
+                className="col-span-6 sm:col-span-3"
+              />
+              <FormSelect
+                control={form.control}
+                name="billingCycle"
+                label="Billing cycle"
+                options={BILLING_CYCLE_OPTIONS}
+                className="col-span-6 sm:col-span-3"
+              />
+
+              <FormInput
+                control={form.control}
+                name="price"
+                label="Price"
+                type="number"
+                className="col-span-3 sm:col-span-2"
+              />
+              <FormInput
+                control={form.control}
+                name="currency"
+                label="Currency"
+                placeholder="BDT"
+                className="col-span-3 sm:col-span-2"
+              />
+              <FormInput
+                control={form.control}
+                name="trialDays"
+                label="Trial days"
+                type="number"
+                className="col-span-3 sm:col-span-1"
+              />
+              <FormInput
+                control={form.control}
+                name="sortOrder"
+                label="Sort order"
+                type="number"
+                className="col-span-3 sm:col-span-1"
+              />
 
               <FormTextarea
                 control={form.control}
                 name="description"
                 label="Description"
                 placeholder="A short summary shown alongside the plan."
+                showCharCount={false}
+                rows={2}
+                className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
               />
-
               <FormTextarea
                 control={form.control}
                 name="features"
                 label="Features"
                 placeholder={"Unlimited invoices\nPriority support"}
                 description="One per line, up to 50."
+                showCharCount={false}
+                rows={2}
+                className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
               />
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <FormInput
-                  control={form.control}
-                  name="limitUsers"
-                  label="User limit"
-                  type="number"
-                  description="Blank = unlimited"
-                />
-                <FormInput
-                  control={form.control}
-                  name="limitBranches"
-                  label="Branch limit"
-                  type="number"
-                  description="Blank = unlimited"
-                />
-                <FormInput
-                  control={form.control}
-                  name="limitStorageGb"
-                  label="Storage (GB)"
-                  type="number"
-                  description="Blank = unlimited"
-                />
-              </div>
+              <FormInput
+                control={form.control}
+                name="limitUsers"
+                label="Users"
+                type="number"
+                placeholder="Unlimited"
+                className="col-span-2"
+              />
+              <FormInput
+                control={form.control}
+                name="limitBranches"
+                label="Branches"
+                type="number"
+                placeholder="Unlimited"
+                className="col-span-2"
+              />
+              <FormInput
+                control={form.control}
+                name="limitStorageGb"
+                label="Storage (GB)"
+                type="number"
+                placeholder="Unlimited"
+                className="col-span-2"
+              />
+              <p className="col-span-6 -mt-1 text-xs text-muted-foreground">
+                Leave a limit blank for unlimited.
+              </p>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="trialDays"
-                  label="Trial days"
-                  type="number"
-                />
-                <FormInput
-                  control={form.control}
-                  name="sortOrder"
-                  label="Sort order"
-                  type="number"
-                  description="Lower shows first."
-                />
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="col-span-6 grid gap-3 sm:grid-cols-2">
                 <FormSwitch
                   control={form.control}
                   name="isActive"
