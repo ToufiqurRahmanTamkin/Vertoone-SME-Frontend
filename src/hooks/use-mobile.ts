@@ -2,18 +2,21 @@ import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+const MOBILE_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
+const subscribe = (onChange: () => void) => {
+  const query = window.matchMedia(MOBILE_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+};
 
-  return !!isMobile;
+const getSnapshot = () => window.matchMedia(MOBILE_QUERY).matches;
+
+/**
+ * Tracks the mobile breakpoint via `useSyncExternalStore`, so the first render
+ * already has the right value — no effect, no setState-in-effect cascade, and
+ * no flash of the desktop layout on a phone.
+ */
+export function useIsMobile(): boolean {
+  return React.useSyncExternalStore(subscribe, getSnapshot, () => false);
 }

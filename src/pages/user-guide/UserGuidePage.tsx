@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useListFilters } from "@/hooks/use-list-filters";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatDate, humanizeEnum } from "@/lib/format";
 import {
@@ -29,12 +30,19 @@ import { GuideFormDialog } from "./GuideFormDialog";
 
 const ALL = "ALL";
 
+interface Filters extends Record<string, string> {
+  search: string;
+  category: GuideCategory | typeof ALL;
+  published: "ALL" | "published" | "draft";
+}
+
 export default function UserGuidePage() {
-  const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
-  const [search, setSearch] = React.useState("");
-  const [category, setCategory] = React.useState<GuideCategory | typeof ALL>(ALL);
-  const [published, setPublished] = React.useState<"ALL" | "published" | "draft">(ALL);
+  const { filters, setFilter, page, setPage, limit, setLimit } = useListFilters<Filters>({
+    search: "",
+    category: ALL,
+    published: ALL,
+  });
+  const { search, category, published } = filters;
 
   const debouncedSearch = useDebounce(search);
 
@@ -51,10 +59,6 @@ export default function UserGuidePage() {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<UserGuide | undefined>();
   const [pendingDelete, setPendingDelete] = React.useState<UserGuide | undefined>();
-
-  React.useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, category, published, limit]);
 
   const openCreate = () => {
     setEditing(undefined);
@@ -99,7 +103,7 @@ export default function UserGuidePage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => setFilter("search", event.target.value)}
                 placeholder="Search guides…"
                 className="pl-9"
               />
@@ -107,7 +111,7 @@ export default function UserGuidePage() {
 
             <Select
               value={category}
-              onValueChange={(value) => setCategory(value as GuideCategory | typeof ALL)}
+              onValueChange={(value) => setFilter("category", value as Filters["category"])}
             >
               <SelectTrigger className="w-full cursor-pointer sm:w-52">
                 <SelectValue placeholder="Category" />
@@ -124,7 +128,7 @@ export default function UserGuidePage() {
 
             <Select
               value={published}
-              onValueChange={(value) => setPublished(value as "ALL" | "published" | "draft")}
+              onValueChange={(value) => setFilter("published", value as Filters["published"])}
             >
               <SelectTrigger className="w-full cursor-pointer sm:w-40">
                 <SelectValue placeholder="Visibility" />

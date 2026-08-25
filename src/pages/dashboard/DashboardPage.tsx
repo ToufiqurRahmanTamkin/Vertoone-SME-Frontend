@@ -160,7 +160,7 @@ export default function DashboardPage() {
                       color: "var(--popover-foreground)",
                       fontSize: "0.8125rem",
                     }}
-                    formatter={(value: number) => [formatCurrency(value, currency), "Revenue"]}
+                    formatter={(value?: number) => [formatCurrency(value ?? 0, currency), "Revenue"]}
                   />
                   <Line
                     type="monotone"
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                       color: "var(--popover-foreground)",
                       fontSize: "0.8125rem",
                     }}
-                    formatter={(value: number) => [formatNumber(value), "Sales"]}
+                    formatter={(value?: number) => [formatNumber(value ?? 0), "Sales"]}
                   />
                   <Bar dataKey="sales" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={18} />
                 </BarChart>

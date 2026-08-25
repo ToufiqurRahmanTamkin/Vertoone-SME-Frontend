@@ -35,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useListFilters } from "@/hooks/use-list-filters";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatCurrency, formatDate, formatNumber, humanizeEnum } from "@/lib/format";
 import {
@@ -53,12 +54,19 @@ import { SoldSubscriptionFormDialog } from "./SoldSubscriptionFormDialog";
 
 const ALL = "ALL";
 
+interface Filters extends Record<string, string> {
+  search: string;
+  status: SubscriptionStatus | typeof ALL;
+  paymentStatus: PaymentStatus | typeof ALL;
+}
+
 export default function SoldSubscriptionsPage() {
-  const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
-  const [search, setSearch] = React.useState("");
-  const [status, setStatus] = React.useState<SubscriptionStatus | typeof ALL>(ALL);
-  const [paymentStatus, setPaymentStatus] = React.useState<PaymentStatus | typeof ALL>(ALL);
+  const { filters, setFilter, page, setPage, limit, setLimit } = useListFilters<Filters>({
+    search: "",
+    status: ALL,
+    paymentStatus: ALL,
+  });
+  const { search, status, paymentStatus } = filters;
 
   const debouncedSearch = useDebounce(search);
 
@@ -76,10 +84,6 @@ export default function SoldSubscriptionsPage() {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<SoldSubscription | undefined>();
   const [pendingDelete, setPendingDelete] = React.useState<SoldSubscription | undefined>();
-
-  React.useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, status, paymentStatus, limit]);
 
   const openCreate = () => {
     setEditing(undefined);
@@ -152,7 +156,7 @@ export default function SoldSubscriptionsPage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => setFilter("search", event.target.value)}
                 placeholder="Search by customer, company, invoice…"
                 className="pl-9"
               />
@@ -160,7 +164,7 @@ export default function SoldSubscriptionsPage() {
 
             <Select
               value={status}
-              onValueChange={(value) => setStatus(value as SubscriptionStatus | typeof ALL)}
+              onValueChange={(value) => setFilter("status", value as Filters["status"])}
             >
               <SelectTrigger className="w-full cursor-pointer sm:w-44">
                 <SelectValue placeholder="Status" />
@@ -177,7 +181,7 @@ export default function SoldSubscriptionsPage() {
 
             <Select
               value={paymentStatus}
-              onValueChange={(value) => setPaymentStatus(value as PaymentStatus | typeof ALL)}
+              onValueChange={(value) => setFilter("paymentStatus", value as Filters["paymentStatus"])}
             >
               <SelectTrigger className="w-full cursor-pointer sm:w-44">
                 <SelectValue placeholder="Payment" />

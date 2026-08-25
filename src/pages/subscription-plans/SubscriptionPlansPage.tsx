@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useListFilters } from "@/hooks/use-list-filters";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatCurrency, humanizeEnum } from "@/lib/format";
 import {
@@ -40,12 +41,19 @@ const ALL = "ALL";
 const describeLimit = (value: number | null): string =>
   value === null || value === undefined ? "∞" : String(value);
 
+interface Filters extends Record<string, string> {
+  search: string;
+  cycle: BillingCycle | typeof ALL;
+  status: "ALL" | "active" | "inactive";
+}
+
 export default function SubscriptionPlansPage() {
-  const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
-  const [search, setSearch] = React.useState("");
-  const [cycle, setCycle] = React.useState<BillingCycle | typeof ALL>(ALL);
-  const [status, setStatus] = React.useState<"ALL" | "active" | "inactive">(ALL);
+  const { filters, setFilter, page, setPage, limit, setLimit } = useListFilters<Filters>({
+    search: "",
+    cycle: ALL,
+    status: ALL,
+  });
+  const { search, cycle, status } = filters;
 
   const debouncedSearch = useDebounce(search);
 
@@ -62,11 +70,6 @@ export default function SubscriptionPlansPage() {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<SubscriptionPlan | undefined>();
   const [pendingDelete, setPendingDelete] = React.useState<SubscriptionPlan | undefined>();
-
-  // Any filter change invalidates the current page number.
-  React.useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, cycle, status, limit]);
 
   const openCreate = () => {
     setEditing(undefined);
@@ -112,7 +115,7 @@ export default function SubscriptionPlansPage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => setFilter("search", event.target.value)}
                 placeholder="Search plans…"
                 className="pl-9"
               />
@@ -120,7 +123,7 @@ export default function SubscriptionPlansPage() {
 
             <Select
               value={cycle}
-              onValueChange={(value) => setCycle(value as BillingCycle | typeof ALL)}
+              onValueChange={(value) => setFilter("cycle", value as Filters["cycle"])}
             >
               <SelectTrigger className="w-full cursor-pointer sm:w-48">
                 <SelectValue placeholder="Billing cycle" />
@@ -137,7 +140,7 @@ export default function SubscriptionPlansPage() {
 
             <Select
               value={status}
-              onValueChange={(value) => setStatus(value as "ALL" | "active" | "inactive")}
+              onValueChange={(value) => setFilter("status", value as Filters["status"])}
             >
               <SelectTrigger className="w-full cursor-pointer sm:w-40">
                 <SelectValue placeholder="Status" />

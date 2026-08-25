@@ -138,12 +138,6 @@
   }
 }
 
-/* Fix for sidebar "none" mode height issue */
-.sidebar-none-mode [data-slot="sidebar"] {
-  height: 100vh !important;
-  min-height: 100vh !important;
-}
-
 /* Fix for right-side inset variant support */
 @media (min-width: 768px) {
   /* Right sidebar inset variant - margin adjustments */
@@ -160,45 +154,6 @@
 /* Smooth scrolling for the entire page */
 html {
   scroll-behavior: smooth;
-}
-
-/* Logo carousel animation */
-@keyframes logo-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-144rem); /* 12 items * 12rem = 144rem */
-  }
-}
-
-.animate-logo-scroll {
-  animation: logo-scroll 30s linear infinite;
-}
-
-.animate-logo-scroll:hover {
-  animation-play-state: paused;
-}
-
-.scrollbar-thin {
-  scrollbar-width: none;
-}
-
-.scrollbar-thin::-webkit-scrollbar {
-  width: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--sidebar-foreground) / 0.12);
-  border-radius: 3px;
-}
-
-.scrollbar-thin:hover::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--sidebar-foreground) / 0.25);
 }
 
 /* Global modern thin scrollbar styles - theme-aware */
