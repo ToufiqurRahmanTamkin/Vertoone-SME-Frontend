@@ -5,6 +5,7 @@ import {
   Receipt,
   Settings,
   SlidersHorizontal,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -15,6 +16,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   SlidersHorizontal,
   BookOpen,
   Settings,
+  Wallet,
 };
 
 export interface NavItem {
@@ -65,6 +67,36 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: "Receipt",
     section: null,
     roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "Finance",
+    path: "/finance",
+    icon: "Wallet",
+    section: "Finance",
+    roles: ["SUPER_ADMIN"],
+    items: [
+      {
+        title: "Income",
+        path: "/finance/income",
+        icon: "Wallet",
+        section: null,
+        roles: ["SUPER_ADMIN"],
+      },
+      {
+        title: "Expense",
+        path: "/finance/expense",
+        icon: "Wallet",
+        section: null,
+        roles: ["SUPER_ADMIN"],
+      },
+      {
+        title: "Category",
+        path: "/finance/categories",
+        icon: "Wallet",
+        section: null,
+        roles: ["SUPER_ADMIN"],
+      },
+    ],
   },
   {
     title: "User Guides",

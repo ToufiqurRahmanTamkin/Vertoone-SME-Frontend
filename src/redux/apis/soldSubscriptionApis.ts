@@ -1,5 +1,6 @@
 import type { Pagination } from "@/types";
 import type {
+  PaymentReviewPayload,
   SoldSubscription,
   SoldSubscriptionCreatePayload,
   SoldSubscriptionListQuery,
@@ -45,6 +46,33 @@ const soldSubscriptionApi = baseApi.injectEndpoints({
       query: ({ id, body }) => ({ url: `/sold-subscriptions/${id}`, method: "PATCH", body }),
       invalidatesTags: ["SoldSubscriptions", "Dashboard"],
     }),
+    approvePayment: builder.mutation<
+      SoldSubscription,
+      { id: string; body: PaymentReviewPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/sold-subscriptions/${id}/approve-payment`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["SoldSubscriptions", "Incomes", "FinanceCategories", "Dashboard"],
+    }),
+    rejectPayment: builder.mutation<SoldSubscription, { id: string; body: PaymentReviewPayload }>({
+      query: ({ id, body }) => ({
+        url: `/sold-subscriptions/${id}/reject-payment`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["SoldSubscriptions", "Dashboard"],
+    }),
+    refundPayment: builder.mutation<SoldSubscription, { id: string; body: PaymentReviewPayload }>({
+      query: ({ id, body }) => ({
+        url: `/sold-subscriptions/${id}/refund-payment`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["SoldSubscriptions", "Incomes", "Dashboard"],
+    }),
     deleteSoldSubscription: builder.mutation<null, string>({
       query: (id) => ({ url: `/sold-subscriptions/${id}`, method: "DELETE" }),
       invalidatesTags: ["SoldSubscriptions", "SubscriptionPlans", "Dashboard"],
@@ -58,5 +86,8 @@ export const {
   useGetSoldSubscriptionQuery,
   useCreateSoldSubscriptionMutation,
   useUpdateSoldSubscriptionMutation,
+  useApprovePaymentMutation,
+  useRejectPaymentMutation,
+  useRefundPaymentMutation,
   useDeleteSoldSubscriptionMutation,
 } = soldSubscriptionApi;

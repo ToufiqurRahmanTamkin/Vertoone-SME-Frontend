@@ -127,6 +127,9 @@ export const ALL_TAG_TYPES = [
   "SubscriptionPlans",
   "SoldSubscriptions",
   "UserGuides",
+  "FinanceCategories",
+  "Incomes",
+  "Expenses",
 ] as const;
 
 

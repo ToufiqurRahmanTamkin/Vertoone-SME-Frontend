@@ -6,11 +6,13 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
+  PAYMENT_REVIEW_ACTION_LABELS,
   PAYMENT_STATUS_LABELS,
   SUBSCRIPTION_STATUS_LABELS,
   toOptions,
 } from "@/constant";
 import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatDate } from "@/lib/date";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import {
   useDeleteSoldSubscriptionMutation,
@@ -24,11 +26,15 @@ import type {
   SoldSubscription,
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
-import { CircleCheck, Clock, Plus, Receipt, Wallet } from "lucide-react";
+import { CircleCheck, Clock, HandCoins, Plus, Receipt, Wallet } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { SoldSubscriptionFormModal } from "./components/SoldSubscriptionFormModal";
 import { SoldSubscriptionMobileCard } from "./components/SoldSubscriptionMobileCard";
+import {
+  PaymentReviewModal,
+  type PaymentReviewMode,
+} from "./components/PaymentReviewModal";
 import { soldSubscriptionColumns } from "./sold-subscriptions.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -68,6 +74,16 @@ export default function SoldSubscriptionsPage() {
   const [pendingDelete, setPendingDelete] = React.useState<SoldSubscription | null>(null);
   const [deleteSale, { isLoading: isDeleting }] = useDeleteSoldSubscriptionMutation();
 
+  const [reviewMode, setReviewMode] = React.useState<PaymentReviewMode>("APPROVE");
+  const [reviewRecord, setReviewRecord] = React.useState<SoldSubscription | null>(null);
+  const [reviewOpen, setReviewOpen] = React.useState(false);
+
+  const openReview = (mode: PaymentReviewMode) => (record: SoldSubscription) => {
+    setReviewMode(mode);
+    setReviewRecord(record);
+    setReviewOpen(true);
+  };
+
   const openCreate = () => {
     setEditing(null);
     setFormOpen(true);
@@ -92,7 +108,14 @@ export default function SoldSubscriptionsPage() {
   };
 
   const columns = React.useMemo(
-    () => soldSubscriptionColumns({ onEdit: openEdit, onDelete: setPendingDelete }),
+    () =>
+      soldSubscriptionColumns({
+        onEdit: openEdit,
+        onDelete: setPendingDelete,
+        onApprove: openReview("APPROVE"),
+        onReject: openReview("REJECT"),
+        onRefund: openReview("REFUND"),
+      }),
     []
   );
 
@@ -120,6 +143,12 @@ export default function SoldSubscriptionsPage() {
       color: "warning" as const,
     },
     {
+      label: "Awaiting approval",
+      value: formatNumber(summary?.awaitingApprovalCount),
+      icon: HandCoins,
+      color: "warning" as const,
+    },
+    {
       label: "Revenue (paid)",
       value: formatAmount(summary?.totalRevenue, currency),
       icon: Wallet,
@@ -134,7 +163,7 @@ export default function SoldSubscriptionsPage() {
         description="Every subscription sold, with its invoice, term and payment state."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -201,6 +230,25 @@ export default function SoldSubscriptionsPage() {
               <span className="text-muted-foreground">Auto renew</span>
               <span className="font-medium">{record.autoRenew ? "Yes" : "No"}</span>
             </div>
+            {record.paymentReviewAction && (
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Payment review</span>
+                <span className="font-medium">
+                  {PAYMENT_REVIEW_ACTION_LABELS[record.paymentReviewAction]}
+                  {record.paymentReviewedAt
+                    ? ` · ${formatDate(record.paymentReviewedAt)}`
+                    : ""}
+                </span>
+              </div>
+            )}
+            {record.paymentReviewNote && (
+              <div className="sm:col-span-2 lg:col-span-3">
+                <span className="text-muted-foreground">Review note</span>
+                <p className="mt-0.5 whitespace-pre-wrap font-medium">
+                  {record.paymentReviewNote}
+                </p>
+              </div>
+            )}
             {record.notes && (
               <div className="sm:col-span-2 lg:col-span-3">
                 <span className="text-muted-foreground">Notes</span>
@@ -214,8 +262,18 @@ export default function SoldSubscriptionsPage() {
             record={record}
             onEdit={openEdit}
             onDelete={setPendingDelete}
+            onApprove={openReview("APPROVE")}
+            onReject={openReview("REJECT")}
+            onRefund={openReview("REFUND")}
           />
         )}
+      />
+
+      <PaymentReviewModal
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        mode={reviewMode}
+        record={reviewRecord}
       />
 
       <SoldSubscriptionFormModal

@@ -1,8 +1,10 @@
 import type { StatusColor } from "@/components/shared/status-badge";
 import type { BillingCycle } from "@/types/domain/plan";
+import type { FinanceCategoryType, IncomeSourceType } from "@/types/domain/finance";
 import type { GuideAudience, GuideCategory } from "@/types/domain/guide";
 import type {
   PaymentMethod,
+  PaymentReviewAction,
   PaymentStatus,
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
@@ -62,6 +64,33 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   CARD: "Card",
   CASH: "Cash",
   OTHER: "Other",
+};
+
+export const PAYMENT_REVIEW_ACTION_LABELS: Record<PaymentReviewAction, string> = {
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  REFUNDED: "Refunded",
+};
+
+export const PAYMENT_REVIEW_ACTION_COLORS: Record<PaymentReviewAction, StatusColor> = {
+  APPROVED: "green",
+  REJECTED: "red",
+  REFUNDED: "violet",
+};
+
+export const FINANCE_CATEGORY_TYPE_LABELS: Record<FinanceCategoryType, string> = {
+  INCOME: "Income",
+  EXPENSE: "Expense",
+};
+
+export const FINANCE_CATEGORY_TYPE_COLORS: Record<FinanceCategoryType, StatusColor> = {
+  INCOME: "green",
+  EXPENSE: "orange",
+};
+
+export const INCOME_SOURCE_TYPE_LABELS: Record<IncomeSourceType, string> = {
+  MANUAL: "Manual",
+  SOLD_SUBSCRIPTION: "Subscription",
 };
 
 export const GUIDE_CATEGORY_LABELS: Record<GuideCategory, string> = {

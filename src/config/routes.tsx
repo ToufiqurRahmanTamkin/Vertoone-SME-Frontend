@@ -9,6 +9,9 @@ const AccountSettings = lazy(() => import("@/app/settings/account/page"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
 const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscriptionsPage"));
 const UserGuides = lazy(() => import("@/app/guides/GuidesPage"));
+const FinanceIncome = lazy(() => import("@/app/finance/income/IncomePage"));
+const FinanceExpense = lazy(() => import("@/app/finance/expense/ExpensePage"));
+const FinanceCategories = lazy(() => import("@/app/finance/categories/FinanceCategoriesPage"));
 const SystemConfig = lazy(() => import("@/app/systemConfig/SystemConfigPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -44,6 +47,9 @@ export const routes: RouteConfig[] = [
           { path: "subscription-plans", element: <SubscriptionPlans /> },
           { path: "sold-subscriptions", element: <SoldSubscriptions /> },
           { path: "user-guides", element: <UserGuides /> },
+          { path: "finance/income", element: <FinanceIncome /> },
+          { path: "finance/expense", element: <FinanceExpense /> },
+          { path: "finance/categories", element: <FinanceCategories /> },
           { path: "system-config", element: <SystemConfig /> },
           { path: "settings/account", element: <AccountSettings /> },
         ],

@@ -9,18 +9,29 @@ import {
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
-import { Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, Pencil, RotateCcw, Trash2, XCircle } from "lucide-react";
+import {
+  canApprovePayment,
+  canRefundPayment,
+  canRejectPayment,
+} from "../payment-actions";
 
 interface SoldSubscriptionMobileCardProps {
   record: SoldSubscription;
   onEdit: (record: SoldSubscription) => void;
   onDelete: (record: SoldSubscription) => void;
+  onApprove: (record: SoldSubscription) => void;
+  onReject: (record: SoldSubscription) => void;
+  onRefund: (record: SoldSubscription) => void;
 }
 
 export function SoldSubscriptionMobileCard({
   record,
   onEdit,
   onDelete,
+  onApprove,
+  onReject,
+  onRefund,
 }: SoldSubscriptionMobileCardProps) {
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -64,7 +75,40 @@ export function SoldSubscriptionMobileCard({
         </div>
       </dl>
 
-      <div className="mt-3 flex justify-end gap-2 border-t pt-3">
+      <div className="mt-3 flex flex-wrap justify-end gap-2 border-t pt-3">
+        {canApprovePayment(record) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer text-emerald-600 hover:text-emerald-600"
+            onClick={() => onApprove(record)}
+          >
+            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+            Approve
+          </Button>
+        )}
+        {canRejectPayment(record) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer text-destructive hover:text-destructive"
+            onClick={() => onReject(record)}
+          >
+            <XCircle className="mr-1.5 h-3.5 w-3.5" />
+            Reject
+          </Button>
+        )}
+        {canRefundPayment(record) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            onClick={() => onRefund(record)}
+          >
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+            Refund
+          </Button>
+        )}
         <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => onEdit(record)}>
           <Pencil className="mr-1.5 h-3.5 w-3.5" />
           Edit

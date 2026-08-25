@@ -10,16 +10,23 @@ import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, Pencil, RotateCcw, Trash2, XCircle } from "lucide-react";
+import { canApprovePayment, canRefundPayment, canRejectPayment } from "./payment-actions";
 
 interface SoldSubscriptionColumnActions {
   onEdit: (record: SoldSubscription) => void;
   onDelete: (record: SoldSubscription) => void;
+  onApprove: (record: SoldSubscription) => void;
+  onReject: (record: SoldSubscription) => void;
+  onRefund: (record: SoldSubscription) => void;
 }
 
 export const soldSubscriptionColumns = ({
   onEdit,
   onDelete,
+  onApprove,
+  onReject,
+  onRefund,
 }: SoldSubscriptionColumnActions): ColumnDef<SoldSubscription>[] => [
   {
     accessorKey: "invoiceNumber",
@@ -93,6 +100,42 @@ export const soldSubscriptionColumns = ({
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
       <div className="flex justify-end gap-1">
+        {canApprovePayment(row.original) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 cursor-pointer text-emerald-600 hover:text-emerald-600"
+            onClick={() => onApprove(row.original)}
+            aria-label={`Approve payment for ${row.original.invoiceNumber}`}
+            title="Approve payment"
+          >
+            <CheckCircle2 className="h-4 w-4" />
+          </Button>
+        )}
+        {canRejectPayment(row.original) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
+            onClick={() => onReject(row.original)}
+            aria-label={`Reject payment for ${row.original.invoiceNumber}`}
+            title="Reject payment"
+          >
+            <XCircle className="h-4 w-4" />
+          </Button>
+        )}
+        {canRefundPayment(row.original) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 cursor-pointer"
+            onClick={() => onRefund(row.original)}
+            aria-label={`Refund payment for ${row.original.invoiceNumber}`}
+            title="Refund payment"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"

@@ -22,6 +22,9 @@ export const PAYMENT_METHODS = [
 ] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
+export const PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED", "REFUNDED"] as const;
+export type PaymentReviewAction = (typeof PAYMENT_REVIEW_ACTIONS)[number];
+
 /**
  * List/detail responses populate `planId`; the create response returns the raw
  * id. Callers should read `planName`, which is denormalised on the record and
@@ -57,6 +60,10 @@ export interface SoldSubscription {
   endDate: string;
   autoRenew: boolean;
   notes: string;
+  paymentReviewAction: PaymentReviewAction | null;
+  paymentReviewedBy: string | null;
+  paymentReviewedAt: string | null;
+  paymentReviewNote: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,6 +74,7 @@ export interface SoldSubscriptionSummary {
   expiredCount: number;
   pendingCount: number;
   totalRevenue: number;
+  awaitingApprovalCount: number;
 }
 
 export interface SoldSubscriptionListQuery {
@@ -105,6 +113,12 @@ export interface SoldSubscriptionCreatePayload {
  * they are omitted here rather than being silently dropped.
  */
 export type SoldSubscriptionUpdatePayload = Omit<SoldSubscriptionCreatePayload, "planId">;
+
+export interface PaymentReviewPayload {
+  note?: string;
+  paymentMethod?: PaymentMethod;
+  transactionId?: string;
+}
 
 export const planRefId = (planId: SoldSubscriptionPlanRef): string =>
   typeof planId === "string" ? planId : planId._id;
