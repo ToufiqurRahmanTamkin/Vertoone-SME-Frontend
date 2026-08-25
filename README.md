@@ -1,1 +1,0 @@
-# Vertoone-SME-Frontend
