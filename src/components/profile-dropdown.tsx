@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,9 +49,14 @@ export default function ProfileDropdown() {
           aria-label={`Account menu — ${user.name}, ${user.email}`}
           className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-transparent py-1 pr-1 pl-1 transition-colors hover:border-border hover:bg-accent focus:outline-none sm:pr-2.5"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary via-primary/80 to-primary/60 p-0.5">
-            <span className="text-xs font-bold text-primary-foreground">{initials}</span>
-          </span>
+          <Avatar className="h-8 w-8 shrink-0">
+            {user.avatarUrl ? (
+              <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+            ) : null}
+            <AvatarFallback className="bg-linear-to-br from-primary via-primary/80 to-primary/60 text-xs font-bold text-primary-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
           <span className="hidden min-w-0 flex-col items-start text-left leading-tight sm:flex">
             <span className="max-w-[10rem] truncate text-xs font-semibold text-foreground">
               {user.name}
@@ -70,9 +76,18 @@ export default function ProfileDropdown() {
       >
         <DropdownMenuLabel className="mb-2 flex flex-col gap-2 rounded-lg bg-accent/50 p-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-primary via-primary/80 to-primary/60 p-0.5">
-              <span className="text-xs font-bold text-primary-foreground">{initials}</span>
-            </div>
+            <Avatar className="h-10 w-10 shrink-0 rounded-lg">
+              {user.avatarUrl ? (
+                <AvatarImage
+                  src={user.avatarUrl}
+                  alt={user.name}
+                  className="rounded-lg object-cover"
+                />
+              ) : null}
+              <AvatarFallback className="rounded-lg bg-linear-to-br from-primary via-primary/80 to-primary/60 text-xs font-bold text-primary-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-foreground">{user.name}</p>
               <p className="truncate text-xs text-muted-foreground">{user.email}</p>

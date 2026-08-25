@@ -8,6 +8,8 @@ export interface User {
   email: string;
   role: Role;
   status: UserStatus;
+  avatarUrl: string | null;
+  avatarPublicId: string | null;
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -32,4 +34,9 @@ export interface AuthTokens {
 export interface ChangePasswordInput {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface UpdateProfileInput {
+  avatarUrl?: string | null;
+  avatarPublicId?: string | null;
 }

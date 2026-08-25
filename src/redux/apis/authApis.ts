@@ -3,6 +3,7 @@ import type {
   ChangePasswordInput,
   LoginInput,
   LoginResponse,
+  UpdateProfileInput,
   User,
 } from "@/types/domain/auth";
 import { setCredentials, setUser } from "../authSlice";
@@ -39,6 +40,18 @@ const authApi = baseApi.injectEndpoints({
         }
       },
     }),
+    updateProfile: builder.mutation<User, UpdateProfileInput>({
+      query: (body) => ({
+        url: "/auth/profile",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Me"],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        dispatch(setUser(data));
+      },
+    }),
     changePassword: builder.mutation<null, ChangePasswordInput>({
       query: (body) => ({
         url: "/auth/change-password",
@@ -63,6 +76,7 @@ export const {
   useLoginMutation,
   useGetMeQuery,
   useLazyGetMeQuery,
+  useUpdateProfileMutation,
   useChangePasswordMutation,
   useRefreshTokenMutation,
   useLogoutMutation,

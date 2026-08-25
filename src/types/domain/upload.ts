@@ -1,4 +1,4 @@
-export const UPLOAD_FOLDERS = ["payment-qr", "modules", "general"] as const;
+export const UPLOAD_FOLDERS = ["payment-qr", "modules", "avatars", "general"] as const;
 export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
 
 export interface UploadedAsset {

@@ -1,9 +1,9 @@
 import { FileUploader } from "@/components/shared/file-uploader";
 import { FormInput, FormPhone, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
 import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -15,16 +15,7 @@ import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { SystemConfig } from "@/types/domain/systemConfig";
 import { SystemConfigSchema, type SystemConfigFormValues } from "@/validations/systemConfig";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Building2,
-  Globe2,
-  Loader2,
-  type LucideIcon,
-  Power,
-  QrCode,
-  RotateCcw,
-  Save,
-} from "lucide-react";
+import { Building2, Globe2, Loader2, Power, QrCode, RotateCcw, Save } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,42 +34,6 @@ const toFormValues = (config: SystemConfig): SystemConfigFormValues => ({
   paymentQrPublicId: config.paymentQrPublicId ?? "",
   paymentInstructions: config.paymentInstructions ?? "",
 });
-
-interface ConfigCardProps {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-  className?: string;
-  children: React.ReactNode;
-}
-
-function ConfigCard({
-  icon: Icon,
-  title,
-  description,
-  action,
-  className,
-  children,
-}: ConfigCardProps) {
-  return (
-    <Card className={cn("gap-0 overflow-hidden py-0", className)}>
-      <CardHeader className="border-b bg-muted/40 px-5 py-4 md:px-6 [.border-b]:pb-4">
-        <div className="flex items-start gap-3">
-          <span className="bg-background text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg border shadow-sm">
-            <Icon className="size-4.5" />
-          </span>
-          <div className="min-w-0 flex-1 space-y-1">
-            <CardTitle className="text-base leading-tight">{title}</CardTitle>
-            <CardDescription className="text-sm leading-relaxed">{description}</CardDescription>
-          </div>
-          {action && <div className="shrink-0 pt-0.5">{action}</div>}
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4 p-5 md:p-6">{children}</CardContent>
-    </Card>
-  );
-}
 
 export default function SystemConfigPage() {
   const { data: config, isLoading } = useGetSystemConfigQuery();
@@ -156,7 +111,7 @@ export default function SystemConfigPage() {
       <Form {...form}>
         <form className="flex flex-col gap-4 xl:gap-6" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid items-stretch gap-4 lg:grid-cols-2 xl:gap-6">
-            <ConfigCard
+            <SectionCard
               icon={Building2}
               title="Identity & support"
               description="How the platform names itself and where customers reach you."
@@ -166,9 +121,9 @@ export default function SystemConfigPage() {
                 <FormInput control={form.control} name="supportEmail" label="Support email" />
                 <FormPhone control={form.control} name="supportPhone" label="Support phone" />
               </div>
-            </ConfigCard>
+            </SectionCard>
 
-            <ConfigCard
+            <SectionCard
               icon={Globe2}
               title="Regional defaults"
               description="Applied wherever a new plan or subscription does not set its own."
@@ -193,9 +148,9 @@ export default function SystemConfigPage() {
                 label="Default timezone"
                 placeholder="Asia/Dhaka"
               />
-            </ConfigCard>
+            </SectionCard>
 
-            <ConfigCard
+            <SectionCard
               icon={QrCode}
               title="Payment QR"
               description="Shown to the buyer whenever a non-cash payment method is picked, so they can pay and hand back a transaction ID for you to approve."
@@ -221,9 +176,9 @@ export default function SystemConfigPage() {
                 showCharCount={false}
                 className="mt-auto"
               />
-            </ConfigCard>
+            </SectionCard>
 
-            <ConfigCard
+            <SectionCard
               icon={Power}
               title="Availability"
               description="Who can join the platform, and how you take it offline for everyone."
@@ -262,10 +217,10 @@ export default function SystemConfigPage() {
                 showCharCount={false}
                 className="mt-auto"
               />
-            </ConfigCard>
+            </SectionCard>
           </div>
 
-          <div className="bg-background/85 sticky bottom-0 z-10 flex flex-col gap-3 rounded-xl border p-3 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-4">
+          <div className="bg-card flex flex-col gap-3 rounded-xl border p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <p className="text-muted-foreground text-sm">
               {isDirty ? "You have unsaved changes." : "Everything is saved."}
             </p>
