@@ -3,6 +3,12 @@ import type { BillingCycle } from "@/types/domain/plan";
 import type { FinanceCategoryType, IncomeSourceType } from "@/types/domain/finance";
 import type { GuideAudience, GuideCategory } from "@/types/domain/guide";
 import type {
+  LoginDeviceType,
+  LoginFailureReason,
+  LoginStatus,
+} from "@/types/domain/loginHistory";
+import type { NotificationLevel, NotificationType } from "@/types/domain/notification";
+import type {
   PaymentMethod,
   PaymentReviewAction,
   PaymentStatus,
@@ -110,3 +116,52 @@ export const GUIDE_AUDIENCE_LABELS: Record<GuideAudience, string> = {
 /** Builds `[{ label, value }]` options for a FormSelect / toolbar filter. */
 export const toOptions = <T extends string>(labels: Record<T, string>) =>
   (Object.entries(labels) as [T, string][]).map(([value, label]) => ({ value, label }));
+
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  SUBSCRIPTION_SOLD: "Subscription sold",
+  PAYMENT_APPROVED: "Payment approved",
+  PAYMENT_REJECTED: "Payment rejected",
+  PAYMENT_REFUNDED: "Payment refunded",
+  SUBSCRIPTION_EXPIRING: "Expiring soon",
+  FINANCE_ENTRY: "Finance",
+  SECURITY_LOGIN: "Security",
+  SYSTEM: "System",
+};
+
+export const NOTIFICATION_LEVEL_LABELS: Record<NotificationLevel, string> = {
+  INFO: "Info",
+  SUCCESS: "Success",
+  WARNING: "Warning",
+  ERROR: "Error",
+};
+
+export const NOTIFICATION_LEVEL_COLORS: Record<NotificationLevel, StatusColor> = {
+  INFO: "blue",
+  SUCCESS: "green",
+  WARNING: "amber",
+  ERROR: "red",
+};
+
+export const LOGIN_STATUS_LABELS: Record<LoginStatus, string> = {
+  SUCCESS: "Successful",
+  FAILED: "Failed",
+};
+
+export const LOGIN_STATUS_COLORS: Record<LoginStatus, StatusColor> = {
+  SUCCESS: "green",
+  FAILED: "red",
+};
+
+export const LOGIN_DEVICE_TYPE_LABELS: Record<LoginDeviceType, string> = {
+  DESKTOP: "Desktop",
+  MOBILE: "Mobile",
+  TABLET: "Tablet",
+  BOT: "Automated",
+  UNKNOWN: "Unknown",
+};
+
+export const LOGIN_FAILURE_REASON_LABELS: Record<LoginFailureReason, string> = {
+  INVALID_CREDENTIALS: "Wrong password",
+  ACCOUNT_INACTIVE: "Account deactivated",
+  UNKNOWN_ACCOUNT: "Unknown email",
+};

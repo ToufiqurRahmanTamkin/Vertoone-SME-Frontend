@@ -14,6 +14,13 @@ const FinanceIncome = lazy(() => import("@/app/finance/income/IncomePage"));
 const FinanceExpense = lazy(() => import("@/app/finance/expense/ExpensePage"));
 const FinanceCategories = lazy(() => import("@/app/finance/categories/FinanceCategoriesPage"));
 const SystemConfig = lazy(() => import("@/app/systemConfig/SystemConfigPage"));
+const Reports = lazy(() => import("@/app/reports/ReportsPage"));
+const RevenueReport = lazy(() => import("@/app/reports/RevenueReportPage"));
+const SubscriptionsReport = lazy(() => import("@/app/reports/SubscriptionsReportPage"));
+const PlansReport = lazy(() => import("@/app/reports/PlansReportPage"));
+const FinanceReport = lazy(() => import("@/app/reports/FinanceReportPage"));
+const CustomersReport = lazy(() => import("@/app/reports/CustomersReportPage"));
+const SecurityReport = lazy(() => import("@/app/reports/SecurityReportPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
 const InternalServerError = lazy(() => import("@/app/errors/internal-server-error/page"));
@@ -52,6 +59,13 @@ export const routes: RouteConfig[] = [
           { path: "finance/income", element: <FinanceIncome /> },
           { path: "finance/expense", element: <FinanceExpense /> },
           { path: "finance/categories", element: <FinanceCategories /> },
+          { path: "reports", element: <Reports /> },
+          { path: "reports/revenue", element: <RevenueReport /> },
+          { path: "reports/subscriptions", element: <SubscriptionsReport /> },
+          { path: "reports/plans", element: <PlansReport /> },
+          { path: "reports/finance", element: <FinanceReport /> },
+          { path: "reports/customers", element: <CustomersReport /> },
+          { path: "reports/security", element: <SecurityReport /> },
           { path: "system-config", element: <SystemConfig /> },
           { path: "settings/account", element: <AccountSettings /> },
         ],

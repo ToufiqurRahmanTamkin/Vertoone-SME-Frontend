@@ -18,6 +18,7 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AvatarUploader } from "./components/avatar-uploader";
+import { LoginHistoryCard } from "./components/login-history-card";
 
 type ChangePasswordValues = z.infer<typeof ChangePasswordSchema>;
 
@@ -153,6 +154,8 @@ export default function AccountSettingsPage() {
           </Form>
         </SectionCard>
       </div>
+
+      <LoginHistoryCard />
     </>
   );
 }

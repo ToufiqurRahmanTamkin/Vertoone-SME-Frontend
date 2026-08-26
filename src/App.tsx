@@ -1,3 +1,4 @@
+import { PwaLifecycle } from "@/components/pwa/pwa-lifecycle";
 import { AppRouter } from "@/components/router/app-router";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarConfigProvider } from "@/contexts/sidebar-context";
@@ -13,6 +14,7 @@ function App() {
           <Router basename={basename}>
             <AppRouter />
           </Router>
+          <PwaLifecycle />
         </SidebarConfigProvider>
       </ThemeProvider>
     </div>

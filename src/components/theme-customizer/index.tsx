@@ -157,9 +157,23 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
 }
 
 // Floating trigger button - positioned dynamically based on sidebar side
-export function ThemeCustomizerTrigger({ onClick }: { onClick: () => void }) {
+export function ThemeCustomizerTrigger({
+  onClick,
+  variant = "outline",
+  className,
+}: {
+  onClick: () => void;
+  variant?: "outline" | "ghost";
+  className?: string;
+}) {
   return (
-    <Button variant="outline" onClick={onClick} size="icon">
+    <Button
+      variant={variant}
+      onClick={onClick}
+      size="icon"
+      className={className}
+      aria-label="Customize theme"
+    >
       <Settings className="h-5 w-5" />
     </Button>
   );

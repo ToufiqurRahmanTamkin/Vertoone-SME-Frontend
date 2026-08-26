@@ -1,8 +1,21 @@
 {
     "rewrites": [
         {
-            "source": "/((?!assets|api|brand-logo.png).*)",
+            "source": "/((?!assets|api|sw\.js|manifest\.json|offline\.html|.*\.(?:png|jpg|jpeg|svg|ico|webmanifest|txt|json)).*)",
             "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/sw.js",
+            "headers": [
+                { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+                { "key": "Service-Worker-Allowed", "value": "/" }
+            ]
+        },
+        {
+            "source": "/manifest.json",
+            "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
         }
     ]
 }

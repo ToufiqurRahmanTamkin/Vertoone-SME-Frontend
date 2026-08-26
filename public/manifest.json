@@ -1,9 +1,15 @@
 {
+  "id": "/",
   "name": "Vertoone SME",
   "short_name": "Vertoone",
-  "description": "Vertoone SME management platform.",
-  "start_url": "/",
+  "description": "Vertoone SME — the super admin console for the SME platform.",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
   "background_color": "#0f0f0f",
   "theme_color": "#0f0f0f",
   "icons": [
@@ -12,9 +18,38 @@
       "sizes": "288x288",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/brand-logo.png",
+      "sizes": "288x288",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Revenue, subscriptions and content at a glance.",
+      "url": "/dashboard",
+      "icons": [{ "src": "/brand-logo.png", "sizes": "288x288", "type": "image/png" }]
+    },
+    {
+      "name": "Reports",
+      "short_name": "Reports",
+      "description": "Revenue, subscription, finance and customer reports.",
+      "url": "/reports",
+      "icons": [{ "src": "/brand-logo.png", "sizes": "288x288", "type": "image/png" }]
+    },
+    {
+      "name": "Sold Subscriptions",
+      "short_name": "Subscriptions",
+      "description": "Review sold subscriptions and payments.",
+      "url": "/sold-subscriptions",
+      "icons": [{ "src": "/brand-logo.png", "sizes": "288x288", "type": "image/png" }]
+    }
+  ],
+  "categories": ["business", "productivity", "finance"],
   "screenshots": [],
   "prefer_related_applications": false
 }
