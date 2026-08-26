@@ -12,6 +12,7 @@ import {
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
 } from "@/redux/apis/notificationApis";
+import { useRealtime } from "@/contexts/realtime-context";
 import type { ApiErrorResponse } from "@/redux/baseApi";
 import type { AppNotification, NotificationLevel } from "@/types/domain/notification";
 import {
@@ -30,7 +31,11 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+// With a live socket the count is pushed, so polling only needs to cover the
+// gap while the connection is down (or on a serverless deployment where there
+// is no socket at all).
 const UNREAD_POLL_INTERVAL_MS = 60_000;
+const UNREAD_POLL_INTERVAL_LIVE_MS = 300_000;
 const PANEL_LIMIT = 12;
 
 const LEVEL_ICONS: Record<NotificationLevel, LucideIcon> = {
@@ -103,8 +108,10 @@ export function NotificationBell() {
   const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
 
+  const { isLive } = useRealtime();
+
   const { data: unreadCount } = useGetUnreadNotificationCountQuery(undefined, {
-    pollingInterval: UNREAD_POLL_INTERVAL_MS,
+    pollingInterval: isLive ? UNREAD_POLL_INTERVAL_LIVE_MS : UNREAD_POLL_INTERVAL_MS,
     refetchOnFocus: true,
     refetchOnReconnect: true,
   });

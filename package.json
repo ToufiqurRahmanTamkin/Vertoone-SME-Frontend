@@ -13,10 +13,11 @@
     "heroku-postbuild": "npm run build",
     "start": "serve -s dist -l $PORT",
     "lint": "eslint .",
-    "preview": "npm run build && wrangler dev",
+    "preview": "tsc -b && vite build --mode cloudflare && wrangler dev",
     "prettier": "prettier --ignore-path .gitignore --write \"./src/**/*.+(js|ts|json)\"",
     "prettier:fix": "npx prettier --write src",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "tsc -b && vite build --mode cloudflare && wrangler deploy",
+    "typecheck": "tsc -b"
   },
   "engines": {
     "node": "24.x"
@@ -62,6 +63,7 @@
     "recharts": "3.6.0",
     "redux-persist": "^6.0.0",
     "serve": "^14.2.4",
+    "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",

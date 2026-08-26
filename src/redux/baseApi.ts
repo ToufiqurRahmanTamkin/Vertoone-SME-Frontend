@@ -170,6 +170,8 @@ export const ALL_TAG_TYPES = [
 ] as const;
 
 
+export type TagType = (typeof ALL_TAG_TYPES)[number];
+
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithReauth,
