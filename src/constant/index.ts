@@ -18,6 +18,13 @@ import type {
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
 import type { EmailStatus, EmailTemplateKey } from "@/types/domain/email";
+import type {
+  ActivityAction,
+  ActivityCategory,
+  ActivityEntityType,
+  ActivitySeverity,
+} from "@/types/domain/activity";
+import type { WipeScope } from "@/types/domain/dataWipe";
 
 // Single source of truth for how every backend enum is presented. Pages read
 // labels and badge colours from here so the same value never renders two ways.
@@ -258,4 +265,115 @@ export const EMAIL_STATUS_COLORS: Record<EmailStatus, StatusColor> = {
   SENT: "green",
   FAILED: "red",
   SKIPPED: "amber",
+};
+
+export const ACTIVITY_CATEGORY_LABELS: Record<ActivityCategory, string> = {
+  COMPANY: "Company",
+  SUBSCRIPTION: "Subscription",
+  BILLING: "Billing",
+  FINANCE: "Finance",
+  CATALOG: "Catalog",
+  CONTENT: "Content",
+  SECURITY: "Security",
+  SYSTEM: "System",
+};
+
+export const ACTIVITY_CATEGORY_COLORS: Record<ActivityCategory, StatusColor> = {
+  COMPANY: "blue",
+  SUBSCRIPTION: "violet",
+  BILLING: "green",
+  FINANCE: "orange",
+  CATALOG: "blue",
+  CONTENT: "zinc",
+  SECURITY: "amber",
+  SYSTEM: "zinc",
+};
+
+export const ACTIVITY_SEVERITY_LABELS: Record<ActivitySeverity, string> = {
+  INFO: "Info",
+  SUCCESS: "Success",
+  WARNING: "Warning",
+  CRITICAL: "Critical",
+};
+
+export const ACTIVITY_SEVERITY_COLORS: Record<ActivitySeverity, StatusColor> = {
+  INFO: "muted",
+  SUCCESS: "green",
+  WARNING: "amber",
+  CRITICAL: "red",
+};
+
+export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
+  COMPANY_REGISTERED: "Company registered",
+  COMPANY_APPROVED: "Company approved",
+  COMPANY_REJECTED: "Company rejected",
+  COMPANY_SUSPENDED: "Company suspended",
+  COMPANY_REACTIVATED: "Company reactivated",
+  COMPANY_DELETED: "Company deleted",
+  SUBSCRIPTION_CREATED: "Subscription sold",
+  SUBSCRIPTION_UPDATED: "Subscription updated",
+  SUBSCRIPTION_DELETED: "Subscription deleted",
+  SUBSCRIPTION_RENEWED: "Subscription renewed",
+  SUBSCRIPTION_EXPIRED: "Subscription expired",
+  PAYMENT_APPROVED: "Payment approved",
+  PAYMENT_REJECTED: "Payment rejected",
+  PAYMENT_REFUNDED: "Payment refunded",
+  PLAN_CREATED: "Plan created",
+  PLAN_UPDATED: "Plan updated",
+  PLAN_DELETED: "Plan deleted",
+  INCOME_CREATED: "Income recorded",
+  INCOME_UPDATED: "Income updated",
+  INCOME_DELETED: "Income deleted",
+  EXPENSE_CREATED: "Expense recorded",
+  EXPENSE_UPDATED: "Expense updated",
+  EXPENSE_DELETED: "Expense deleted",
+  CATEGORY_CREATED: "Category created",
+  CATEGORY_UPDATED: "Category updated",
+  CATEGORY_DELETED: "Category deleted",
+  GUIDE_CREATED: "Guide created",
+  GUIDE_UPDATED: "Guide updated",
+  GUIDE_DELETED: "Guide deleted",
+  USER_LOGGED_IN: "Signed in",
+  USER_LOGIN_FAILED: "Sign-in failed",
+  USER_PROFILE_UPDATED: "Profile updated",
+  USER_PASSWORD_CHANGED: "Password changed",
+  USER_PASSWORD_RESET: "Password reset",
+  EMAIL_RESENT: "Email resent",
+  SYSTEM_CONFIG_UPDATED: "System config updated",
+  DATA_WIPE_EXECUTED: "Data wipe executed",
+};
+
+export const ACTIVITY_ENTITY_TYPE_LABELS: Record<ActivityEntityType, string> = {
+  COMPANY: "Company",
+  SOLD_SUBSCRIPTION: "Sold subscription",
+  SUBSCRIPTION_PLAN: "Subscription plan",
+  INCOME: "Income",
+  EXPENSE: "Expense",
+  FINANCE_CATEGORY: "Finance category",
+  USER_GUIDE: "User guide",
+  USER: "User",
+  EMAIL: "Email",
+  SYSTEM_CONFIG: "System config",
+  SYSTEM: "System",
+};
+
+export const WIPE_SCOPE_LABELS: Record<WipeScope, string> = {
+  SOFT_DELETED: "Purge deleted records",
+  OPERATIONAL: "Wipe operational data",
+  FACTORY_RESET: "Factory reset",
+};
+
+export const WIPE_SCOPE_DESCRIPTIONS: Record<WipeScope, string> = {
+  SOFT_DELETED:
+    "Permanently removes only the records already deleted from the UI. Live data is untouched.",
+  OPERATIONAL:
+    "Permanently removes companies, users, invoices, ledgers, emails and logs. The plan catalog, finance categories, guides and settings stay.",
+  FACTORY_RESET:
+    "Permanently removes everything above plus the plan catalog, finance categories, guides and system settings. Only super admin logins survive.",
+};
+
+export const WIPE_SCOPE_COLORS: Record<WipeScope, StatusColor> = {
+  SOFT_DELETED: "amber",
+  OPERATIONAL: "orange",
+  FACTORY_RESET: "red",
 };

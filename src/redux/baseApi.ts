@@ -167,6 +167,8 @@ export const ALL_TAG_TYPES = [
   "Companies",
   "CompanySummary",
   "MyCompany",
+  "Activities",
+  "DataWipe",
 ] as const;
 
 

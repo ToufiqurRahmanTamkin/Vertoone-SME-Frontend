@@ -1,4 +1,5 @@
 import {
+  Activity,
   BarChart3,
   Building2,
   BookOpen,
@@ -9,12 +10,15 @@ import {
   Settings,
   ShieldCheck,
   SlidersHorizontal,
+  Trash2,
   Users,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
+  Activity,
+  Trash2,
   LayoutDashboard,
   Building2,
   CreditCard,
@@ -193,6 +197,20 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/emails",
     icon: "Mail",
     section: "Communication",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "System Activity",
+    path: "/activity",
+    icon: "Activity",
+    section: "System",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "Wipe Data",
+    path: "/data-wipe",
+    icon: "Trash2",
+    section: null,
     roles: ["SUPER_ADMIN"],
   },
   {
