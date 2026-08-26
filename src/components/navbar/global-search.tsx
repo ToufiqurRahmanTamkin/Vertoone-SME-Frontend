@@ -9,6 +9,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { getSearchableMenuItems } from "@/config/navigation";
+import { usePermissions } from "@/hooks/use-permission";
 import { selectCurrentUser } from "@/redux/authSlice";
 import { Search } from "lucide-react";
 import * as React from "react";
@@ -20,9 +21,11 @@ export function GlobalSearch() {
   const user = useSelector(selectCurrentUser);
   const [open, setOpen] = React.useState(false);
 
+  const { modules } = usePermissions();
+
   const entries = React.useMemo(
-    () => getSearchableMenuItems(user?.role ?? ""),
-    [user?.role]
+    () => getSearchableMenuItems(user?.role ?? "", modules),
+    [user?.role, modules]
   );
 
   React.useEffect(() => {

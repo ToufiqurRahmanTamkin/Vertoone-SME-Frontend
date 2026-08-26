@@ -119,6 +119,12 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Warehouse,
 };
 
+import {
+  canDo,
+  moduleKeyFromPath,
+  type ModulePermissionMap,
+} from "@/types/domain/permission";
+
 export interface NavItem {
   title: string;
   url: string;
@@ -146,7 +152,7 @@ export interface MenuItem {
   shownInSidebar?: boolean;
 }
 
-const OWNER = ["COMPANY_OWNER"];
+const OWNER = ["COMPANY_OWNER", "COMPANY_USER"];
 
 // The single source of truth for both the sidebar and the route guard. Every
 // new module adds its entry here and nowhere else.
@@ -961,11 +967,30 @@ export const MENU_ITEMS: MenuItem[] = [
   },
 ];
 
-export const getNavigationForRole = (role: string): NavGroup[] => {
-  const roleItems = MENU_ITEMS.filter(
-    (item) => item.roles.includes(role) && item.shownInSidebar !== false
-  );
+/** The permission key a menu entry is gated by, derived from its own path. */
+export const menuModuleKey = (item: MenuItem): string => moduleKeyFromPath(item.path);
 
+/**
+ * A leaf is visible when its own module grants `canView`; a parent is visible
+ * when at least one of its children is. That way switching off every child of a
+ * group removes the group header too.
+ */
+export const isMenuItemVisible = (
+  item: MenuItem,
+  role: string,
+  modules: ModulePermissionMap | undefined
+): boolean => {
+  if (!item.roles.includes(role)) return false;
+  if (item.items?.length) {
+    return item.items.some((child) => isMenuItemVisible(child, role, modules));
+  }
+  return canDo(modules, menuModuleKey(item), "canView");
+};
+
+export const getNavigation = (
+  role: string,
+  modules: ModulePermissionMap | undefined
+): NavGroup[] => {
   const groups: NavGroup[] = [];
   let currentGroup: NavGroup | null = null;
 
@@ -974,16 +999,24 @@ export const getNavigationForRole = (role: string): NavGroup[] => {
     url: item.path,
     icon: ICON_MAP[item.icon],
     items: item.items
-      ? item.items.filter((sub) => sub.roles.includes(role)).map(buildNavItem)
+      ? item.items
+          .filter((child) => isMenuItemVisible(child, role, modules))
+          .map(buildNavItem)
       : undefined,
   });
 
-  roleItems.forEach((item) => {
+  MENU_ITEMS.forEach((item) => {
+    // The section header belongs to the first item that declares it, so it has
+    // to be opened even when that very item turns out to be hidden.
     if (item.section !== null && item.section !== undefined) {
       const existing = groups.find((group) => group.label === item.section);
       currentGroup = existing ?? { label: item.section, items: [] };
       if (!existing) groups.push(currentGroup);
     }
+
+    if (item.shownInSidebar === false) return;
+    if (!isMenuItemVisible(item, role, modules)) return;
+
     currentGroup?.items.push(buildNavItem(item));
   });
 
@@ -1029,14 +1062,17 @@ export const getBreadcrumbTrail = (pathname: string): BreadcrumbEntry[] => {
   }));
 };
 
-export const getSearchableMenuItems = (role: string): { title: string; path: string; group: string; icon?: LucideIcon }[] => {
+export const getSearchableMenuItems = (
+  role: string,
+  modules: ModulePermissionMap | undefined
+): { title: string; path: string; group: string; icon?: LucideIcon }[] => {
   const groups: { title: string; path: string; group: string; icon?: LucideIcon }[] = [];
   let currentSection = "Navigation";
 
   const visit = (items: MenuItem[], parentTitle?: string) => {
     items.forEach((item) => {
       if (item.section) currentSection = item.section;
-      if (!item.roles.includes(role)) return;
+      if (!isMenuItemVisible(item, role, modules)) return;
       if (item.items?.length) {
         visit(item.items, item.title);
         return;

@@ -2,12 +2,15 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ICON_MAP, findMenuItemByPath } from "@/config/navigation";
-import { Compass, Hammer } from "lucide-react";
+import { useCurrentModulePermission } from "@/hooks/use-permission";
+import { ACTION_LABELS, MODULE_ACTIONS } from "@/types/domain/permission";
+import { Check, Compass, Hammer, X } from "lucide-react";
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function ModulePlaceholderPage() {
   const { pathname } = useLocation();
+  const access = useCurrentModulePermission();
 
   const view = useMemo(() => {
     const match = findMenuItemByPath(pathname);
@@ -48,6 +51,24 @@ export default function ModulePlaceholderPage() {
             This screen is a placeholder while the menu structure is being finalised. Once the
             module is confirmed, its table, filters and forms are built here.
           </p>
+        </div>
+
+        {/* Until the real screen exists, showing the resolved grant is the
+            clearest way to confirm what the plan and the owner allow here. */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {MODULE_ACTIONS.map((action) => (
+            <Badge
+              key={action}
+              variant={access[action] ? "secondary" : "outline"}
+              className={access[action] ? "px-2.5 py-1" : "px-2.5 py-1 text-muted-foreground"}
+            >
+              {access[action] ? <Check className="size-3" /> : <X className="size-3" />}
+              {ACTION_LABELS[action]}
+            </Badge>
+          ))}
+          <Badge variant="outline" className="px-2.5 py-1 text-muted-foreground">
+            {access.limit === null ? "No record limit" : `Limit ${access.limit}`}
+          </Badge>
         </div>
 
         <div className="w-full max-w-3xl space-y-2 pt-2 text-left">

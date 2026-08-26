@@ -25,6 +25,7 @@ import type {
 } from "@/types/domain/soldSubscription";
 import { AlertTriangle, Building2, Receipt, ShieldCheck, Wallet } from "lucide-react";
 import { useSelector } from "react-redux";
+import { PlanEntitlementCard } from "./components/PlanEntitlementCard";
 
 const InvoiceRow = ({ invoice }: { invoice: CompanyInvoice }) => (
   <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-sm">
@@ -218,6 +219,8 @@ export default function MyCompanyPage() {
           )}
         </SectionCard>
       </div>
+
+      <PlanEntitlementCard modulePermissions={data?.modulePermissions} isLoading={isLoading} />
 
       {data?.invoices[0] && (
         <SectionCard

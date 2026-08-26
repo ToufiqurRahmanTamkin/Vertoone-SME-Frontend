@@ -6,7 +6,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { getNavigationForRole } from "@/config/navigation";
+import { getNavigation } from "@/config/navigation";
+import { usePermissions } from "@/hooks/use-permission";
 import { APP_NAME, APP_TAGLINE, BRAND_MARK } from "@/config/branding";
 import { selectCurrentUser } from "@/redux/authSlice";
 import * as React from "react";
@@ -16,8 +17,9 @@ import { Link } from "react-router-dom";
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const user = useSelector(selectCurrentUser);
   const role = user?.role ?? "";
+  const { modules } = usePermissions();
 
-  const navGroups = React.useMemo(() => getNavigationForRole(role), [role]);
+  const navGroups = React.useMemo(() => getNavigation(role, modules), [role, modules]);
 
   return (
     <Sidebar {...props}>

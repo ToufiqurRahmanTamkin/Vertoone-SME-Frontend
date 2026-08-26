@@ -1,4 +1,5 @@
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
@@ -57,6 +58,31 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
     cell: ({ row }) => (
       <span className="text-sm">{formatLimit(row.original.limits?.users)}</span>
     ),
+  },
+  {
+    id: "modules",
+    header: "Modules",
+    cell: ({ row }) => {
+      const granted = Object.values(row.original.modulePermissions ?? {}).filter(
+        (permission) => permission.canView
+      );
+      const capped = granted.filter((permission) => permission.limit !== null).length;
+
+      return granted.length === 0 ? (
+        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+          None
+        </Badge>
+      ) : (
+        <div className="flex items-center gap-1.5">
+          <Badge variant="secondary" className="text-[10px]">
+            {granted.length} menu{granted.length === 1 ? "" : "s"}
+          </Badge>
+          {capped > 0 && (
+            <span className="text-[11px] text-muted-foreground">{capped} capped</span>
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "autoRenewEnabled",

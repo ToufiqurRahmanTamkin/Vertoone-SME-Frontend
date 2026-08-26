@@ -1,4 +1,6 @@
-export const ROLES = ["SUPER_ADMIN", "COMPANY_OWNER"] as const;
+import type { ModulePermissionMap } from "./permission";
+
+export const ROLES = ["SUPER_ADMIN", "COMPANY_OWNER", "COMPANY_USER"] as const;
 export type Role = (typeof ROLES)[number];
 
 export const USER_STATUSES = ["ACTIVE", "INACTIVE", "PENDING_APPROVAL", "REJECTED"] as const;
@@ -15,6 +17,7 @@ export interface User {
   avatarUrl: string | null;
   avatarPublicId: string | null;
   lastLoginAt: string | null;
+  modulePermissions: ModulePermissionMap;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,4 +80,5 @@ export interface ResetPasswordInput {
 export const HOME_ROUTE_BY_ROLE: Record<Role, string> = {
   SUPER_ADMIN: "/dashboard",
   COMPANY_OWNER: "/my-company",
+  COMPANY_USER: "/my-company",
 };

@@ -28,6 +28,8 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
   NOTIFICATIONS: ["Notifications", "NotificationsUnread"],
   EMAILS: ["Emails"],
   FINANCE: ["Incomes", "Expenses", "FinanceCategories", "Reports"],
+  PERMISSIONS: ["Permissions", "Me", "MyCompany"],
+  TEAM_MEMBERS: ["TeamMembers", "TeamSummary"],
 };
 
 const TOAST_BY_LEVEL: Record<string, (title: string, description: string) => void> = {

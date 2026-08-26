@@ -1,3 +1,4 @@
+import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
 import { FormInput, FormSelect, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +11,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
+import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import type { ModulePermissionMap } from "@/types/domain/permission";
 import {
   DEFAULT_CURRENCY,
   SUPPORTED_CURRENCIES,
@@ -80,6 +84,14 @@ export function PlanFormModal({
   const [updatePlan, { isLoading: isUpdating }] = useUpdatePlanMutation();
   const isSaving = isCreating || isUpdating;
 
+  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
+  const companyModules = React.useMemo(
+    () => catalogue.filter((definition) => definition.scope === "COMPANY"),
+    [catalogue]
+  );
+
+  const [modulePermissions, setModulePermissions] = React.useState<ModulePermissionMap>({});
+
   const form = useForm<PlanFormValues>({
     resolver: zodResolver(PlanSchema),
     defaultValues: emptyValues(defaultCurrency),
@@ -92,6 +104,16 @@ export function PlanFormModal({
     form.reset(plan ? toFormValues(plan) : emptyValues(defaultCurrency));
   }, [open, plan, defaultCurrency, form]);
 
+  // The matrix is plain state rather than a form field, so it is re-seeded
+  // during render — the sanctioned way to reset state when props change.
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
+  const seedKey = open ? (plan?._id ?? "new") : null;
+
+  if (seedKey !== seededFor) {
+    setSeededFor(seedKey);
+    setModulePermissions(seedKey === null ? {} : (plan?.modulePermissions ?? {}));
+  }
+
   const onSubmit = async (values: PlanFormValues) => {
     const payload = {
       name: values.name,
@@ -101,6 +123,7 @@ export function PlanFormModal({
       billingCycle: values.billingCycle,
       features: parseFeatures(values.features),
       limits: { users: toLimit(values.limitUsers) },
+      modulePermissions,
       trialDays: values.trialDays,
       isActive: values.isActive,
       autoRenewEnabled: values.autoRenewEnabled,
@@ -123,13 +146,13 @@ export function PlanFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit plan" : "New subscription plan"}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? "Update this plan. Changes do not alter subscriptions already sold on it."
-              : "Define what customers get and how often they are billed."}
+              ? "Update this plan. Companies already subscribed keep the modules and limits they bought until their next renewal."
+              : "Define what customers get, which menus they unlock and how often they are billed."}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,89 +161,117 @@ export function PlanFormModal({
             {/* Compact layout: a 6-column grid lets the short numeric fields
                 share rows instead of each taking a full one, which keeps the
                 whole plan form on screen without scrolling on a laptop. */}
-            <DialogBody className="grid grid-cols-6 gap-x-3 gap-y-3">
-              <FormInput
-                control={form.control}
-                name="name"
-                label="Name"
-                placeholder="Starter"
-                className="col-span-6 sm:col-span-3"
-              />
-              <FormSelect
-                control={form.control}
-                name="billingCycle"
-                label="Billing cycle"
-                options={BILLING_CYCLE_OPTIONS}
-                className="col-span-6 sm:col-span-3"
-              />
+            <DialogBody>
+              <Tabs defaultValue="details">
+                <TabsList className="mb-3">
+                  <TabsTrigger value="details" className="cursor-pointer">
+                    Details
+                  </TabsTrigger>
+                  <TabsTrigger value="modules" className="cursor-pointer">
+                    Modules &amp; limits
+                  </TabsTrigger>
+                </TabsList>
 
-              <FormInput
-                control={form.control}
-                name="price"
-                label="Price"
-                type="number"
-                className="col-span-3 sm:col-span-2"
-              />
-              <FormSelect
-                control={form.control}
-                name="currency"
-                label="Currency"
-                options={CURRENCY_OPTIONS}
-                className="col-span-3 sm:col-span-2"
-              />
-              <FormInput
-                control={form.control}
-                name="trialDays"
-                label="Trial days"
-                type="number"
-                className="col-span-3 sm:col-span-2"
-              />
+                <TabsContent value="details" className="grid grid-cols-6 gap-x-3 gap-y-3">
+                  <FormInput
+                    control={form.control}
+                    name="name"
+                    label="Name"
+                    placeholder="Starter"
+                    className="col-span-6 sm:col-span-3"
+                  />
+                  <FormSelect
+                    control={form.control}
+                    name="billingCycle"
+                    label="Billing cycle"
+                    options={BILLING_CYCLE_OPTIONS}
+                    className="col-span-6 sm:col-span-3"
+                  />
 
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Description"
-                placeholder="A short summary shown alongside the plan."
-                description="Shown alongside the plan name."
-                showCharCount={false}
-                rows={3}
-                className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
-              />
-              <FormTextarea
-                control={form.control}
-                name="features"
-                label="Features"
-                placeholder={"Unlimited invoices\nPriority support"}
-                description="One per line, up to 50."
-                showCharCount={false}
-                rows={3}
-                className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
-              />
+                  <FormInput
+                    control={form.control}
+                    name="price"
+                    label="Price"
+                    type="number"
+                    className="col-span-3 sm:col-span-2"
+                  />
+                  <FormSelect
+                    control={form.control}
+                    name="currency"
+                    label="Currency"
+                    options={CURRENCY_OPTIONS}
+                    className="col-span-3 sm:col-span-2"
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="trialDays"
+                    label="Trial days"
+                    type="number"
+                    className="col-span-3 sm:col-span-2"
+                  />
 
-              <FormInput
-                control={form.control}
-                name="limitUsers"
-                label="Users"
-                type="number"
-                placeholder="Unlimited"
-                description="Leave blank for unlimited."
-                className="col-span-6 sm:col-span-2"
-              />
+                  <FormTextarea
+                    control={form.control}
+                    name="description"
+                    label="Description"
+                    placeholder="A short summary shown alongside the plan."
+                    description="Shown alongside the plan name."
+                    showCharCount={false}
+                    rows={3}
+                    className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
+                  />
+                  <FormTextarea
+                    control={form.control}
+                    name="features"
+                    label="Features"
+                    placeholder={"Unlimited invoices\nPriority support"}
+                    description="One per line, up to 50."
+                    showCharCount={false}
+                    rows={3}
+                    className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
+                  />
 
-              <div className="col-span-6 grid gap-3 sm:grid-cols-2">
-                <FormSwitch
-                  control={form.control}
-                  name="isActive"
-                  label="Active"
-                  description="Available to sell"
-                />
-                <FormSwitch
-                  control={form.control}
-                  name="autoRenewEnabled"
-                  label="Enable auto renew"
-                  description="Renews when the period ends and raises a bill for approval"
-                />
-              </div>
+                  <FormInput
+                    control={form.control}
+                    name="limitUsers"
+                    label="Users"
+                    type="number"
+                    placeholder="Unlimited"
+                    description="Leave blank for unlimited."
+                    className="col-span-6 sm:col-span-2"
+                  />
+
+                  <div className="col-span-6 grid gap-3 sm:grid-cols-2">
+                    <FormSwitch
+                      control={form.control}
+                      name="isActive"
+                      label="Active"
+                      description="Available to sell"
+                    />
+                    <FormSwitch
+                      control={form.control}
+                      name="autoRenewEnabled"
+                      label="Enable auto renew"
+                      description="Renews when the period ends and raises a bill for approval"
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="modules" className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Tick the menus this plan unlocks and set an optional record cap for each. Leave
+                    a cap blank for unlimited. A company that already bought this plan keeps its
+                    current terms until the next renewal invoice is paid.
+                  </p>
+                  <ModulePermissionMatrix
+                    modules={companyModules}
+                    value={modulePermissions}
+                    onChange={setModulePermissions}
+                    showLimits
+                    emptyMessage="The module catalogue could not be loaded."
+                  />
+                </TabsContent>
+              </Tabs>
             </DialogBody>
 
             <DialogFooter>

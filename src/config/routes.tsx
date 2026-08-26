@@ -30,6 +30,7 @@ const CustomersReport = lazy(() => import("@/app/reports/CustomersReportPage"));
 const SecurityReport = lazy(() => import("@/app/reports/SecurityReportPage"));
 const CompanyProfile = lazy(() => import("@/app/organization/CompanyProfilePage"));
 const SisterConcerns = lazy(() => import("@/app/organization/SisterConcernsPage"));
+const TeamMembers = lazy(() => import("@/app/configuration/team/TeamMembersPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -64,6 +65,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "data-wipe", element: <DataWipe /> },
   { path: "organization/profile", element: <CompanyProfile /> },
   { path: "organization/sister-concerns", element: <SisterConcerns /> },
+  { path: "configuration/team", element: <TeamMembers /> },
   { path: "settings/account", element: <AccountSettings /> },
 ];
 

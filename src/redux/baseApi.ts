@@ -169,6 +169,10 @@ export const ALL_TAG_TYPES = [
   "MyCompany",
   "Activities",
   "DataWipe",
+  "Permissions",
+  "ModuleCatalogue",
+  "TeamMembers",
+  "TeamSummary",
 ] as const;
 
 

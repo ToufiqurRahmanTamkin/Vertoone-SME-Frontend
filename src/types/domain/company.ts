@@ -1,3 +1,5 @@
+import type { ModulePermissionMap } from "./permission";
+
 import type { PaymentMethod } from "./soldSubscription";
 
 export const EMPLOYEE_RANGES = [
@@ -144,6 +146,7 @@ export interface CompanyWorkspace {
   invoices: CompanyInvoice[];
   totalPaid: number;
   outstanding: number;
+  modulePermissions: ModulePermissionMap;
 }
 
 export const companyPlanName = (company: Company): string => {
