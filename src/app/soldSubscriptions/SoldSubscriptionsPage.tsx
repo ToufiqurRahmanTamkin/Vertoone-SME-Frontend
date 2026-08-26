@@ -6,6 +6,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
+  BILLING_ORIGIN_LABELS,
   PAYMENT_REVIEW_ACTION_LABELS,
   PAYMENT_STATUS_LABELS,
   SUBSCRIPTION_STATUS_LABELS,
@@ -22,11 +23,20 @@ import {
 import { useGetSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type {
+  BillingOrigin,
   PaymentStatus,
   SoldSubscription,
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
-import { CircleCheck, Clock, HandCoins, Plus, Receipt, Wallet } from "lucide-react";
+import {
+  CircleCheck,
+  Clock,
+  HandCoins,
+  Plus,
+  Receipt,
+  RefreshCcw,
+  Wallet,
+} from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { SoldSubscriptionFormModal } from "./components/SoldSubscriptionFormModal";
@@ -50,6 +60,12 @@ const FILTERS: FilterConfig[] = [
     type: "select",
     options: toOptions(PAYMENT_STATUS_LABELS),
   },
+  {
+    name: "billingOrigin",
+    label: "Origin",
+    type: "select",
+    options: toOptions(BILLING_ORIGIN_LABELS),
+  },
   { name: "startDate", label: "Start date", type: "date-range" },
 ];
 
@@ -64,6 +80,7 @@ export default function SoldSubscriptionsPage() {
     search: filters.search,
     status: filters.status as SubscriptionStatus | undefined,
     paymentStatus: filters.paymentStatus as PaymentStatus | undefined,
+    billingOrigin: filters.billingOrigin as BillingOrigin | undefined,
     // The date-range filter writes the shared `from`/`to` params.
     startDateFrom: filters.from as string | undefined,
     startDateTo: filters.to as string | undefined,
@@ -149,6 +166,12 @@ export default function SoldSubscriptionsPage() {
       color: "warning" as const,
     },
     {
+      label: "Auto renewed",
+      value: formatNumber(summary?.autoRenewedCount),
+      icon: RefreshCcw,
+      color: "info" as const,
+    },
+    {
       label: "Revenue (paid)",
       value: formatAmount(summary?.totalRevenue, currency),
       icon: Wallet,
@@ -230,22 +253,12 @@ export default function SoldSubscriptionsPage() {
               <span className="text-muted-foreground">Auto renew</span>
               <span className="font-medium">{record.autoRenew ? "Yes" : "No"}</span>
             </div>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <span className="text-muted-foreground">Modules granted</span>
-              {record.grantedModules?.length ? (
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {record.grantedModules.map((entry) => (
-                    <span
-                      key={entry.key}
-                      className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
-                    >
-                      {entry.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-0.5 font-medium">None</p>
-              )}
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Billing origin</span>
+              <span className="font-medium">
+                {BILLING_ORIGIN_LABELS[record.billingOrigin] ?? record.billingOrigin}
+                {record.renewalCycle > 0 ? ` · cycle ${record.renewalCycle}` : ""}
+              </span>
             </div>
             {record.paymentReviewAction && (
               <div className="flex justify-between gap-4">

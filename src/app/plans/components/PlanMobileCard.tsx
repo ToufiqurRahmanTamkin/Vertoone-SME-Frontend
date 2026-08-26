@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
-import { Pencil, Star, Trash2 } from "lucide-react";
+import { Pencil, RefreshCcw, Trash2 } from "lucide-react";
 
 interface PlanMobileCardProps {
   plan: SubscriptionPlan;
@@ -18,7 +18,12 @@ export function PlanMobileCard({ plan, onEdit, onDelete }: PlanMobileCardProps) 
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="truncate font-semibold">{plan.name}</p>
-            {plan.isPopular && <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-500" />}
+            {plan.autoRenewEnabled && (
+              <RefreshCcw
+                className="h-3.5 w-3.5 shrink-0 text-violet-500"
+                aria-label="Auto renew enabled"
+              />
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
             {formatAmount(plan.price, plan.currency)} · {BILLING_CYCLE_LABELS[plan.billingCycle]}
@@ -41,16 +46,12 @@ export function PlanMobileCard({ plan, onEdit, onDelete }: PlanMobileCardProps) 
           <dd className="font-medium">{formatLimit(plan.limits?.users)}</dd>
         </div>
         <div className="flex justify-between">
-          <dt className="text-muted-foreground">Branches</dt>
-          <dd className="font-medium">{formatLimit(plan.limits?.branches)}</dd>
-        </div>
-        <div className="flex justify-between">
-          <dt className="text-muted-foreground">Storage</dt>
-          <dd className="font-medium">{formatLimit(plan.limits?.storageGb)} GB</dd>
-        </div>
-        <div className="flex justify-between">
           <dt className="text-muted-foreground">Trial</dt>
           <dd className="font-medium">{plan.trialDays > 0 ? `${plan.trialDays}d` : "—"}</dd>
+        </div>
+        <div className="flex justify-between">
+          <dt className="text-muted-foreground">Auto renew</dt>
+          <dd className="font-medium">{plan.autoRenewEnabled ? "Enabled" : "Off"}</dd>
         </div>
       </dl>
 

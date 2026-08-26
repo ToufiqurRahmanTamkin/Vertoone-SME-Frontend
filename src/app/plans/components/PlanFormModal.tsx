@@ -13,10 +13,13 @@ import { Form } from "@/components/ui/form";
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import { moduleRefId } from "@/types/domain/appModule";
-import type { SubscriptionPlan } from "@/types/domain/plan";
+import {
+  DEFAULT_CURRENCY,
+  SUPPORTED_CURRENCIES,
+  type SubscriptionPlan,
+  type SupportedCurrency,
+} from "@/types/domain/plan";
 import { parseFeatures, PlanSchema, toLimit, type PlanFormValues } from "@/validations/plan";
-import { PlanModulesField } from "./PlanModulesField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
@@ -33,43 +36,44 @@ interface PlanFormModalProps {
 
 const BILLING_CYCLE_OPTIONS = toOptions(BILLING_CYCLE_LABELS);
 
+const CURRENCY_OPTIONS = SUPPORTED_CURRENCIES.map((code) => ({ label: code, value: code }));
+
+const resolveCurrency = (value: string | undefined): SupportedCurrency =>
+  SUPPORTED_CURRENCIES.includes(value as SupportedCurrency)
+    ? (value as SupportedCurrency)
+    : DEFAULT_CURRENCY;
+
 const emptyValues = (currency: string): PlanFormValues => ({
   name: "",
   description: "",
   price: 0,
-  currency,
+  currency: resolveCurrency(currency),
   billingCycle: "MONTHLY",
   features: "",
   limitUsers: "",
-  limitBranches: "",
-  limitStorageGb: "",
   trialDays: 0,
-  modules: [],
   isActive: true,
-  isPopular: false,
+  autoRenewEnabled: false,
 });
 
 const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   name: plan.name,
   description: plan.description ?? "",
   price: plan.price,
-  currency: plan.currency,
+  currency: resolveCurrency(plan.currency),
   billingCycle: plan.billingCycle,
   features: (plan.features ?? []).join("\n"),
   limitUsers: plan.limits?.users ?? "",
-  limitBranches: plan.limits?.branches ?? "",
-  limitStorageGb: plan.limits?.storageGb ?? "",
   trialDays: plan.trialDays ?? 0,
-  modules: (plan.modules ?? []).map(moduleRefId),
   isActive: plan.isActive,
-  isPopular: plan.isPopular,
+  autoRenewEnabled: plan.autoRenewEnabled ?? false,
 });
 
 export function PlanFormModal({
   open,
   onOpenChange,
   plan,
-  defaultCurrency = "BDT",
+  defaultCurrency = DEFAULT_CURRENCY,
 }: PlanFormModalProps) {
   const isEdit = Boolean(plan);
   const [createPlan, { isLoading: isCreating }] = useCreatePlanMutation();
@@ -93,18 +97,13 @@ export function PlanFormModal({
       name: values.name,
       description: values.description,
       price: values.price,
-      currency: values.currency.toUpperCase(),
+      currency: values.currency,
       billingCycle: values.billingCycle,
       features: parseFeatures(values.features),
-      limits: {
-        users: toLimit(values.limitUsers),
-        branches: toLimit(values.limitBranches),
-        storageGb: toLimit(values.limitStorageGb),
-      },
+      limits: { users: toLimit(values.limitUsers) },
       trialDays: values.trialDays,
-      modules: values.modules,
       isActive: values.isActive,
-      isPopular: values.isPopular,
+      autoRenewEnabled: values.autoRenewEnabled,
     };
 
     try {
@@ -162,11 +161,11 @@ export function PlanFormModal({
                 type="number"
                 className="col-span-3 sm:col-span-2"
               />
-              <FormInput
+              <FormSelect
                 control={form.control}
                 name="currency"
                 label="Currency"
-                placeholder="BDT"
+                options={CURRENCY_OPTIONS}
                 className="col-span-3 sm:col-span-2"
               />
               <FormInput
@@ -198,35 +197,15 @@ export function PlanFormModal({
                 className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
               />
 
-              <PlanModulesField control={form.control} name="modules" className="col-span-6" />
-
               <FormInput
                 control={form.control}
                 name="limitUsers"
                 label="Users"
                 type="number"
                 placeholder="Unlimited"
-                className="col-span-2"
+                description="Leave blank for unlimited."
+                className="col-span-6 sm:col-span-2"
               />
-              <FormInput
-                control={form.control}
-                name="limitBranches"
-                label="Branches"
-                type="number"
-                placeholder="Unlimited"
-                className="col-span-2"
-              />
-              <FormInput
-                control={form.control}
-                name="limitStorageGb"
-                label="Storage (GB)"
-                type="number"
-                placeholder="Unlimited"
-                className="col-span-2"
-              />
-              <p className="col-span-6 -mt-1 text-xs text-muted-foreground">
-                Leave a limit blank for unlimited.
-              </p>
 
               <div className="col-span-6 grid gap-3 sm:grid-cols-2">
                 <FormSwitch
@@ -237,9 +216,9 @@ export function PlanFormModal({
                 />
                 <FormSwitch
                   control={form.control}
-                  name="isPopular"
-                  label="Popular"
-                  description="Highlight this plan"
+                  name="autoRenewEnabled"
+                  label="Enable auto renew"
+                  description="Renews when the period ends and raises a bill for approval"
                 />
               </div>
             </DialogBody>

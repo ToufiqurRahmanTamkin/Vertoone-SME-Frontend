@@ -1,4 +1,4 @@
-import { BILLING_CYCLES } from "@/types/domain/plan";
+import { BILLING_CYCLES, SUPPORTED_CURRENCIES } from "@/types/domain/plan";
 import { z } from "zod";
 
 // A limit input is an empty string when the user means "unlimited", which the
@@ -11,21 +11,14 @@ export const PlanSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(80),
   description: z.string().trim().max(500, "Description must be 500 characters or fewer"),
   price: z.number().min(0, "Price cannot be negative"),
-  currency: z
-    .string()
-    .trim()
-    .length(3, "Use a 3-letter currency code")
-    .regex(/^[A-Za-z]{3}$/, "Use a 3-letter currency code"),
+  currency: z.enum(SUPPORTED_CURRENCIES),
   billingCycle: z.enum(BILLING_CYCLES),
   // One feature per line in the textarea; split on submit.
   features: z.string().max(4000).optional(),
   limitUsers: limitField,
-  limitBranches: limitField,
-  limitStorageGb: limitField,
   trialDays: z.number().int().min(0).max(365, "Trial can be at most 365 days"),
-  modules: z.array(z.string()),
   isActive: z.boolean(),
-  isPopular: z.boolean(),
+  autoRenewEnabled: z.boolean(),
 });
 
 export type PlanFormValues = z.infer<typeof PlanSchema>;

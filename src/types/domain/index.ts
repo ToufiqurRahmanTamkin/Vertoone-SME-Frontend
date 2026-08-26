@@ -1,6 +1,6 @@
-export * from "./appModule";
 export * from "./auth";
 export * from "./dashboard";
+export * from "./email";
 export * from "./finance";
 export * from "./guide";
 export * from "./loginHistory";

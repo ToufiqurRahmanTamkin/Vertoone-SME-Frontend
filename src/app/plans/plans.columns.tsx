@@ -2,10 +2,9 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
-import { moduleRefId } from "@/types/domain/appModule";
 import type { SubscriptionPlan } from "@/types/domain/plan";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Star, Trash2 } from "lucide-react";
+import { Pencil, RefreshCcw, Trash2 } from "lucide-react";
 
 interface PlanColumnActions {
   onEdit: (plan: SubscriptionPlan) => void;
@@ -22,8 +21,11 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="truncate font-medium">{plan.name}</span>
-            {plan.isPopular && (
-              <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-500" />
+            {plan.autoRenewEnabled && (
+              <RefreshCcw
+                className="h-3.5 w-3.5 shrink-0 text-violet-500"
+                aria-label="Auto renew enabled"
+              />
             )}
           </div>
           {plan.description && (
@@ -51,43 +53,20 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
   },
   {
     id: "limits",
-    header: "Limits",
-    cell: ({ row }) => {
-      const { users, branches, storageGb } = row.original.limits ?? {};
-      return (
-        <div className="text-xs text-muted-foreground">
-          <div>{formatLimit(users)} users</div>
-          <div>
-            {formatLimit(branches)} branches · {formatLimit(storageGb)} GB
-          </div>
-        </div>
-      );
-    },
+    header: "Users",
+    cell: ({ row }) => (
+      <span className="text-sm">{formatLimit(row.original.limits?.users)}</span>
+    ),
   },
   {
-    id: "modules",
-    header: "Modules",
-    cell: ({ row }) => {
-      const modules = row.original.modules ?? [];
-      if (modules.length === 0) {
-        return <span className="text-xs text-muted-foreground">None</span>;
-      }
-      return (
-        <div className="flex max-w-[12rem] flex-wrap gap-1">
-          {modules.slice(0, 2).map((entry) => (
-            <span
-              key={moduleRefId(entry)}
-              className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
-            >
-              {typeof entry === "string" ? entry : entry.name}
-            </span>
-          ))}
-          {modules.length > 2 && (
-            <span className="text-[10px] text-muted-foreground">+{modules.length - 2}</span>
-          )}
-        </div>
-      );
-    },
+    accessorKey: "autoRenewEnabled",
+    header: "Auto renew",
+    cell: ({ row }) =>
+      row.original.autoRenewEnabled ? (
+        <StatusBadge color="violet" label="Enabled" />
+      ) : (
+        <StatusBadge color="zinc" label="Off" />
+      ),
   },
   {
     accessorKey: "trialDays",

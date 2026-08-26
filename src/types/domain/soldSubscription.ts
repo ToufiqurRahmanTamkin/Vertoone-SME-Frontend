@@ -1,4 +1,3 @@
-import type { GrantedModule } from "./appModule";
 import type { BillingCycle } from "./plan";
 
 export const SUBSCRIPTION_STATUSES = [
@@ -20,6 +19,9 @@ export const CASH_PAYMENT_METHOD: PaymentMethod = "CASH";
 
 export const requiresTransactionId = (method: PaymentMethod): boolean =>
   method !== CASH_PAYMENT_METHOD;
+
+export const BILLING_ORIGINS = ["MANUAL", "AUTO_RENEWAL"] as const;
+export type BillingOrigin = (typeof BILLING_ORIGINS)[number];
 
 export const PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED", "REFUNDED"] as const;
 export type PaymentReviewAction = (typeof PAYMENT_REVIEW_ACTIONS)[number];
@@ -63,7 +65,10 @@ export interface SoldSubscription {
   paymentReviewedBy: string | null;
   paymentReviewedAt: string | null;
   paymentReviewNote: string;
-  grantedModules: GrantedModule[];
+  billingOrigin: BillingOrigin;
+  renewedFromId: string | null;
+  renewalCycle: number;
+  renewedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +80,7 @@ export interface SoldSubscriptionSummary {
   pendingCount: number;
   totalRevenue: number;
   awaitingApprovalCount: number;
+  autoRenewedCount: number;
 }
 
 export interface SoldSubscriptionListQuery {
@@ -86,6 +92,7 @@ export interface SoldSubscriptionListQuery {
   status?: SubscriptionStatus;
   paymentStatus?: PaymentStatus;
   planId?: string;
+  billingOrigin?: BillingOrigin;
   startDateFrom?: string;
   startDateTo?: string;
 }

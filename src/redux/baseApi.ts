@@ -130,11 +130,11 @@ export const ALL_TAG_TYPES = [
   "FinanceCategories",
   "Incomes",
   "Expenses",
-  "AppModules",
   "Notifications",
   "NotificationsUnread",
   "LoginHistory",
   "Reports",
+  "Emails",
 ] as const;
 
 

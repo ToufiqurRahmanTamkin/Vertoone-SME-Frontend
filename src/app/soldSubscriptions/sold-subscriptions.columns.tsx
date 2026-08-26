@@ -10,7 +10,7 @@ import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle2, Pencil, RotateCcw, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, Pencil, RefreshCcw, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { canApprovePayment, canRefundPayment, canRejectPayment } from "./payment-actions";
 
 interface SoldSubscriptionColumnActions {
@@ -32,7 +32,15 @@ export const soldSubscriptionColumns = ({
     accessorKey: "invoiceNumber",
     header: "Invoice",
     cell: ({ row }) => (
-      <span className="font-mono text-xs font-medium">{row.original.invoiceNumber}</span>
+      <div className="min-w-0">
+        <span className="font-mono text-xs font-medium">{row.original.invoiceNumber}</span>
+        {row.original.billingOrigin === "AUTO_RENEWAL" && (
+          <span className="mt-0.5 flex items-center gap-1 text-[10px] font-semibold uppercase text-violet-600 dark:text-violet-400">
+            <RefreshCcw className="size-2.5" />
+            Auto renewal
+          </span>
+        )}
+      </div>
     ),
   },
   {

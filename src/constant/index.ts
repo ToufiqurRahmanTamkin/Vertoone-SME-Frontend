@@ -9,11 +9,13 @@ import type {
 } from "@/types/domain/loginHistory";
 import type { NotificationLevel, NotificationType } from "@/types/domain/notification";
 import type {
+  BillingOrigin,
   PaymentMethod,
   PaymentReviewAction,
   PaymentStatus,
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
+import type { EmailStatus, EmailTemplateKey } from "@/types/domain/email";
 
 // Single source of truth for how every backend enum is presented. Pages read
 // labels and badge colours from here so the same value never renders two ways.
@@ -80,6 +82,16 @@ export const PAYMENT_REVIEW_ACTION_COLORS: Record<PaymentReviewAction, StatusCol
   APPROVED: "green",
   REJECTED: "red",
   REFUNDED: "violet",
+};
+
+export const BILLING_ORIGIN_LABELS: Record<BillingOrigin, string> = {
+  MANUAL: "Manual",
+  AUTO_RENEWAL: "Auto renewal",
+};
+
+export const BILLING_ORIGIN_COLORS: Record<BillingOrigin, StatusColor> = {
+  MANUAL: "zinc",
+  AUTO_RENEWAL: "violet",
 };
 
 export const FINANCE_CATEGORY_TYPE_LABELS: Record<FinanceCategoryType, string> = {
@@ -164,4 +176,26 @@ export const LOGIN_FAILURE_REASON_LABELS: Record<LoginFailureReason, string> = {
   INVALID_CREDENTIALS: "Wrong password",
   ACCOUNT_INACTIVE: "Account deactivated",
   UNKNOWN_ACCOUNT: "Unknown email",
+};
+
+export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
+  SUBSCRIPTION_RENEWED: "Subscription renewed",
+  RENEWAL_BILL_GENERATED: "Renewal bill generated",
+  PAYMENT_APPROVED: "Payment approved",
+  PAYMENT_REJECTED: "Payment rejected",
+  PAYMENT_REFUNDED: "Payment refunded",
+  SUBSCRIPTION_EXPIRING: "Subscription expiring",
+  SUBSCRIPTION_EXPIRED: "Subscription expired",
+};
+
+export const EMAIL_STATUS_LABELS: Record<EmailStatus, string> = {
+  SENT: "Sent",
+  FAILED: "Failed",
+  SKIPPED: "Skipped",
+};
+
+export const EMAIL_STATUS_COLORS: Record<EmailStatus, StatusColor> = {
+  SENT: "green",
+  FAILED: "red",
+  SKIPPED: "amber",
 };
