@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { APP_NAME, BRAND_LOCKUP } from "@/config/branding";
 import { useLoginMutation } from "@/redux/apis/authApis";
+import { HOME_ROUTE_BY_ROLE } from "@/types/domain/auth";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { LoginSchema } from "@/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, Building2, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -32,8 +33,9 @@ export default function LoginPage() {
     try {
       // The mutation stores the session in `authSlice` via onQueryStarted, so
       // by the time this resolves the route guard already sees a token.
-      await login(data).unwrap();
-      const from = location.state?.from?.pathname || "/dashboard";
+      const session = await login(data).unwrap();
+      const home = HOME_ROUTE_BY_ROLE[session.user.role] ?? "/dashboard";
+      const from = location.state?.from?.pathname || home;
       navigate(from, { replace: true });
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
@@ -92,12 +94,22 @@ export default function LoginPage() {
                     placeholder="name@example.com"
                   />
 
-                  <FormPassword
-                    control={form.control}
-                    name="password"
-                    label="Password"
-                    placeholder="Enter your password"
-                  />
+                  <div className="space-y-1.5">
+                    <FormPassword
+                      control={form.control}
+                      name="password"
+                      label="Password"
+                      placeholder="Enter your password"
+                    />
+                    <div className="flex justify-end">
+                      <Link
+                        to="/forgot-password"
+                        className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                  </div>
 
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.985 }}>
                     <Button
@@ -120,6 +132,29 @@ export default function LoginPage() {
                   </motion.div>
                 </form>
               </Form>
+
+              <div className="relative mt-6 lg:mt-4">
+                <div className="flex items-center gap-3">
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    New to {APP_NAME}?
+                  </span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+
+                <Link
+                  to="/register"
+                  className="group mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/25 bg-primary/5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 lg:mt-3"
+                >
+                  <Building2 className="h-4 w-4" />
+                  Register your company
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+
+                <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
+                  Company accounts go live once a super admin approves the registration.
+                </p>
+              </div>
             </div>
           </motion.div>
         </motion.div>

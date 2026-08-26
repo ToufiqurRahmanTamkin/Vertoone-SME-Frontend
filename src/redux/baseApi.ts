@@ -49,6 +49,36 @@ const unwrapEnvelope = (result: Awaited<ReturnType<typeof baseQuery>>) => {
   result.data = envelope.meta ? { data: envelope.data, meta: envelope.meta } : envelope.data;
 };
 
+const PUBLIC_ENDPOINT_PATHS = [
+  "/auth/login",
+  "/auth/refresh",
+  "/auth/forgot-password",
+  "/auth/verify-otp",
+  "/auth/reset-password",
+  "/companies/register",
+  "/companies/check-availability",
+  "/subscription-plans/public",
+  "/system-config/public",
+];
+
+const requestPath = (args: string | FetchArgs): string => {
+  const url = typeof args === "string" ? args : args.url;
+  return url.split("?")[0];
+};
+
+const isPublicRequest = (args: string | FetchArgs): boolean => {
+  const path = requestPath(args);
+  return PUBLIC_ENDPOINT_PATHS.some((publicPath) => path.startsWith(publicPath));
+};
+
+const redirectToLogin = () => {
+  if (typeof window === "undefined") return;
+  const basename = (import.meta.env.VITE_BASENAME || "").replace(/\/+$/, "");
+  const loginPath = `${basename}/login`;
+  if (window.location.pathname === loginPath) return;
+  window.location.href = loginPath;
+};
+
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -59,7 +89,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   unwrapEnvelope(result);
 
-  if (result.error?.status !== 401) {
+  if (result.error?.status !== 401 || isPublicRequest(args)) {
     return result;
   }
 
@@ -72,36 +102,37 @@ export const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
+  const state = api.getState() as {
+    auth: { refreshToken: string | null; user: User | null };
+  };
+
+  if (!state.auth.refreshToken || !state.auth.user) {
+    api.dispatch(logOut());
+    redirectToLogin();
+    return result;
+  }
+
   const release = await mutex.acquire();
   try {
-    const state = api.getState() as {
-      auth: { refreshToken: string | null; user: User | null };
-    };
-    const refreshToken = state.auth.refreshToken;
-
-    if (!refreshToken || !state.auth.user) {
-      throw new Error("No refresh token available");
-    }
-
     const refreshResult = await baseQuery(
-      { url: "/auth/refresh", method: "POST", body: { refreshToken } },
+      { url: "/auth/refresh", method: "POST", body: { refreshToken: state.auth.refreshToken } },
       api,
       extraOptions
     );
 
-    if (!refreshResult.data) {
+    const envelope = refreshResult.data as
+      | ApiResponse<{ accessToken: string; refreshToken: string }>
+      | undefined;
+
+    if (!envelope?.success || !envelope.data?.accessToken) {
       throw new Error("Refresh rejected");
     }
-
-    const tokens = (
-      refreshResult.data as ApiResponse<{ accessToken: string; refreshToken: string }>
-    ).data;
 
     api.dispatch(
       setCredentials({
         user: state.auth.user,
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
+        accessToken: envelope.data.accessToken,
+        refreshToken: envelope.data.refreshToken,
       })
     );
 
@@ -109,9 +140,7 @@ export const baseQueryWithReauth: BaseQueryFn<
     unwrapEnvelope(result);
   } catch {
     api.dispatch(logOut());
-    if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-      window.location.href = "/login";
-    }
+    redirectToLogin();
   } finally {
     release();
   }
@@ -135,6 +164,9 @@ export const ALL_TAG_TYPES = [
   "LoginHistory",
   "Reports",
   "Emails",
+  "Companies",
+  "CompanySummary",
+  "MyCompany",
 ] as const;
 
 

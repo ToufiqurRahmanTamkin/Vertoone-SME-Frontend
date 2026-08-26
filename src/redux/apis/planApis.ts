@@ -17,6 +17,9 @@ const planApi = baseApi.injectEndpoints({
       }),
       providesTags: ["SubscriptionPlans"],
     }),
+    getPublicPlans: builder.query<SubscriptionPlan[], void>({
+      query: () => ({ url: "/subscription-plans/public", method: "GET" }),
+    }),
     getPlan: builder.query<SubscriptionPlan, string>({
       query: (id) => ({ url: `/subscription-plans/${id}`, method: "GET" }),
       providesTags: ["SubscriptionPlans"],
@@ -38,6 +41,7 @@ const planApi = baseApi.injectEndpoints({
 
 export const {
   useGetPlansQuery,
+  useGetPublicPlansQuery,
   useGetPlanQuery,
   useCreatePlanMutation,
   useUpdatePlanMutation,

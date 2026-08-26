@@ -1,4 +1,8 @@
-import type { SystemConfig, SystemConfigPayload } from "@/types/domain/systemConfig";
+import type {
+  PublicSystemConfig,
+  SystemConfig,
+  SystemConfigPayload,
+} from "@/types/domain/systemConfig";
 import { baseApi } from "../baseApi";
 
 const systemConfigApi = baseApi.injectEndpoints({
@@ -7,6 +11,9 @@ const systemConfigApi = baseApi.injectEndpoints({
       query: () => ({ url: "/system-config", method: "GET" }),
       providesTags: ["SystemConfig"],
     }),
+    getPublicSystemConfig: builder.query<PublicSystemConfig, void>({
+      query: () => ({ url: "/system-config/public", method: "GET" }),
+    }),
     updateSystemConfig: builder.mutation<SystemConfig, SystemConfigPayload>({
       query: (body) => ({ url: "/system-config", method: "PATCH", body }),
       invalidatesTags: ["SystemConfig", "Dashboard"],
@@ -14,4 +21,8 @@ const systemConfigApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetSystemConfigQuery, useUpdateSystemConfigMutation } = systemConfigApi;
+export const {
+  useGetSystemConfigQuery,
+  useGetPublicSystemConfigQuery,
+  useUpdateSystemConfigMutation,
+} = systemConfigApi;

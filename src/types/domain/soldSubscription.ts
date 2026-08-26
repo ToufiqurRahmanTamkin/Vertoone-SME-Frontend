@@ -20,7 +20,7 @@ export const CASH_PAYMENT_METHOD: PaymentMethod = "CASH";
 export const requiresTransactionId = (method: PaymentMethod): boolean =>
   method !== CASH_PAYMENT_METHOD;
 
-export const BILLING_ORIGINS = ["MANUAL", "AUTO_RENEWAL"] as const;
+export const BILLING_ORIGINS = ["MANUAL", "AUTO_RENEWAL", "SELF_SERVICE"] as const;
 export type BillingOrigin = (typeof BILLING_ORIGINS)[number];
 
 export const PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED", "REFUNDED"] as const;

@@ -5,6 +5,8 @@ export type LoginDeviceType = "DESKTOP" | "MOBILE" | "TABLET" | "BOT" | "UNKNOWN
 export type LoginFailureReason =
   | "INVALID_CREDENTIALS"
   | "ACCOUNT_INACTIVE"
+  | "ACCOUNT_PENDING_APPROVAL"
+  | "ACCOUNT_REJECTED"
   | "UNKNOWN_ACCOUNT";
 
 export interface LoginHistoryEntry {

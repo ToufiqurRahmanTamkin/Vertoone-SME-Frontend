@@ -1,10 +1,15 @@
 import type {
   AuthTokens,
   ChangePasswordInput,
+  ForgotPasswordInput,
+  ForgotPasswordResponse,
   LoginInput,
   LoginResponse,
+  ResetPasswordInput,
   UpdateProfileInput,
   User,
+  VerifyOtpInput,
+  VerifyOtpResponse,
 } from "@/types/domain/auth";
 import { setCredentials, setUser } from "../authSlice";
 import { baseApi } from "../baseApi";
@@ -59,6 +64,27 @@ const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordInput>({
+      query: (body) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+    verifyPasswordOtp: builder.mutation<VerifyOtpResponse, VerifyOtpInput>({
+      query: (body) => ({
+        url: "/auth/verify-otp",
+        method: "POST",
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation<null, ResetPasswordInput>({
+      query: (body) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body,
+      }),
+    }),
     refreshToken: builder.mutation<AuthTokens, { refreshToken: string }>({
       query: (body) => ({
         url: "/auth/refresh",
@@ -78,6 +104,9 @@ export const {
   useLazyGetMeQuery,
   useUpdateProfileMutation,
   useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useVerifyPasswordOtpMutation,
+  useResetPasswordMutation,
   useRefreshTokenMutation,
   useLogoutMutation,
 } = authApi;

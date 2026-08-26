@@ -1,6 +1,7 @@
 import { PermissionDeniedError } from "@/app/errors/permission-denied/components/permission-denied-error";
 import { MENU_ITEMS } from "@/config/navigation";
 import { selectCurrentToken, selectCurrentUser } from "@/redux/authSlice";
+import { HOME_ROUTE_BY_ROLE } from "@/types/domain/auth";
 import { useSelector } from "react-redux";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
@@ -18,10 +19,10 @@ export function ProtectedRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Paths every authenticated user reaches regardless of the menu.
-  const ALWAYS_ALLOWED_PATHS = ["/", "/dashboard"];
-  if (ALWAYS_ALLOWED_PATHS.includes(location.pathname)) {
-    return <Outlet />;
+  const home = HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard";
+
+  if (location.pathname === "/") {
+    return <Navigate to={home} replace />;
   }
 
   // Menu access is role-driven. Typing a forbidden URL lands on the Permission
@@ -45,10 +46,12 @@ export function ProtectedRoute() {
 
 export function PublicRoute() {
   const token = useSelector(selectCurrentToken);
+  const user = useSelector(selectCurrentUser);
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
 
-  if (token) {
+  if (token && user) {
+    const home = HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard";
+    const from = location.state?.from?.pathname || home;
     return <Navigate to={from} replace />;
   }
 

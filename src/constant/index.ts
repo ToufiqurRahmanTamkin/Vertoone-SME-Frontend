@@ -8,6 +8,8 @@ import type {
   LoginStatus,
 } from "@/types/domain/loginHistory";
 import type { NotificationLevel, NotificationType } from "@/types/domain/notification";
+import type { CompanyStatus, EmployeeRange } from "@/types/domain/company";
+import type { Role, UserStatus } from "@/types/domain/auth";
 import type {
   BillingOrigin,
   PaymentMethod,
@@ -87,11 +89,56 @@ export const PAYMENT_REVIEW_ACTION_COLORS: Record<PaymentReviewAction, StatusCol
 export const BILLING_ORIGIN_LABELS: Record<BillingOrigin, string> = {
   MANUAL: "Manual",
   AUTO_RENEWAL: "Auto renewal",
+  SELF_SERVICE: "Self sign-up",
 };
 
 export const BILLING_ORIGIN_COLORS: Record<BillingOrigin, StatusColor> = {
   MANUAL: "zinc",
   AUTO_RENEWAL: "violet",
+  SELF_SERVICE: "blue",
+};
+
+export const COMPANY_STATUS_LABELS: Record<CompanyStatus, string> = {
+  PENDING: "Pending approval",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  SUSPENDED: "Suspended",
+};
+
+export const COMPANY_STATUS_COLORS: Record<CompanyStatus, StatusColor> = {
+  PENDING: "amber",
+  APPROVED: "green",
+  REJECTED: "red",
+  SUSPENDED: "orange",
+};
+
+export const EMPLOYEE_RANGE_LABELS: Record<EmployeeRange, string> = {
+  "1-50": "1 – 50 employees",
+  "51-100": "51 – 100 employees",
+  "101-200": "101 – 200 employees",
+  "201-300": "201 – 300 employees",
+  "301-500": "301 – 500 employees",
+  "501-1000": "501 – 1000 employees",
+  "1000+": "1000+ employees",
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  SUPER_ADMIN: "Super admin",
+  COMPANY_OWNER: "Company owner",
+};
+
+export const USER_STATUS_LABELS: Record<UserStatus, string> = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+  PENDING_APPROVAL: "Pending approval",
+  REJECTED: "Rejected",
+};
+
+export const USER_STATUS_COLORS: Record<UserStatus, StatusColor> = {
+  ACTIVE: "green",
+  INACTIVE: "zinc",
+  PENDING_APPROVAL: "amber",
+  REJECTED: "red",
 };
 
 export const FINANCE_CATEGORY_TYPE_LABELS: Record<FinanceCategoryType, string> = {
@@ -131,6 +178,9 @@ export const toOptions = <T extends string>(labels: Record<T, string>) =>
 
 export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   SUBSCRIPTION_SOLD: "Subscription sold",
+  COMPANY_REGISTERED: "Company registered",
+  COMPANY_APPROVED: "Company approved",
+  COMPANY_REJECTED: "Company rejected",
   PAYMENT_APPROVED: "Payment approved",
   PAYMENT_REJECTED: "Payment rejected",
   PAYMENT_REFUNDED: "Payment refunded",
@@ -175,11 +225,19 @@ export const LOGIN_DEVICE_TYPE_LABELS: Record<LoginDeviceType, string> = {
 export const LOGIN_FAILURE_REASON_LABELS: Record<LoginFailureReason, string> = {
   INVALID_CREDENTIALS: "Wrong password",
   ACCOUNT_INACTIVE: "Account deactivated",
+  ACCOUNT_PENDING_APPROVAL: "Awaiting approval",
+  ACCOUNT_REJECTED: "Registration rejected",
   UNKNOWN_ACCOUNT: "Unknown email",
 };
 
 export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
   SUBSCRIPTION_RENEWED: "Subscription renewed",
+  REGISTRATION_RECEIVED: "Registration received",
+  REGISTRATION_SUBMITTED_ADMIN: "Registration submitted (admin)",
+  REGISTRATION_APPROVED: "Registration approved",
+  REGISTRATION_REJECTED: "Registration rejected",
+  PASSWORD_RESET_OTP: "Password reset code",
+  PASSWORD_RESET_SUCCESS: "Password reset confirmed",
   RENEWAL_BILL_GENERATED: "Renewal bill generated",
   PAYMENT_APPROVED: "Payment approved",
   PAYMENT_REJECTED: "Payment rejected",

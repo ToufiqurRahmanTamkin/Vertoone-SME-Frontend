@@ -1,9 +1,13 @@
 import { PrivateLayout } from "@/components/router/private-layout";
+import { RootRedirect } from "@/components/router/root-redirect";
 import { ProtectedRoute, PublicRoute } from "@/components/router/protected-route";
 import { lazy } from "react";
-import { Navigate } from "react-router-dom";
 
 const Login = lazy(() => import("@/app/auth/login/LoginPage"));
+const Register = lazy(() => import("@/app/auth/register/RegisterPage"));
+const ForgotPassword = lazy(() => import("@/app/auth/forgot-password/ForgotPasswordPage"));
+const Companies = lazy(() => import("@/app/companies/CompaniesPage"));
+const MyCompany = lazy(() => import("@/app/myCompany/MyCompanyPage"));
 const Dashboard = lazy(() => import("@/app/dashboard/page"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
@@ -34,13 +38,17 @@ export interface RouteConfig {
 export const routes: RouteConfig[] = [
   {
     path: "/",
-    element: <Navigate to="dashboard" replace />,
+    element: <RootRedirect />,
   },
 
   {
     path: "/",
     element: <PublicRoute />,
-    children: [{ path: "login", element: <Login /> }],
+    children: [
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+    ],
   },
 
   {
@@ -52,6 +60,8 @@ export const routes: RouteConfig[] = [
         element: <PrivateLayout />,
         children: [
           { path: "dashboard", element: <Dashboard /> },
+          { path: "companies", element: <Companies /> },
+          { path: "my-company", element: <MyCompany /> },
           { path: "subscription-plans", element: <SubscriptionPlans /> },
           { path: "sold-subscriptions", element: <SoldSubscriptions /> },
           { path: "user-guides", element: <UserGuides /> },

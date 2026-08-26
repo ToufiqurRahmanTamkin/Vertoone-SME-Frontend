@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Building2,
   BookOpen,
   Mail,
   CreditCard,
@@ -15,6 +16,7 @@ import {
 
 export const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
+  Building2,
   CreditCard,
   Receipt,
   SlidersHorizontal,
@@ -60,6 +62,20 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/dashboard",
     icon: "LayoutDashboard",
     section: "Overview",
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    title: "My Company",
+    path: "/my-company",
+    icon: "Building2",
+    section: "Overview",
+    roles: ["COMPANY_OWNER"],
+  },
+  {
+    title: "Companies",
+    path: "/companies",
+    icon: "Building2",
+    section: "Customers",
     roles: ["SUPER_ADMIN"],
   },
   {
@@ -190,8 +206,8 @@ export const MENU_ITEMS: MenuItem[] = [
     title: "Account",
     path: "/settings/account",
     icon: "Settings",
-    section: null,
-    roles: ["SUPER_ADMIN"],
+    section: "Settings",
+    roles: ["SUPER_ADMIN", "COMPANY_OWNER"],
   },
 ];
 
@@ -214,8 +230,9 @@ export const getNavigationForRole = (role: string): NavGroup[] => {
 
   roleItems.forEach((item) => {
     if (item.section !== null && item.section !== undefined) {
-      currentGroup = { label: item.section, items: [] };
-      groups.push(currentGroup);
+      const existing = groups.find((group) => group.label === item.section);
+      currentGroup = existing ?? { label: item.section, items: [] };
+      if (!existing) groups.push(currentGroup);
     }
     currentGroup?.items.push(buildNavItem(item));
   });
