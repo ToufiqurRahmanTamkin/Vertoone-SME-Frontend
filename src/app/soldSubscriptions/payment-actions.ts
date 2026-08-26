@@ -1,10 +1,12 @@
-import type { SoldSubscription } from "@/types/domain/soldSubscription";
+import type { PaymentStatus, SoldSubscription } from "@/types/domain/soldSubscription";
+
+const REVIEWABLE_PAYMENT_STATUSES: PaymentStatus[] = ["UNPAID", "PENDING", "FAILED"];
 
 export const canApprovePayment = (record: SoldSubscription): boolean =>
-  record.paymentStatus === "UNPAID" || record.paymentStatus === "FAILED";
+  REVIEWABLE_PAYMENT_STATUSES.includes(record.paymentStatus);
 
 export const canRejectPayment = (record: SoldSubscription): boolean =>
-  record.paymentStatus === "UNPAID" || record.paymentStatus === "FAILED";
+  REVIEWABLE_PAYMENT_STATUSES.includes(record.paymentStatus);
 
 export const canRefundPayment = (record: SoldSubscription): boolean =>
   record.paymentStatus === "PAID";

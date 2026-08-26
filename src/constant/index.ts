@@ -55,13 +55,15 @@ export const SUBSCRIPTION_STATUS_COLORS: Record<SubscriptionStatus, StatusColor>
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   UNPAID: "Unpaid",
+  PENDING: "Awaiting approval",
   PAID: "Paid",
   REFUNDED: "Refunded",
   FAILED: "Failed",
 };
 
 export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, StatusColor> = {
-  UNPAID: "amber",
+  UNPAID: "zinc",
+  PENDING: "amber",
   PAID: "green",
   REFUNDED: "violet",
   FAILED: "red",

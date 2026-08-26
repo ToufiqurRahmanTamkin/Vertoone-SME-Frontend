@@ -102,7 +102,7 @@ export default function DashboardPage() {
     {
       label: "Outstanding",
       value: formatAmount(kpis?.revenue.outstanding, currency),
-      description: `${formatNumber(kpis?.subscriptions.awaitingApproval)} invoice(s) unpaid`,
+      description: `${formatNumber(kpis?.subscriptions.awaitingApproval)} invoice(s) awaiting approval`,
       icon: CreditCard,
       color: "warning" as const,
     },
