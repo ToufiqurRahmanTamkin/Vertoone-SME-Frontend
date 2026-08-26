@@ -1,7 +1,13 @@
 import { RealtimeContext, type RealtimeContextValue } from "@/contexts/realtime-context";
-import { connectSocket, disconnectSocket, isRealtimeConfigured } from "@/lib/socket";
-import { baseApi, type TagType } from "@/redux/baseApi";
+import {
+  connectSocket,
+  disconnectSocket,
+  getSocketStatus,
+  isRealtimeConfigured,
+  subscribeToSocketStatus,
+} from "@/lib/socket";
 import { logOut, selectCurrentToken, selectCurrentUser } from "@/redux/authSlice";
+import { baseApi, type TagType } from "@/redux/baseApi";
 import type {
   NotificationCreatedPayload,
   RealtimeStatus,
@@ -37,36 +43,21 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const token = useSelector(selectCurrentToken);
   const user = useSelector(selectCurrentUser);
 
-  const [status, setStatus] = React.useState<RealtimeStatus>(
-    isRealtimeConfigured() ? "CONNECTING" : "DISABLED"
-  );
+  const socketStatus = React.useSyncExternalStore(subscribeToSocketStatus, getSocketStatus);
   const [lastEventAt, setLastEventAt] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (!isRealtimeConfigured()) {
-      setStatus("DISABLED");
-      return;
-    }
+    if (!isRealtimeConfigured()) return;
 
     if (!token || !user) {
       disconnectSocket();
-      setStatus("DISCONNECTED");
       return;
     }
 
     const socket = connectSocket(token);
-    if (!socket) {
-      setStatus("DISABLED");
-      return;
-    }
-
-    setStatus(socket.connected ? "CONNECTED" : "CONNECTING");
+    if (!socket) return;
 
     const markEvent = () => setLastEventAt(new Date().toISOString());
-
-    const onConnect = () => setStatus("CONNECTED");
-    const onDisconnect = () => setStatus("DISCONNECTED");
-    const onConnectError = () => setStatus("DISCONNECTED");
 
     const onNotification = (payload: NotificationCreatedPayload) => {
       markEvent();
@@ -91,17 +82,11 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       navigate("/login", { replace: true });
     };
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("connect_error", onConnectError);
     socket.on("notification:created", onNotification);
     socket.on("resource:changed", onResourceChanged);
     socket.on("session:revoked", onSessionRevoked);
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("connect_error", onConnectError);
       socket.off("notification:created", onNotification);
       socket.off("resource:changed", onResourceChanged);
       socket.off("session:revoked", onSessionRevoked);
@@ -109,6 +94,12 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   }, [token, user, dispatch, navigate]);
 
   React.useEffect(() => () => disconnectSocket(), []);
+
+  const status: RealtimeStatus = !isRealtimeConfigured()
+    ? "DISABLED"
+    : !token || !user
+      ? "DISCONNECTED"
+      : socketStatus;
 
   const value = React.useMemo<RealtimeContextValue>(
     () => ({ status, isLive: status === "CONNECTED", lastEventAt }),
