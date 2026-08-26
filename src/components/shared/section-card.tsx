@@ -23,7 +23,7 @@ export function SectionCard({
   children,
 }: SectionCardProps) {
   return (
-    <Card className={cn("gap-0 overflow-hidden py-0", className)}>
+    <Card className={cn("shrink-0 gap-0 overflow-hidden py-0", className)}>
       <CardHeader className="bg-muted/40 border-b px-5 py-4 md:px-6 [.border-b]:pb-4">
         <div className="flex items-start gap-3">
           <span className="bg-background text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg border shadow-sm">

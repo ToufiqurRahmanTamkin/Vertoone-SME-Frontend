@@ -16,6 +16,7 @@ const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscri
 const UserGuides = lazy(() => import("@/app/guides/GuidesPage"));
 const FinanceIncome = lazy(() => import("@/app/finance/income/IncomePage"));
 const FinanceExpense = lazy(() => import("@/app/finance/expense/ExpensePage"));
+const FinanceInvoices = lazy(() => import("@/app/finance/invoices/InvoicesPage"));
 const FinanceCategories = lazy(() => import("@/app/finance/categories/FinanceCategoriesPage"));
 const SystemConfig = lazy(() => import("@/app/systemConfig/SystemConfigPage"));
 const Emails = lazy(() => import("@/app/emails/EmailsPage"));
@@ -51,6 +52,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "user-guides", element: <UserGuides /> },
   { path: "finance/income", element: <FinanceIncome /> },
   { path: "finance/expense", element: <FinanceExpense /> },
+  { path: "finance/invoices", element: <FinanceInvoices /> },
   { path: "finance/categories", element: <FinanceCategories /> },
   { path: "reports", element: <Reports /> },
   { path: "reports/revenue", element: <RevenueReport /> },

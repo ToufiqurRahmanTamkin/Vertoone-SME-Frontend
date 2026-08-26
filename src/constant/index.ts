@@ -2,6 +2,7 @@ import type { StatusColor } from "@/components/shared/status-badge";
 import type { BillingCycle } from "@/types/domain/plan";
 import type { FinanceCategoryType, IncomeSourceType } from "@/types/domain/finance";
 import type { GuideAudience, GuideCategory } from "@/types/domain/guide";
+import type { InvoiceOrigin, InvoiceStatus, InvoiceType } from "@/types/domain/invoice";
 import type {
   LoginDeviceType,
   LoginFailureReason,
@@ -166,6 +167,40 @@ export const INCOME_SOURCE_TYPE_LABELS: Record<IncomeSourceType, string> = {
   SOLD_SUBSCRIPTION: "Subscription",
 };
 
+export const INVOICE_TYPE_LABELS: Record<InvoiceType, string> = {
+  INCOME: "Receivable",
+  EXPENSE: "Payable",
+};
+
+export const INVOICE_TYPE_COLORS: Record<InvoiceType, StatusColor> = {
+  INCOME: "green",
+  EXPENSE: "orange",
+};
+
+export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+  DRAFT: "Draft",
+  ISSUED: "Issued",
+  PAID: "Paid",
+  CANCELLED: "Cancelled",
+};
+
+export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, StatusColor> = {
+  DRAFT: "zinc",
+  ISSUED: "amber",
+  PAID: "green",
+  CANCELLED: "red",
+};
+
+export const INVOICE_ORIGIN_LABELS: Record<InvoiceOrigin, string> = {
+  AUTO: "Auto raised",
+  MANUAL: "Manual",
+};
+
+export const INVOICE_ORIGIN_COLORS: Record<InvoiceOrigin, StatusColor> = {
+  AUTO: "violet",
+  MANUAL: "zinc",
+};
+
 export const GUIDE_CATEGORY_LABELS: Record<GuideCategory, string> = {
   GETTING_STARTED: "Getting started",
   ACCOUNT: "Account",
@@ -328,6 +363,9 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   EXPENSE_CREATED: "Expense recorded",
   EXPENSE_UPDATED: "Expense updated",
   EXPENSE_DELETED: "Expense deleted",
+  INVOICE_CREATED: "Invoice raised",
+  INVOICE_UPDATED: "Invoice updated",
+  INVOICE_DELETED: "Invoice deleted",
   CATEGORY_CREATED: "Category created",
   CATEGORY_UPDATED: "Category updated",
   CATEGORY_DELETED: "Category deleted",
@@ -350,6 +388,7 @@ export const ACTIVITY_ENTITY_TYPE_LABELS: Record<ActivityEntityType, string> = {
   SUBSCRIPTION_PLAN: "Subscription plan",
   INCOME: "Income",
   EXPENSE: "Expense",
+  INVOICE: "Invoice",
   FINANCE_CATEGORY: "Finance category",
   USER_GUIDE: "User guide",
   USER: "User",

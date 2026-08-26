@@ -1,3 +1,4 @@
+import type { LinkedInvoice } from "./invoice";
 import type { PaymentMethod } from "./soldSubscription";
 
 export const FINANCE_CATEGORY_TYPES = ["INCOME", "EXPENSE"] as const;
@@ -41,6 +42,7 @@ export interface Income {
   sourceType: IncomeSourceType;
   sourceId: string | null;
   recordedBy: string | null;
+  invoice?: LinkedInvoice | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +59,7 @@ export interface Expense {
   reference: string;
   notes: string;
   recordedBy: string | null;
+  invoice?: LinkedInvoice | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -214,6 +214,13 @@ export const MENU_ITEMS: MenuItem[] = [
         roles: ["SUPER_ADMIN"],
       },
       {
+        title: "Invoices",
+        path: "/finance/invoices",
+        icon: "ScrollText",
+        section: null,
+        roles: ["SUPER_ADMIN"],
+      },
+      {
         title: "Category",
         path: "/finance/categories",
         icon: "Wallet",

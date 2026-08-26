@@ -11,6 +11,14 @@ import type {
   IncomeListQuery,
   IncomePayload,
 } from "@/types/domain/finance";
+import type {
+  Invoice,
+  InvoiceListQuery,
+  InvoicePayload,
+  InvoiceSummary,
+  LinkableEntry,
+  LinkableEntryQuery,
+} from "@/types/domain/invoice";
 import { baseApi } from "../baseApi";
 import { buildQuery } from "./queryString";
 
@@ -60,15 +68,15 @@ const financeApi = baseApi.injectEndpoints({
     }),
     createIncome: builder.mutation<Income, IncomePayload>({
       query: (body) => ({ url: "/finance/incomes", method: "POST", body }),
-      invalidatesTags: ["Incomes", "Dashboard"],
+      invalidatesTags: ["Incomes", "Invoices", "LinkableEntries", "Dashboard"],
     }),
     updateIncome: builder.mutation<Income, { id: string; body: Partial<IncomePayload> }>({
       query: ({ id, body }) => ({ url: `/finance/incomes/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["Incomes", "Dashboard"],
+      invalidatesTags: ["Incomes", "Invoices", "LinkableEntries", "Dashboard"],
     }),
     deleteIncome: builder.mutation<null, string>({
       query: (id) => ({ url: `/finance/incomes/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Incomes", "Dashboard"],
+      invalidatesTags: ["Incomes", "Invoices", "LinkableEntries", "Dashboard"],
     }),
 
     getExpenses: builder.query<ListResult<Expense>, ExpenseListQuery | void>({
@@ -84,15 +92,48 @@ const financeApi = baseApi.injectEndpoints({
     }),
     createExpense: builder.mutation<Expense, ExpensePayload>({
       query: (body) => ({ url: "/finance/expenses", method: "POST", body }),
-      invalidatesTags: ["Expenses", "Dashboard"],
+      invalidatesTags: ["Expenses", "Invoices", "LinkableEntries", "Dashboard"],
     }),
     updateExpense: builder.mutation<Expense, { id: string; body: Partial<ExpensePayload> }>({
       query: ({ id, body }) => ({ url: `/finance/expenses/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["Expenses", "Dashboard"],
+      invalidatesTags: ["Expenses", "Invoices", "LinkableEntries", "Dashboard"],
     }),
     deleteExpense: builder.mutation<null, string>({
       query: (id) => ({ url: `/finance/expenses/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Expenses", "Dashboard"],
+      invalidatesTags: ["Expenses", "Invoices", "LinkableEntries", "Dashboard"],
+    }),
+
+    getInvoices: builder.query<ListResult<Invoice>, InvoiceListQuery | void>({
+      query: (params) => ({
+        url: `/finance/invoices${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["Invoices"],
+    }),
+    getInvoiceSummary: builder.query<InvoiceSummary, void>({
+      query: () => ({ url: "/finance/invoices/summary", method: "GET" }),
+      providesTags: ["Invoices"],
+    }),
+    getLinkableEntries: builder.query<LinkableEntry[], LinkableEntryQuery>({
+      query: (params) => ({
+        url: `/finance/invoices/linkable-entries${buildQuery(
+          params as unknown as Record<string, unknown>
+        )}`,
+        method: "GET",
+      }),
+      providesTags: ["LinkableEntries"],
+    }),
+    createInvoice: builder.mutation<Invoice, InvoicePayload>({
+      query: (body) => ({ url: "/finance/invoices", method: "POST", body }),
+      invalidatesTags: ["Invoices", "LinkableEntries", "Incomes", "Expenses"],
+    }),
+    updateInvoice: builder.mutation<Invoice, { id: string; body: Partial<InvoicePayload> }>({
+      query: ({ id, body }) => ({ url: `/finance/invoices/${id}`, method: "PATCH", body }),
+      invalidatesTags: ["Invoices", "LinkableEntries", "Incomes", "Expenses"],
+    }),
+    deleteInvoice: builder.mutation<null, string>({
+      query: (id) => ({ url: `/finance/invoices/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Invoices", "LinkableEntries", "Incomes", "Expenses"],
     }),
   }),
 });
@@ -112,4 +153,10 @@ export const {
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
+  useGetInvoicesQuery,
+  useGetInvoiceSummaryQuery,
+  useGetLinkableEntriesQuery,
+  useCreateInvoiceMutation,
+  useUpdateInvoiceMutation,
+  useDeleteInvoiceMutation,
 } = financeApi;

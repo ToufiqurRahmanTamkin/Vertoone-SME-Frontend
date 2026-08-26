@@ -1,4 +1,5 @@
 import { FINANCE_CATEGORY_TYPES } from "@/types/domain/finance";
+import { INVOICE_STATUSES, INVOICE_TYPES } from "@/types/domain/invoice";
 import { PAYMENT_METHODS, requiresTransactionId } from "@/types/domain/soldSubscription";
 import { z } from "zod";
 
@@ -28,6 +29,35 @@ export const FinanceEntrySchema = z.object({
 });
 
 export type FinanceEntryFormValues = z.infer<typeof FinanceEntrySchema>;
+
+export const InvoiceSchema = z
+  .object({
+    type: z.enum(INVOICE_TYPES),
+    entryId: z.string(),
+    status: z.enum(INVOICE_STATUSES),
+    title: z.string().trim().max(140),
+    party: z.string().trim().max(140),
+    amount: z.number().min(0, "Amount cannot be negative"),
+    currency: z
+      .string()
+      .trim()
+      .length(3, "Use a 3-letter currency code")
+      .regex(/^[A-Za-z]{3}$/, "Use a 3-letter currency code"),
+    issueDate: z.string().min(1, "Pick an issue date"),
+    dueDate: z.string(),
+    reference: z.string().trim().max(120),
+    notes: z.string().trim().max(1000),
+  })
+  .refine((data) => Boolean(data.entryId) || data.title.trim().length >= 2, {
+    message: "Title must be at least 2 characters",
+    path: ["title"],
+  })
+  .refine((data) => !data.dueDate || !data.issueDate || data.dueDate >= data.issueDate, {
+    message: "The due date cannot fall before the issue date",
+    path: ["dueDate"],
+  });
+
+export type InvoiceFormValues = z.infer<typeof InvoiceSchema>;
 
 export const PaymentReviewSchema = z
   .object({

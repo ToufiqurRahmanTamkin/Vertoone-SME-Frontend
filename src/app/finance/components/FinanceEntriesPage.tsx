@@ -1,11 +1,17 @@
 import { PageHeader } from "@/components/shared/page-header";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
-import { PAYMENT_METHOD_LABELS, toOptions } from "@/constant";
+import {
+  INVOICE_STATUS_COLORS,
+  INVOICE_STATUS_LABELS,
+  PAYMENT_METHOD_LABELS,
+  toOptions,
+} from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatAmount, formatNumber } from "@/lib/amount";
 import {
@@ -216,6 +222,22 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
               <span className="truncate font-mono font-medium">{entry.reference || "—"}</span>
             </div>
             <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Invoice</span>
+              {entry.invoice ? (
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate font-mono font-medium">
+                    {entry.invoice.invoiceNumber}
+                  </span>
+                  <StatusBadge
+                    color={INVOICE_STATUS_COLORS[entry.invoice.status]}
+                    label={INVOICE_STATUS_LABELS[entry.invoice.status]}
+                  />
+                </span>
+              ) : (
+                <span className="font-medium">—</span>
+              )}
+            </div>
+            <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">{copy.partyLabel}</span>
               <span className="font-medium">
                 {(isIncome ? (entry as Income).receivedFrom : (entry as Expense).paidTo) || "—"}
@@ -248,6 +270,11 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
                 {new Date(entry.date).toLocaleDateString()} ·{" "}
                 {PAYMENT_METHOD_LABELS[entry.paymentMethod]}
               </p>
+              {entry.invoice && (
+                <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
+                  {entry.invoice.invoiceNumber}
+                </p>
+              )}
               <div className="mt-3 flex justify-end gap-2 border-t pt-3">
                 <Button
                   variant="outline"

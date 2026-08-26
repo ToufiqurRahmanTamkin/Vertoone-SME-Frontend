@@ -6,6 +6,7 @@ export * from "./dataWipe";
 export * from "./email";
 export * from "./finance";
 export * from "./guide";
+export * from "./invoice";
 export * from "./loginHistory";
 export * from "./notification";
 export * from "./permission";
