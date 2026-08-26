@@ -5,7 +5,7 @@ import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, RefreshCcw, Trash2 } from "lucide-react";
+import { Lock, Pencil, RefreshCcw, Trash2 } from "lucide-react";
 
 interface PlanColumnActions {
   onEdit: (plan: SubscriptionPlan) => void;
@@ -26,6 +26,12 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
               <RefreshCcw
                 className="h-3.5 w-3.5 shrink-0 text-violet-500"
                 aria-label="Auto renew enabled"
+              />
+            )}
+            {plan.isPrivate && (
+              <Lock
+                className="h-3.5 w-3.5 shrink-0 text-amber-500"
+                aria-label="Private plan"
               />
             )}
           </div>
@@ -106,12 +112,16 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
   {
     accessorKey: "isActive",
     header: "Status",
-    cell: ({ row }) =>
-      row.original.isActive ? (
-        <StatusBadge color="green" label="Active" />
-      ) : (
-        <StatusBadge color="zinc" label="Inactive" />
-      ),
+    cell: ({ row }) => (
+      <div className="flex flex-wrap items-center gap-1.5">
+        {row.original.isActive ? (
+          <StatusBadge color="green" label="Active" />
+        ) : (
+          <StatusBadge color="zinc" label="Inactive" />
+        )}
+        {row.original.isPrivate && <StatusBadge color="amber" label="Private" />}
+      </div>
+    ),
   },
   {
     id: "actions",

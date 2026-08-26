@@ -49,7 +49,7 @@ export function BaseLayout({ children }: BaseLayoutProps) {
         {
           "--sidebar-width": "16rem",
           "--sidebar-width-icon": "3rem",
-          "--header-height": "calc(var(--spacing) * 14)",
+          "--header-height": "calc(var(--spacing) * 16)",
         } as React.CSSProperties
       }
       variant={config.variant}

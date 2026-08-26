@@ -104,6 +104,13 @@ export interface RegisterCompanyPayload {
   transactionId?: string;
 }
 
+export interface CreateCompanyByAdminPayload extends RegisterCompanyPayload {
+  amount?: number;
+  startDate?: string;
+  autoRenew?: boolean;
+  note?: string;
+}
+
 export interface RegisterCompanyResult {
   companyId: string;
   companyName: string;

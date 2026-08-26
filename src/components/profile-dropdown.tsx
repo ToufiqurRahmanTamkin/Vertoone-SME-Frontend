@@ -47,7 +47,7 @@ export default function ProfileDropdown() {
         <button
           type="button"
           aria-label={`Account menu — ${user.name}, ${user.email}`}
-          className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-transparent py-1 pr-1 pl-1 transition-colors hover:border-border hover:bg-accent focus:outline-none sm:pr-2.5"
+          className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-transparent p-1 transition-all hover:border-border hover:bg-accent focus:outline-none active:scale-95 xl:pr-2.5"
         >
           <Avatar className="h-8 w-8 shrink-0">
             {user.avatarUrl ? (
@@ -57,15 +57,15 @@ export default function ProfileDropdown() {
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden min-w-0 flex-col items-start text-left leading-tight sm:flex">
-            <span className="max-w-[10rem] truncate text-xs font-semibold text-foreground">
+          <span className="hidden min-w-0 flex-col items-start text-left leading-tight xl:flex">
+            <span className="max-w-[9rem] truncate text-xs font-semibold text-foreground">
               {user.name}
             </span>
-            <span className="max-w-[10rem] truncate text-[11px] text-muted-foreground">
+            <span className="max-w-[9rem] truncate text-[11px] text-muted-foreground">
               {user.email}
             </span>
           </span>
-          <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 opacity-50 sm:block" />
+          <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 opacity-50 xl:block" />
         </button>
       </DropdownMenuTrigger>
 

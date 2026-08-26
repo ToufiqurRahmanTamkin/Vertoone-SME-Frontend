@@ -58,6 +58,7 @@ const emptyValues = (currency: string): PlanFormValues => ({
   trialDays: 0,
   isActive: true,
   autoRenewEnabled: false,
+  isPrivate: false,
 });
 
 const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
@@ -71,6 +72,7 @@ const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   trialDays: plan.trialDays ?? 0,
   isActive: plan.isActive,
   autoRenewEnabled: plan.autoRenewEnabled ?? false,
+  isPrivate: plan.isPrivate ?? false,
 });
 
 export function PlanFormModal({
@@ -127,6 +129,7 @@ export function PlanFormModal({
       trialDays: values.trialDays,
       isActive: values.isActive,
       autoRenewEnabled: values.autoRenewEnabled,
+      isPrivate: values.isPrivate,
     };
 
     try {
@@ -253,6 +256,12 @@ export function PlanFormModal({
                       name="autoRenewEnabled"
                       label="Enable auto renew"
                       description="Renews when the period ends and raises a bill for approval"
+                    />
+                    <FormSwitch
+                      control={form.control}
+                      name="isPrivate"
+                      label="Private plan"
+                      description="Hidden from public signup — you assign it to a company yourself"
                     />
                   </div>
                 </TabsContent>

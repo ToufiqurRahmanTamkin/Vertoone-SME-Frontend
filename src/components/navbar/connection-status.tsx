@@ -3,13 +3,13 @@ import { useRealtime } from "@/contexts/realtime-context";
 import { useOnlineStatus } from "@/hooks/use-pwa";
 import { cn } from "@/lib/utils";
 import { safeDistanceToNow } from "@/lib/date";
-import { Radio, RefreshCw, WifiOff } from "lucide-react";
+import { RefreshCw, WifiOff } from "lucide-react";
 
 function OfflineBadge() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="flex h-8 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+        <span className="flex h-9 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
           <WifiOff className="size-3.5 shrink-0" />
           <span className="hidden sm:inline">Offline</span>
         </span>
@@ -38,18 +38,21 @@ export function ConnectionStatus() {
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-semibold",
+            "hidden h-9 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-semibold transition-colors md:flex",
             isLive
               ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
               : "border-muted-foreground/30 bg-muted text-muted-foreground"
           )}
         >
           {isLive ? (
-            <Radio className="size-3.5 shrink-0" />
+            <span className="relative flex size-2 shrink-0">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-70" />
+              <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+            </span>
           ) : (
             <RefreshCw className={cn("size-3.5 shrink-0", isReconnecting && "animate-spin")} />
           )}
-          <span className="hidden sm:inline">{isLive ? "Live" : "Reconnecting"}</span>
+          <span className="hidden xl:inline">{isLive ? "Live" : "Reconnecting"}</span>
         </span>
       </TooltipTrigger>
       <TooltipContent>

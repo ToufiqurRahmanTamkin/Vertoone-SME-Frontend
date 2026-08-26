@@ -1,6 +1,8 @@
 import { CompanyMobileCard } from "@/app/companies/components/CompanyMobileCard";
+import { CompanyCreateModal } from "@/app/companies/components/CompanyCreateModal";
 import { CompanyReviewModal } from "@/app/companies/components/CompanyReviewModal";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +12,7 @@ import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatNumber } from "@/lib/amount";
 import { useGetCompaniesQuery, useGetCompanySummaryQuery } from "@/redux/apis/companyApis";
 import type { CompanyStatus, EmployeeRange, Company } from "@/types/domain/company";
-import { Ban, Building2, CheckCircle2, Clock } from "lucide-react";
+import { Ban, Building2, CheckCircle2, Clock, Plus } from "lucide-react";
 import * as React from "react";
 import { companyColumns, type CompanyAction } from "./companies.columns";
 
@@ -42,6 +44,7 @@ export default function CompaniesPage() {
 
   const { data: summary, isLoading: isLoadingSummary } = useGetCompanySummaryQuery();
 
+  const [createOpen, setCreateOpen] = React.useState(false);
   const [reviewOpen, setReviewOpen] = React.useState(false);
   const [action, setAction] = React.useState<CompanyAction>("APPROVE");
   const [selected, setSelected] = React.useState<Company | null>(null);
@@ -94,7 +97,7 @@ export default function CompaniesPage() {
     <>
       <PageHeader
         title="Companies"
-        description="Every self-service registration. Approve one to unlock sign-in for its owner and mark the registration invoice paid."
+        description="Every registration, self-service or created here. Approving one unlocks sign-in for its owner and marks the registration invoice paid."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -123,6 +126,12 @@ export default function CompaniesPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
+        actions={
+          <Button className="cursor-pointer" onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            New company
+          </Button>
+        }
       />
 
       <DataTable
@@ -141,6 +150,8 @@ export default function CompaniesPage() {
           <CompanyMobileCard company={company} onAction={openReview} />
         )}
       />
+
+      <CompanyCreateModal open={createOpen} onOpenChange={setCreateOpen} />
 
       <CompanyReviewModal
         open={reviewOpen}

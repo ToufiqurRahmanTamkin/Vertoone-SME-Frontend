@@ -19,6 +19,7 @@ export const PlanSchema = z.object({
   trialDays: z.number().int().min(0).max(365, "Trial can be at most 365 days"),
   isActive: z.boolean(),
   autoRenewEnabled: z.boolean(),
+  isPrivate: z.boolean(),
 });
 
 export type PlanFormValues = z.infer<typeof PlanSchema>;

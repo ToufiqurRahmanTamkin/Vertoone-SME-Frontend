@@ -7,6 +7,7 @@ import type {
   CompanyReviewPayload,
   CompanySummary,
   CompanyWorkspace,
+  CreateCompanyByAdminPayload,
   RegisterCompanyPayload,
   RegisterCompanyResult,
 } from "@/types/domain/company";
@@ -28,10 +29,16 @@ const COMPANY_REVIEW_TAGS = [
   "Emails",
 ] as const;
 
+const COMPANY_CREATE_TAGS = [...COMPANY_REVIEW_TAGS, "Incomes", "Reports"] as const;
+
 const companyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     registerCompany: builder.mutation<RegisterCompanyResult, RegisterCompanyPayload>({
       query: (body) => ({ url: "/companies/register", method: "POST", body }),
+    }),
+    createCompany: builder.mutation<RegisterCompanyResult, CreateCompanyByAdminPayload>({
+      query: (body) => ({ url: "/companies", method: "POST", body }),
+      invalidatesTags: [...COMPANY_CREATE_TAGS],
     }),
     checkCompanyAvailability: builder.mutation<AvailabilityResult, AvailabilityQuery>({
       query: (body) => ({ url: "/companies/check-availability", method: "POST", body }),
@@ -80,6 +87,7 @@ const companyApi = baseApi.injectEndpoints({
 
 export const {
   useRegisterCompanyMutation,
+  useCreateCompanyMutation,
   useCheckCompanyAvailabilityMutation,
   useGetCompaniesQuery,
   useGetCompanySummaryQuery,

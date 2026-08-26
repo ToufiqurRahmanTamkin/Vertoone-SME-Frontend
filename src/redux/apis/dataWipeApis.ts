@@ -10,6 +10,10 @@ const dataWipeApi = baseApi.injectEndpoints({
     executeDataWipe: builder.mutation<DataWipeResult, DataWipePayload>({
       query: (body) => ({ url: "/data-wipe", method: "POST", body }),
       invalidatesTags: [...ALL_TAG_TYPES],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await queryFulfilled;
+        dispatch(baseApi.util.resetApiState());
+      },
     }),
   }),
 });
