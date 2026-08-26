@@ -57,12 +57,24 @@ const authApi = baseApi.injectEndpoints({
         dispatch(setUser(data));
       },
     }),
-    changePassword: builder.mutation<null, ChangePasswordInput>({
+    changePassword: builder.mutation<AuthTokens, ChangePasswordInput>({
       query: (body) => ({
         url: "/auth/change-password",
         method: "PATCH",
         body,
       }),
+      async onQueryStarted(_arg, { dispatch, getState, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        const currentUser = (getState() as unknown as { auth: { user: User | null } }).auth.user;
+        if (!currentUser) return;
+        dispatch(
+          setCredentials({
+            user: currentUser,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          })
+        );
+      },
     }),
     forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordInput>({
       query: (body) => ({
