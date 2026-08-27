@@ -176,6 +176,8 @@ export const ALL_TAG_TYPES = [
   "TeamMembers",
   "TeamSummary",
   "AllUsers",
+  "Tags",
+  "LeadSources",
 ] as const;
 
 
