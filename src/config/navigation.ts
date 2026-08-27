@@ -179,6 +179,13 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ["SUPER_ADMIN"],
   },
   {
+    title: "All Users",
+    path: "/all-users",
+    icon: "Users",
+    section: null,
+    roles: ["SUPER_ADMIN"],
+  },
+  {
     title: "Subscription Plans",
     path: "/subscription-plans",
     icon: "CreditCard",

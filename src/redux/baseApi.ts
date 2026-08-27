@@ -175,6 +175,7 @@ export const ALL_TAG_TYPES = [
   "ModuleCatalogue",
   "TeamMembers",
   "TeamSummary",
+  "AllUsers",
 ] as const;
 
 

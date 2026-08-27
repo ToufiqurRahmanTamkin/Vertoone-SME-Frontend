@@ -8,6 +8,7 @@ const Login = lazy(() => import("@/app/auth/login/LoginPage"));
 const Register = lazy(() => import("@/app/auth/register/RegisterPage"));
 const ForgotPassword = lazy(() => import("@/app/auth/forgot-password/ForgotPasswordPage"));
 const Companies = lazy(() => import("@/app/companies/CompaniesPage"));
+const AllUsers = lazy(() => import("@/app/allUsers/AllUsersPage"));
 const MyCompany = lazy(() => import("@/app/myCompany/MyCompanyPage"));
 const Dashboard = lazy(() => import("@/app/dashboard/page"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
@@ -46,6 +47,7 @@ export interface RouteConfig {
 const builtRoutes: RouteConfig[] = [
   { path: "dashboard", element: <Dashboard /> },
   { path: "companies", element: <Companies /> },
+  { path: "all-users", element: <AllUsers /> },
   { path: "my-company", element: <MyCompany /> },
   { path: "subscription-plans", element: <SubscriptionPlans /> },
   { path: "sold-subscriptions", element: <SoldSubscriptions /> },
