@@ -2,6 +2,7 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { MOBILE_FULL_SCREEN } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 function AlertDialog({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
@@ -52,7 +53,10 @@ function AlertDialogContent({
           // Never let the panel touch the viewport edges on a phone.
           "max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] rounded-lg [scrollbar-gutter:stable_both-edges]",
           "data-[size=sm]:sm:max-w-xs data-[size=default]:sm:max-w-lg",
-          className
+          className,
+          // See the note in dialog.tsx: the mobile lock is applied last so a
+          // caller's desktop sizing cannot shrink the phone layout.
+          MOBILE_FULL_SCREEN
         )}
         {...props}
       />
