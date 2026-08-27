@@ -149,7 +149,7 @@ export default function EmailsPage() {
           <button
             type="button"
             onClick={() => setPreviewId(email._id)}
-            className="w-full cursor-pointer rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent/40"
+            className="w-full cursor-pointer rounded-xl border bg-card p-4 text-left transition-colors hover:bg-accent/40"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

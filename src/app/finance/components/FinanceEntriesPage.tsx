@@ -254,7 +254,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
         mobileCard={(entry) => {
           const locked = isIncome && (entry as Income).sourceType !== "MANUAL";
           return (
-            <div className="rounded-lg border bg-card p-4">
+            <div className="rounded-xl border bg-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{entry.title}</p>

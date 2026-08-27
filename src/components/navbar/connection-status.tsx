@@ -1,3 +1,4 @@
+import { NAV_CHIP } from "@/components/navbar/navbar-styles";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRealtime } from "@/contexts/realtime-context";
 import { useOnlineStatus } from "@/hooks/use-pwa";
@@ -9,7 +10,12 @@ function OfflineBadge() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="flex h-9 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+        <span
+          className={cn(
+            NAV_CHIP,
+            "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+          )}
+        >
           <WifiOff className="size-3.5 shrink-0" />
           <span className="hidden sm:inline">Offline</span>
         </span>
@@ -27,8 +33,6 @@ export function ConnectionStatus() {
 
   if (!isOnline) return <OfflineBadge />;
 
-  // Realtime off for this deployment: the app polls instead, and there is
-  // nothing for the user to act on, so stay out of the way.
   if (status === "DISABLED") return null;
 
   const isReconnecting = status === "CONNECTING" || status === "DISCONNECTED";
@@ -38,7 +42,8 @@ export function ConnectionStatus() {
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "hidden h-9 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-semibold transition-colors md:flex",
+            NAV_CHIP,
+            "hidden transition-colors md:flex",
             isLive
               ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
               : "border-muted-foreground/30 bg-muted text-muted-foreground"

@@ -42,30 +42,32 @@ export default function ProfileDropdown() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        {/* Identity chip: avatar + name + email. The text collapses away below
-            `sm` so the navbar keeps its icon-only footprint on a phone. */}
         <button
           type="button"
           aria-label={`Account menu — ${user.name}, ${user.email}`}
-          className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-transparent p-1 transition-all hover:border-border hover:bg-accent focus:outline-none active:scale-95 xl:pr-2.5"
+          className="flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg px-0.5 transition-colors hover:bg-accent focus:outline-none xl:pr-2"
         >
-          <Avatar className="h-8 w-8 shrink-0">
+          <Avatar className="size-7 shrink-0 rounded-md">
             {user.avatarUrl ? (
-              <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+              <AvatarImage
+                src={user.avatarUrl}
+                alt={user.name}
+                className="rounded-md object-cover"
+              />
             ) : null}
-            <AvatarFallback className="bg-linear-to-br from-primary via-primary/80 to-primary/60 text-xs font-bold text-primary-foreground">
+            <AvatarFallback className="rounded-md bg-linear-to-br from-primary via-primary/80 to-primary/60 text-[11px] font-bold text-primary-foreground">
               {initials}
             </AvatarFallback>
           </Avatar>
           <span className="hidden min-w-0 flex-col items-start text-left leading-tight xl:flex">
-            <span className="max-w-[9rem] truncate text-xs font-semibold text-foreground">
+            <span className="max-w-[8.5rem] truncate text-[13px] font-semibold text-foreground">
               {user.name}
             </span>
-            <span className="max-w-[9rem] truncate text-[11px] text-muted-foreground">
+            <span className="max-w-[8.5rem] truncate text-[11px] text-muted-foreground">
               {user.email}
             </span>
           </span>
-          <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 opacity-50 xl:block" />
+          <ChevronsUpDown className="hidden size-3.5 shrink-0 opacity-50 xl:block" />
         </button>
       </DropdownMenuTrigger>
 

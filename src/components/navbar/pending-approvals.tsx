@@ -1,7 +1,8 @@
+import { NAV_CHIP } from "@/components/navbar/navbar-styles";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useGetCompanySummaryQuery } from "@/redux/apis/companyApis";
 import { selectCurrentUser } from "@/redux/authSlice";
-import { Clock3 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
@@ -19,17 +20,19 @@ export function PendingApprovals() {
       <TooltipTrigger asChild>
         <Link
           to="/companies?status=PENDING"
-          className="group flex h-9 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 text-[11px] font-semibold text-amber-600 transition-all hover:border-amber-500/60 hover:bg-amber-500/20 active:scale-95 dark:text-amber-400"
+          className={cn(
+            NAV_CHIP,
+            "border-amber-500/40 bg-amber-500/10 text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+          )}
         >
           <span className="relative flex size-2 shrink-0">
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-500 opacity-70" />
             <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
           </span>
-          <Clock3 className="size-3.5 shrink-0 xl:hidden" />
+          <span className="tabular-nums">{pending}</span>
           <span className="hidden xl:inline">
-            {pending} awaiting {pending === 1 ? "approval" : "approvals"}
+            awaiting {pending === 1 ? "approval" : "approvals"}
           </span>
-          <span className="xl:hidden">{pending}</span>
         </Link>
       </TooltipTrigger>
       <TooltipContent>

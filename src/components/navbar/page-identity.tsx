@@ -1,6 +1,6 @@
-import { ICON_MAP, findMenuItemByPath, getBreadcrumbTrail } from "@/config/navigation";
+import { findMenuItemByPath, getBreadcrumbTrail } from "@/config/navigation";
 import { cn } from "@/lib/utils";
-import { ChevronRight, LayoutGrid } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -17,45 +17,50 @@ export function PageIdentity({ className }: { className?: string }) {
     [location.pathname]
   );
 
-  const Icon = (lookup?.item.icon ? ICON_MAP[lookup.item.icon] : undefined) ?? LayoutGrid;
-  const title = trail.length > 0 ? trail[trail.length - 1].title : "Dashboard";
+  const current = trail.length > 0 ? trail[trail.length - 1].title : "Dashboard";
   const parents = trail.slice(0, -1);
   const section = lookup?.section;
 
   return (
-    <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
-      <span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary via-primary/90 to-primary/70 shadow-sm shadow-primary/30">
-        <Icon className="size-[1.05rem] text-primary-foreground" />
-      </span>
+    <nav
+      aria-label="Breadcrumb"
+      className={cn("flex min-w-0 items-center text-sm", className)}
+    >
+      <ol className="flex min-w-0 items-center gap-1.5">
+        {section && (
+          <li className="hidden shrink-0 items-center gap-1.5 lg:flex">
+            <span className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+              {section}
+            </span>
+            <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/40" />
+          </li>
+        )}
 
-      <div className="hidden min-w-0 flex-col justify-center sm:flex">
-        <nav aria-label="Breadcrumb" className="hidden min-w-0 md:block">
-          <ol className="flex min-w-0 items-center gap-1 text-[11px] leading-none text-muted-foreground">
-            {section && parents.length === 0 && (
-              <li className="truncate font-medium uppercase tracking-wide">{section}</li>
+        {parents.map((entry) => (
+          <li key={entry.path} className="hidden min-w-0 items-center gap-1.5 md:flex">
+            {entry.isLinkable ? (
+              <Link
+                to={entry.path}
+                className="truncate text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {entry.title}
+              </Link>
+            ) : (
+              <span className="truncate text-muted-foreground">{entry.title}</span>
             )}
-            {parents.map((entry) => (
-              <li key={entry.path} className="flex min-w-0 items-center gap-1">
-                {entry.isLinkable ? (
-                  <Link
-                    to={entry.path}
-                    className="truncate transition-colors hover:text-foreground"
-                  >
-                    {entry.title}
-                  </Link>
-                ) : (
-                  <span className="truncate">{entry.title}</span>
-                )}
-                <ChevronRight className="size-3 shrink-0 opacity-50" />
-              </li>
-            ))}
-          </ol>
-        </nav>
+            <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/40" />
+          </li>
+        ))}
 
-        <h1 className="truncate text-[0.95rem] font-semibold leading-tight tracking-tight">
-          {title}
-        </h1>
-      </div>
-    </div>
+        <li className="min-w-0">
+          <span
+            aria-current="page"
+            className="block truncate font-semibold tracking-tight text-foreground"
+          >
+            {current}
+          </span>
+        </li>
+      </ol>
+    </nav>
   );
 }

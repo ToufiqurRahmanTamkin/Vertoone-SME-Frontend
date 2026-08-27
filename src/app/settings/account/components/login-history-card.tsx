@@ -136,7 +136,7 @@ export function LoginHistoryCard() {
         mobileCard={(entry) => {
           const Icon = deviceIcon(entry.deviceType);
           return (
-            <div className="rounded-lg border bg-card p-4">
+            <div className="rounded-xl border bg-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-muted/50 text-muted-foreground">

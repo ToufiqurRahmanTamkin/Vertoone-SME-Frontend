@@ -6,9 +6,9 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { APP_NAME, APP_TAGLINE, BRAND_MARK } from "@/config/branding";
 import { getNavigation } from "@/config/navigation";
 import { usePermissions } from "@/hooks/use-permission";
-import { APP_NAME, APP_TAGLINE, BRAND_MARK } from "@/config/branding";
 import { selectCurrentUser } from "@/redux/authSlice";
 import * as React from "react";
 import { useSelector } from "react-redux";
@@ -23,23 +23,23 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="border-b border-sidebar-border px-2.5 h-(--header-height)">
+      <SidebarHeader className="h-(--header-height) justify-center gap-0 border-b border-sidebar-border p-0 px-2 group-data-[collapsible=icon]:px-1.5">
         <SidebarMenu>
           <SidebarMenuItem>
             <Link
               to="/dashboard"
-              className="group/brand flex items-center gap-3 rounded-xl px-1.5 transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1"
+              className="flex h-9 items-center gap-2.5 rounded-lg px-1.5 transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
               <img
                 src={BRAND_MARK}
                 alt={APP_NAME}
-                className="size-8 shrink-0 object-contain group-data-[collapsible=icon]:size-7"
+                className="size-7 shrink-0 object-contain group-data-[collapsible=icon]:size-6"
               />
               <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                <p className="truncate text-sm font-bold leading-tight text-sidebar-foreground">
+                <p className="truncate text-[13px] font-bold leading-none text-sidebar-foreground">
                   {APP_NAME}
                 </p>
-                <p className="truncate text-[11px] leading-tight text-sidebar-foreground/55">
+                <p className="mt-1 truncate text-[10px] leading-none text-sidebar-foreground/55">
                   {APP_TAGLINE}
                 </p>
               </div>

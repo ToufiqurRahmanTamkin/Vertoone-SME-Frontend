@@ -57,12 +57,12 @@ export function GlobalSearch() {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="group h-9 cursor-pointer justify-start gap-2 rounded-full border-border/60 bg-muted/40 px-3 text-muted-foreground shadow-sm transition-all hover:border-border hover:bg-muted hover:text-foreground hover:shadow active:scale-[0.98] lg:w-52 xl:w-64"
+        className="group h-8 cursor-pointer justify-start gap-2 rounded-lg border-border/70 bg-muted/40 px-2.5 text-muted-foreground shadow-none transition-colors hover:bg-muted hover:text-foreground lg:w-56 xl:w-64"
         aria-label="Search pages"
       >
-        <Search className="size-4 shrink-0 transition-transform group-hover:scale-110" />
-        <span className="hidden truncate text-sm font-normal lg:inline">Search pages...</span>
-        <CommandShortcut className="ml-auto hidden rounded-md border bg-background px-1.5 py-0.5 text-[10px] font-medium tracking-wide transition-colors group-hover:border-primary/30 group-hover:text-foreground lg:inline-block">
+        <Search className="size-[1.05rem] shrink-0" />
+        <span className="hidden truncate text-[13px] font-normal lg:inline">Search</span>
+        <CommandShortcut className="ml-auto hidden rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium tracking-wide lg:inline-block">
           Ctrl K
         </CommandShortcut>
       </Button>

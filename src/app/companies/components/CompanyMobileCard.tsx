@@ -24,7 +24,7 @@ export function CompanyMobileCard({ company, onAction }: CompanyMobileCardProps)
   const paymentStatus = subscription?.paymentStatus as PaymentStatus | undefined;
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-semibold">{company.name}</p>

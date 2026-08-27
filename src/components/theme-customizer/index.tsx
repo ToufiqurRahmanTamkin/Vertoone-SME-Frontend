@@ -174,7 +174,7 @@ export function ThemeCustomizerTrigger({
       className={className}
       aria-label="Customize theme"
     >
-      <Settings className="h-5 w-5" />
+      <Settings className="size-[1.05rem]" />
     </Button>
   );
 }

@@ -63,7 +63,7 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {/* Desktop / tablet table view */}
       <div className={mobileCard ? "hidden md:block" : undefined}>
-        <div className="rounded-md border overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border">
           <table data-slot="table" className="w-full caption-bottom text-sm">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -136,7 +136,7 @@ export function DataTable<TData, TValue>({
         <div className="md:hidden space-y-3">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="rounded-lg border p-4 space-y-2">
+              <div key={i} className="space-y-2 rounded-xl border p-4">
                 <Skeleton className="h-5 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
                 <Skeleton className="h-4 w-2/3" />
@@ -146,7 +146,7 @@ export function DataTable<TData, TValue>({
           ) : data.length > 0 ? (
             data.map((row, i) => <div key={i}>{mobileCard(row)}</div>)
           ) : (
-            <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
+            <div className="rounded-xl border p-8 text-center text-sm text-muted-foreground">
               No results.
             </div>
           )}

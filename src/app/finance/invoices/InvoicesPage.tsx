@@ -187,7 +187,7 @@ export default function InvoicesPage() {
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
         mobileCard={(invoice) => (
-          <div className="rounded-lg border bg-card p-4">
+          <div className="rounded-xl border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-mono text-xs font-semibold">{invoice.invoiceNumber}</p>

@@ -58,7 +58,6 @@ export default function ReportsPage() {
       onFilterChange={setFilter}
       onReset={clearFilters}
       isFetching={isFetching}
-      showBackButton={false}
       showGroupBy={false}
       periodLabel={describePeriod(data?.period.from, data?.period.to)}
     >
@@ -66,7 +65,7 @@ export default function ReportsPage() {
         {(isLoading ? Array.from({ length: 6 }) : cards).map((entry, index) => {
           const card = entry as ReportSummaryCard | undefined;
           return (
-            <div key={card?.key ?? index} className="rounded-lg border bg-card p-4 shadow-sm">
+            <div key={card?.key ?? index} className="rounded-xl border bg-card p-4 shadow-sm">
               <p className="text-sm font-medium text-muted-foreground">
                 {card?.label ?? <Skeleton className="h-4 w-24" />}
               </p>

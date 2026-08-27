@@ -1,3 +1,4 @@
+import { NAV_ICON_BUTTON } from "@/components/navbar/navbar-styles";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,9 +32,6 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-// With a live socket the count is pushed, so polling only needs to cover the
-// gap while the connection is down (or on a serverless deployment where there
-// is no socket at all).
 const UNREAD_POLL_INTERVAL_MS = 60_000;
 const UNREAD_POLL_INTERVAL_LIVE_MS = 300_000;
 const PANEL_LIMIT = 12;
@@ -165,10 +163,10 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative size-9 cursor-pointer rounded-full"
+          className={cn(NAV_ICON_BUTTON, "relative")}
           aria-label={unread > 0 ? `Notifications — ${unread} unread` : "Notifications"}
         >
-          <Bell className="size-[1.15rem]" />
+          <Bell className="size-[1.05rem]" />
           {unread > 0 && (
             <>
               <span className="absolute right-1 top-1 flex size-2 animate-ping rounded-full bg-primary/60" />

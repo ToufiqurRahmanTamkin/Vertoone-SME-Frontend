@@ -18,7 +18,6 @@ export function ModeToggle({ variant = "outline", className }: ModeToggleProps) 
   const { theme } = useTheme();
   const { toggleTheme } = useCircularTransition();
 
-  // Simple, reliable dark mode detection with re-sync
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   React.useEffect(() => {
@@ -34,7 +33,6 @@ export function ModeToggle({ variant = "outline", className }: ModeToggleProps) 
 
     updateMode();
 
-    // Listen for system theme changes
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     mediaQuery.addEventListener("change", updateMode);
 
@@ -52,11 +50,10 @@ export function ModeToggle({ variant = "outline", className }: ModeToggleProps) 
       onClick={handleToggle}
       className={cn("cursor-pointer mode-toggle-button relative overflow-hidden", className)}
     >
-      {/* Show the icon for the mode you can switch TO */}
       {isDarkMode ? (
-        <Sun className="h-[1.2rem] w-[1.2rem] transition-transform duration-300 rotate-0 scale-100" />
+        <Sun className="size-[1.05rem] rotate-0 scale-100 transition-transform duration-300" />
       ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem] transition-transform duration-300 rotate-0 scale-100" />
+        <Moon className="size-[1.05rem] rotate-0 scale-100 transition-transform duration-300" />
       )}
       <span className="sr-only">Switch to {isDarkMode ? "light" : "dark"} mode</span>
     </Button>

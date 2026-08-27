@@ -27,7 +27,6 @@ interface ReportLayoutProps {
   onReset: () => void;
   onExport?: () => void;
   isFetching?: boolean;
-  showBackButton?: boolean;
   showGroupBy?: boolean;
   periodLabel?: string;
   children: React.ReactNode;
@@ -41,7 +40,6 @@ export function ReportLayout({
   onReset,
   onExport,
   isFetching = false,
-  showBackButton = true,
   showGroupBy = true,
   periodLabel,
   children,
@@ -57,7 +55,6 @@ export function ReportLayout({
       <PageHeader
         title={title}
         description={description}
-        showBackButton={showBackButton}
         actions={
           onExport && (
             <Button
@@ -77,7 +74,7 @@ export function ReportLayout({
         }
       />
 
-      <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="flex flex-col gap-3 rounded-xl border bg-card p-3 sm:flex-row sm:flex-wrap sm:items-center">
         <DateRangePicker
           value={{ from: range.from, to: range.to }}
           onValueChange={(next) => {

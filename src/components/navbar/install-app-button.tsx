@@ -1,6 +1,8 @@
+import { NAV_ICON_BUTTON } from "@/components/navbar/navbar-styles";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePwaInstall } from "@/hooks/use-pwa";
+import { cn } from "@/lib/utils";
 import { Download, Share } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,10 +39,10 @@ export function InstallAppButton() {
           variant="ghost"
           size="icon"
           onClick={handleClick}
-          className="size-9 cursor-pointer rounded-full text-primary hover:text-primary"
+          className={cn(NAV_ICON_BUTTON, "text-primary hover:text-primary")}
           aria-label={label}
         >
-          <Icon className="size-[1.15rem]" />
+          <Icon className="size-[1.05rem]" />
         </Button>
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>

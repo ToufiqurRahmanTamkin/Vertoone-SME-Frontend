@@ -124,7 +124,7 @@ export default function FinanceCategoriesPage() {
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
         mobileCard={(category) => (
-          <div className="rounded-lg border bg-card p-4">
+          <div className="rounded-xl border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-semibold">{category.name}</p>
