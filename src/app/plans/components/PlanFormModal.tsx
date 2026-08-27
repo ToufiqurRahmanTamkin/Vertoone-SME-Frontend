@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
 import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
@@ -25,9 +25,9 @@ import {
 } from "@/types/domain/plan";
 import { parseFeatures, PlanSchema, toLimit, type PlanFormValues } from "@/validations/plan";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 interface PlanFormModalProps {
@@ -41,6 +41,29 @@ interface PlanFormModalProps {
 const BILLING_CYCLE_OPTIONS = toOptions(BILLING_CYCLE_LABELS);
 
 const CURRENCY_OPTIONS = SUPPORTED_CURRENCIES.map((code) => ({ label: code, value: code }));
+
+const STEPS: readonly StepperStep[] = [
+  { id: "details", label: "Plan details" },
+  { id: "modules", label: "Modules & limits" },
+  { id: "availability", label: "Availability" },
+];
+
+/**
+ * Fields each step owns. Advancing validates only these, so a half-filled later
+ * step never blocks the one in front of the user.
+ */
+const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
+  ["name", "billingCycle", "price", "currency", "trialDays", "description", "features"],
+  ["limitUsers"],
+  ["isActive", "autoRenewEnabled", "isPrivate"],
+];
+
+const LAST_STEP = STEPS.length - 1;
+
+const stepOf = (field: string): number => {
+  const index = STEP_FIELDS.findIndex((fields) => fields.includes(field as keyof PlanFormValues));
+  return index === -1 ? 0 : index;
+};
 
 const resolveCurrency = (value: string | undefined): SupportedCurrency =>
   SUPPORTED_CURRENCIES.includes(value as SupportedCurrency)
@@ -93,6 +116,8 @@ export function PlanFormModal({
   );
 
   const [modulePermissions, setModulePermissions] = React.useState<ModulePermissionMap>({});
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
 
   const form = useForm<PlanFormValues>({
     resolver: zodResolver(PlanSchema),
@@ -106,15 +131,30 @@ export function PlanFormModal({
     form.reset(plan ? toFormValues(plan) : emptyValues(defaultCurrency));
   }, [open, plan, defaultCurrency, form]);
 
-  // The matrix is plain state rather than a form field, so it is re-seeded
-  // during render — the sanctioned way to reset state when props change.
+  // The matrix and the step cursor are plain state rather than form fields, so
+  // they are re-seeded during render — the sanctioned way to reset state when
+  // props change.
   const [seededFor, setSeededFor] = React.useState<string | null>(null);
   const seedKey = open ? (plan?._id ?? "new") : null;
 
   if (seedKey !== seededFor) {
     setSeededFor(seedKey);
     setModulePermissions(seedKey === null ? {} : (plan?.modulePermissions ?? {}));
+    setStep(0);
+    // An existing plan is already complete, so every step is reachable at once.
+    setFurthestStep(seedKey !== null && plan ? LAST_STEP : 0);
   }
+
+  const goToStep = (next: number) => {
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
+
+  const goNext = async () => {
+    const isValid = await form.trigger(STEP_FIELDS[step], { shouldFocus: true });
+    if (!isValid) return;
+    goToStep(Math.min(step + 1, LAST_STEP));
+  };
 
   const onSubmit = async (values: PlanFormValues) => {
     const payload = {
@@ -147,6 +187,29 @@ export function PlanFormModal({
     }
   };
 
+  // A field that failed on an earlier step would otherwise fail silently, so
+  // the stepper jumps back to the first step that still has an error.
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const firstStep = Object.keys(errors).map(stepOf).sort((a, b) => a - b)[0];
+    if (firstStep !== undefined) setStep(firstStep);
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step < LAST_STEP) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
+  const selectedModuleCount = React.useMemo(
+    () => Object.values(modulePermissions).filter((permission) => permission.canView).length,
+    [modulePermissions]
+  );
+
+  const summary = useWatch({ control: form.control });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
@@ -160,22 +223,20 @@ export function PlanFormModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form className="flex min-h-0 flex-1 flex-col" onSubmit={form.handleSubmit(onSubmit)}>
-            {/* Compact layout: a 6-column grid lets the short numeric fields
-                share rows instead of each taking a full one, which keeps the
-                whole plan form on screen without scrolling on a laptop. */}
-            <DialogBody>
-              <Tabs defaultValue="details">
-                <TabsList className="mb-3">
-                  <TabsTrigger value="details" className="cursor-pointer">
-                    Details
-                  </TabsTrigger>
-                  <TabsTrigger value="modules" className="cursor-pointer">
-                    Modules &amp; limits
-                  </TabsTrigger>
-                </TabsList>
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleFormSubmit}>
+            <DialogBody className="space-y-4">
+              <Stepper
+                steps={STEPS}
+                current={step}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
 
-                <TabsContent value="details" className="grid grid-cols-6 gap-x-3 gap-y-3">
+              {/* Compact layout: a 6-column grid lets the short numeric fields
+                  share rows instead of each taking a full one, which keeps the
+                  step on screen without scrolling on a laptop. */}
+              {step === 0 && (
+                <div className="grid grid-cols-6 gap-x-3 gap-y-3">
                   <FormInput
                     control={form.control}
                     name="name"
@@ -233,7 +294,11 @@ export function PlanFormModal({
                     rows={3}
                     className="col-span-6 sm:col-span-3 [&_textarea]:min-h-0"
                   />
+                </div>
+              )}
 
+              {step === 1 && (
+                <div className="space-y-3">
                   <FormInput
                     control={form.control}
                     name="limitUsers"
@@ -241,10 +306,26 @@ export function PlanFormModal({
                     type="number"
                     placeholder="Unlimited"
                     description="Leave blank for unlimited."
-                    className="col-span-6 sm:col-span-2"
+                    className="sm:max-w-56"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Tick the menus this plan unlocks and set an optional record cap for each. Leave
+                    a cap blank for unlimited. A company that already bought this plan keeps its
+                    current terms until the next renewal invoice is paid.
+                  </p>
+                  <ModulePermissionMatrix
+                    modules={companyModules}
+                    value={modulePermissions}
+                    onChange={setModulePermissions}
+                    showLimits
+                    emptyMessage="The module catalogue could not be loaded."
+                  />
+                </div>
+              )}
 
-                  <div className="col-span-6 grid gap-3 sm:grid-cols-2">
+              {step === 2 && (
+                <div className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <FormSwitch
                       control={form.control}
                       name="isActive"
@@ -264,38 +345,66 @@ export function PlanFormModal({
                       description="Hidden from public signup — you assign it to a company yourself"
                     />
                   </div>
-                </TabsContent>
 
-                <TabsContent value="modules" className="space-y-3">
-                  <p className="text-xs text-muted-foreground">
-                    Tick the menus this plan unlocks and set an optional record cap for each. Leave
-                    a cap blank for unlimited. A company that already bought this plan keeps its
-                    current terms until the next renewal invoice is paid.
-                  </p>
-                  <ModulePermissionMatrix
-                    modules={companyModules}
-                    value={modulePermissions}
-                    onChange={setModulePermissions}
-                    showLimits
-                    emptyMessage="The module catalogue could not be loaded."
-                  />
-                </TabsContent>
-              </Tabs>
+                  <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Plan</dt>
+                      <dd className="truncate font-medium">{summary.name || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Price</dt>
+                      <dd className="font-medium">
+                        {summary.price ?? 0} {summary.currency} /{" "}
+                        {summary.billingCycle ? BILLING_CYCLE_LABELS[summary.billingCycle] : "—"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Trial</dt>
+                      <dd className="font-medium">
+                        {summary.trialDays ? `${summary.trialDays} days` : "None"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Menus</dt>
+                      <dd className="font-medium">{selectedModuleCount} enabled</dd>
+                    </div>
+                  </dl>
+                </div>
+              )}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Create plan"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}
+                  disabled={isSaving}
+                >
+                  {step === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {step < LAST_STEP ? (
+                  <Button type="button" onClick={() => void goNext()}>
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? "Save changes" : "Create plan"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>
