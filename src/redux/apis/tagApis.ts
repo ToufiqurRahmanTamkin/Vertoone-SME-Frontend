@@ -3,6 +3,8 @@ import type {
   CreateTagPayload,
   Tag,
   TagListQuery,
+  TagOptionQuery,
+  TagRef,
   TagSummary,
   UpdateTagPayload,
 } from "@/types/domain/tag";
@@ -14,7 +16,7 @@ interface TagListResult {
   meta: Pagination;
 }
 
-const TAG_TAGS = ["Tags", "TagSummary"] as const;
+const TAG_TAGS = ["Tags", "TagSummary", "TagOptions"] as const;
 
 const tagApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -24,6 +26,13 @@ const tagApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["Tags"],
+    }),
+    getTagOptions: builder.query<TagRef[], TagOptionQuery | void>({
+      query: (params) => ({
+        url: `/tags/options${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["TagOptions"],
     }),
     getTagSummary: builder.query<TagSummary, void>({
       query: () => ({ url: "/crm/tags/summary", method: "GET" }),
@@ -50,6 +59,7 @@ const tagApi = baseApi.injectEndpoints({
 
 export const {
   useGetTagsQuery,
+  useGetTagOptionsQuery,
   useGetTagSummaryQuery,
   useGetTagQuery,
   useCreateTagMutation,

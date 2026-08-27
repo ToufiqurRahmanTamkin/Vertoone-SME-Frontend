@@ -5,7 +5,11 @@ import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { useDeletePlanMutation, useGetPlansQuery } from "@/redux/apis/planApis";
+import {
+  useDeletePlanMutation,
+  useGetPlansQuery,
+  useUpdatePlanMutation,
+} from "@/redux/apis/planApis";
 import { useGetSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { BillingCycle, SubscriptionPlan } from "@/types/domain/plan";
@@ -50,6 +54,8 @@ export default function PlansPage() {
   const [editing, setEditing] = React.useState<SubscriptionPlan | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<SubscriptionPlan | null>(null);
   const [deletePlan, { isLoading: isDeleting }] = useDeletePlanMutation();
+  const [updatePlan] = useUpdatePlanMutation();
+  const [togglingPlanId, setTogglingPlanId] = React.useState<string | null>(null);
 
   const openCreate = () => {
     setEditing(null);
@@ -74,9 +80,33 @@ export default function PlansPage() {
     }
   };
 
+  const toggleAutoRenew = React.useCallback(
+    async (plan: SubscriptionPlan, enabled: boolean) => {
+      setTogglingPlanId(plan._id);
+      try {
+        await updatePlan({ id: plan._id, body: { autoRenewEnabled: enabled } }).unwrap();
+        toast.success(
+          enabled ? `Auto renew turned on for ${plan.name}` : `Auto renew turned off for ${plan.name}`
+        );
+      } catch (error: unknown) {
+        const err = error as ApiErrorResponse;
+        toast.error(err?.data?.message || "Could not change auto renew");
+      } finally {
+        setTogglingPlanId(null);
+      }
+    },
+    [updatePlan]
+  );
+
   const columns = React.useMemo(
-    () => planColumns({ onEdit: openEdit, onDelete: setPendingDelete }),
-    []
+    () =>
+      planColumns({
+        onEdit: openEdit,
+        onDelete: setPendingDelete,
+        onToggleAutoRenew: toggleAutoRenew,
+        togglingPlanId,
+      }),
+    [toggleAutoRenew, togglingPlanId]
   );
 
   const plans = data?.data ?? [];
@@ -114,7 +144,13 @@ export default function PlansPage() {
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
         mobileCard={(plan) => (
-          <PlanMobileCard plan={plan} onEdit={openEdit} onDelete={setPendingDelete} />
+          <PlanMobileCard
+            plan={plan}
+            onEdit={openEdit}
+            onDelete={setPendingDelete}
+            onToggleAutoRenew={toggleAutoRenew}
+            isToggling={togglingPlanId === plan._id}
+          />
         )}
       />
 

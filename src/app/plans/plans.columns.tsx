@@ -1,6 +1,7 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
@@ -10,9 +11,16 @@ import { Lock, Pencil, RefreshCcw, Trash2 } from "lucide-react";
 interface PlanColumnActions {
   onEdit: (plan: SubscriptionPlan) => void;
   onDelete: (plan: SubscriptionPlan) => void;
+  onToggleAutoRenew: (plan: SubscriptionPlan, enabled: boolean) => void;
+  togglingPlanId?: string | null;
 }
 
-export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<SubscriptionPlan>[] => [
+export const planColumns = ({
+  onEdit,
+  onDelete,
+  onToggleAutoRenew,
+  togglingPlanId,
+}: PlanColumnActions): ColumnDef<SubscriptionPlan>[] => [
   {
     accessorKey: "name",
     header: "Plan",
@@ -93,12 +101,23 @@ export const planColumns = ({ onEdit, onDelete }: PlanColumnActions): ColumnDef<
   {
     accessorKey: "autoRenewEnabled",
     header: "Auto renew",
-    cell: ({ row }) =>
-      row.original.autoRenewEnabled ? (
-        <StatusBadge color="violet" label="Enabled" />
-      ) : (
-        <StatusBadge color="zinc" label="Off" />
-      ),
+    cell: ({ row }) => {
+      const plan = row.original;
+      return (
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={plan.autoRenewEnabled}
+            disabled={togglingPlanId === plan._id}
+            onCheckedChange={(checked) => onToggleAutoRenew(plan, checked)}
+            aria-label={`Auto renew for ${plan.name}`}
+            className="cursor-pointer"
+          />
+          <span className="text-xs text-muted-foreground">
+            {plan.autoRenewEnabled ? "Enabled" : "Off"}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "trialDays",
