@@ -2,23 +2,14 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
 export interface StepperStep {
-  /** Stable identifier, also used as the React key. */
   id: string;
   label: string;
 }
 
 interface StepperProps {
   steps: readonly StepperStep[];
-  /** Zero-based index of the step being filled in. */
   current: number;
-  /**
-   * Called when a reachable marker is clicked. Omit to render a read-only rail.
-   */
   onStepSelect?: (index: number) => void;
-  /**
-   * Highest index the user has already reached. Steps beyond it stay
-   * unclickable so a form is never skipped past its own validation.
-   */
   reachable?: number;
   className?: string;
 }

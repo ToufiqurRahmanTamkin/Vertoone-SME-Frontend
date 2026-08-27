@@ -9,7 +9,6 @@ export interface ModulePermission {
   canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;
-  /** null means unlimited. */
   limit: number | null;
 }
 
@@ -22,7 +21,6 @@ export interface ModuleDefinition {
   group: string;
   scope: ModuleScope;
   supportsLimit: boolean;
-  /** Reserved for the company owner; never delegable to an employee. */
   ownerOnly: boolean;
 }
 
@@ -39,10 +37,6 @@ export const ACTION_LABELS: Record<ModuleAction, string> = {
   canDelete: "Delete",
 };
 
-/**
- * Mirrors the backend's `moduleKeyFromPath`. Both sides derive the key from the
- * menu path, so a screen never needs a hand-written identifier.
- */
 export const moduleKeyFromPath = (path: string): string =>
   path.replace(/^\/+/, "").replace(/[/-]/g, "_").toUpperCase();
 

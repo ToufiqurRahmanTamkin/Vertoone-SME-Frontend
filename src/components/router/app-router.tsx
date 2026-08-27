@@ -17,8 +17,6 @@ function renderRoutes(routeConfigs: RouteConfig[]) {
       element={
         <Suspense
           fallback={
-            // Fill the layout's content area so the spinner centres vertically
-            // instead of sitting in the top 200px of the page.
             <div className="flex min-h-[70vh] flex-1 items-center justify-center">
               <LoadingSpinner />
             </div>
@@ -40,7 +38,6 @@ export function AppRouter() {
     (state: RootState) => state.settings
   );
 
-  // Initialize and persist theme styles on app load/state change
   useEffect(() => {
     if (selectedTheme) {
       applyTheme(selectedTheme, isDarkMode);

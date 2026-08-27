@@ -1,4 +1,4 @@
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 import {
   FLUSH,
   PAUSE,
@@ -10,7 +10,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import authReducer from "./authSlice";
+import authReducer, { logOut, setCredentials } from "./authSlice";
 import { baseApi } from "./baseApi";
 import settingsReducer from "./settingsSlice";
 
@@ -28,6 +28,26 @@ const rootReducer = combineReducers({
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
 
+const sessionListener = createListenerMiddleware();
+
+sessionListener.startListening({
+  actionCreator: logOut,
+  effect: (_action, listenerApi) => {
+    listenerApi.dispatch(baseApi.util.resetApiState());
+  },
+});
+
+sessionListener.startListening({
+  actionCreator: setCredentials,
+  effect: (action, listenerApi) => {
+    const previous = (listenerApi.getOriginalState() as { auth: { user: { _id: string } | null } })
+      .auth.user;
+    if (previous && previous._id !== action.payload.user._id) {
+      listenerApi.dispatch(baseApi.util.resetApiState());
+    }
+  },
+});
+
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -35,7 +55,9 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(baseApi.middleware),
+    })
+      .prepend(sessionListener.middleware)
+      .concat(baseApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -4,12 +4,6 @@ import { selectCurrentToken, selectCurrentUser } from "@/redux/authSlice";
 import * as React from "react";
 import { useSelector } from "react-redux";
 
-/**
- * Holds the signed-in account's effective menu permissions. The query is tagged
- * `Permissions`, so a socket push from the backend — an owner revoking a menu,
- * or a renewal changing what the plan grants — refetches it and every guard
- * downstream re-renders without a page reload.
- */
 export function PermissionProvider({ children }: { children: React.ReactNode }) {
   const token = useSelector(selectCurrentToken);
   const user = useSelector(selectCurrentUser);

@@ -24,7 +24,6 @@ import { toast } from "sonner";
 interface GuideFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   guide?: UserGuide | null;
 }
 
@@ -81,8 +80,6 @@ export function GuideFormModal({ open, onOpenChange, guide }: GuideFormModalProp
       tags: parseTags(values.tags),
       sortOrder: values.sortOrder,
       isPublished: values.isPublished,
-      // An empty slug is omitted so the server derives it from the title and
-      // guarantees uniqueness; sending "" would fail its regex.
       ...(values.slug ? { slug: values.slug } : {}),
     };
 

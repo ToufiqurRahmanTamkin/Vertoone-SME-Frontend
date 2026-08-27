@@ -31,7 +31,6 @@ import { toast } from "sonner";
 interface TeamMemberFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   member?: TeamMember | null;
 }
 
@@ -66,8 +65,6 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
 
   const { data: catalogue = [] } = useGetModuleCatalogueQuery();
 
-  // Only menus the company itself can reach are worth offering; the rest would
-  // be silently dropped by the backend anyway.
   const assignableModules = React.useMemo(
     () =>
       catalogue.filter(
@@ -91,8 +88,6 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
     form.reset(member ? toFormValues(member) : emptyValues());
   }, [open, member, form]);
 
-  // The matrix is plain state rather than a form field, so it is re-seeded
-  // during render — the sanctioned way to reset state when props change.
   const [seededFor, setSeededFor] = React.useState<string | null>(null);
   const seedKey = open ? (member?._id ?? "new") : null;
 

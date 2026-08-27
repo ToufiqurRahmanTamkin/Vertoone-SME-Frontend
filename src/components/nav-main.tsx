@@ -19,23 +19,16 @@ import {
 import type { NavItem } from "@/config/navigation";
 import { useEffect, useState } from "react";
 
-// ─── Item styling ─────────────────────────────────────────────────────────────
-// Top-level rows. Inactive rows read clearly (no washed-out icons); hover gives
-// a full accent surface; the active row is a high-contrast gradient pill with a
-// glowing left bar so the current page is unmistakable.
 const MENU_BUTTON_CLASS = cn(
   "group/btn relative h-9 gap-3 cursor-pointer rounded-lg font-medium transition-all duration-150",
   "text-sidebar-foreground/80 [&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
   "hover:bg-sidebar-accent hover:text-sidebar-foreground hover:[&>svg]:text-sidebar-foreground",
-  // Active — gradient pill, primary text/icon, semibold, soft ring + glowing bar.
   "data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:to-primary/5",
   "data-[active=true]:text-primary data-[active=true]:font-semibold data-[active=true]:[&>svg]:text-primary",
   "data-[active=true]:ring-1 data-[active=true]:ring-inset data-[active=true]:ring-primary/20",
   "data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:h-5 data-[active=true]:before:w-1 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:rounded-r-full data-[active=true]:before:bg-primary data-[active=true]:before:shadow-[0_0_8px_0] data-[active=true]:before:shadow-primary/50"
 );
 
-// Sub-items sit on the vertical guide; active fills the guide segment and tints
-// the row to match the parent's accent.
 const SUB_BUTTON_CLASS = cn(
   "relative h-8 cursor-pointer rounded-md font-medium text-sidebar-foreground/70 transition-colors duration-150",
   "hover:bg-sidebar-accent hover:text-sidebar-foreground",
@@ -50,7 +43,6 @@ export function NavMain({
 }: {
   label: string;
   items: NavItem[];
-  /** Overrides the route used for active-state matching (used by the preview harness). */
   activePath?: string;
 }) {
   const location = useLocation();
@@ -94,11 +86,6 @@ export function NavMain({
       )}
       <SidebarMenu className="gap-1">
         {items.map((item) => {
-          // Leaf items (no sub-menu) render as a plain menu item. Previously
-          // EVERY item — leaves included — was wrapped in a Radix Collapsible,
-          // so opening the mobile drawer instantiated dozens of unused
-          // collapsible trees in one synchronous burst. That mount cost was the
-          // measured cause of the laggy open; leaves don't need a collapsible.
           if (!item.items?.length) {
             return (
               <SidebarMenuItem key={item.title}>

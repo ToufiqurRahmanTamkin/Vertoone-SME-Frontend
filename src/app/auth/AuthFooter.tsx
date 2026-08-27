@@ -1,10 +1,6 @@
 import { COMPANY_NAME, COMPANY_URL, COMPANY_WORDMARK } from "@/config/branding";
 import { motion } from "motion/react";
 
-/**
- * Footer strip shared by the auth screens: a hairline divider, the Vertoone
- * brand mark linking to the marketing site, and a copyright line.
- */
 export function AuthFooter() {
   const year = new Date().getFullYear();
 

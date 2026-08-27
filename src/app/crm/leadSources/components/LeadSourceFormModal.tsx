@@ -23,7 +23,6 @@ import { toast } from "sonner";
 interface LeadSourceFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   source?: LeadSource | null;
 }
 

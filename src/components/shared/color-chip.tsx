@@ -6,11 +6,6 @@ interface ColorChipProps {
   className?: string;
 }
 
-/**
- * A label rendered in its own author-chosen colour. The colour is user data
- * rather than a theme token, so the tint and border are derived from it inline
- * and the text keeps the theme's foreground for legibility either way.
- */
 export function ColorChip({ color, label, className }: ColorChipProps) {
   return (
     <span

@@ -28,10 +28,6 @@ function PopoverContent({
         sideOffset={sideOffset}
         onOpenAutoFocus={(event) => {
           onOpenAutoFocus?.(event);
-          // On touch devices Radix's focus-on-open would land on any search
-          // input inside (searchable selects) and pop the on-screen keyboard.
-          // Keep focus on the trigger there; desktop keeps the default
-          // auto-focus so users can type immediately.
           if (!event.defaultPrevented && window.matchMedia("(pointer: coarse)").matches) {
             event.preventDefault();
           }

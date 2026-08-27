@@ -26,11 +26,6 @@ export type BillingOrigin = (typeof BILLING_ORIGINS)[number];
 export const PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED", "REFUNDED"] as const;
 export type PaymentReviewAction = (typeof PAYMENT_REVIEW_ACTIONS)[number];
 
-/**
- * List/detail responses populate `planId`; the create response returns the raw
- * id. Callers should read `planName`, which is denormalised on the record and
- * always present.
- */
 export type SoldSubscriptionPlanRef =
   | string
   | {
@@ -115,10 +110,6 @@ export interface SoldSubscriptionCreatePayload {
   notes?: string;
 }
 
-/**
- * The server strips `planId`, `planName` and `invoiceNumber` from an update, so
- * they are omitted here rather than being silently dropped.
- */
 export type SoldSubscriptionUpdatePayload = Omit<SoldSubscriptionCreatePayload, "planId">;
 
 export interface PaymentReviewPayload {

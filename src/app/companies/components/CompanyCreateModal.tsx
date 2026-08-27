@@ -45,10 +45,6 @@ const STEPS: readonly StepperStep[] = [
   { id: "plan", label: "Plan & payment" },
 ];
 
-/**
- * Fields each step owns. Advancing validates only these, so a later step that
- * has not been filled in yet never blocks the one in front of the user.
- */
 const STEP_FIELDS: readonly (keyof CreateCompanyFormValues)[][] = [
   ["companyName", "employeeRange", "companyEmail", "companyPhone", "companyAddress"],
   ["adminName", "adminEmail", "adminPhone", "adminPassword"],
@@ -97,8 +93,6 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
     if (open) form.reset(emptyValues);
   }, [open, form]);
 
-  // The step cursor is plain state rather than a form field, so it is re-seeded
-  // during render — the sanctioned way to reset state when props change.
   const [seededFor, setSeededFor] = React.useState(false);
 
   if (seededFor !== open) {
@@ -164,8 +158,6 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
     }
   };
 
-  // A field that failed on an earlier step would otherwise fail silently, so
-  // the stepper jumps back to the first step that still has an error.
   const onInvalid = (errors: Record<string, unknown>) => {
     const firstStep = Object.keys(errors)
       .map(stepOf)
@@ -357,12 +349,22 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                   )}
                 </Button>
                 {step < LAST_STEP ? (
-                  <Button type="button" className="cursor-pointer" onClick={() => void goNext()}>
+                  <Button
+                    key="wizard-next"
+                    type="button"
+                    className="cursor-pointer"
+                    onClick={() => void goNext()}
+                  >
                     Next
                     <ArrowRight className="ml-2 size-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" className="cursor-pointer" disabled={isLoading}>
+                  <Button
+                    key="wizard-submit"
+                    type="submit"
+                    className="cursor-pointer"
+                    disabled={isLoading}
+                  >
                     {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
                     Create company
                   </Button>

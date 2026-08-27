@@ -77,9 +77,6 @@ const builtRoutes: RouteConfig[] = [
   { path: "settings/account", element: <AccountSettings /> },
 ];
 
-// Menu entries whose screen has not been built yet still need a route, or the
-// sidebar link would fall through to Not Found. They render the placeholder
-// until the real page replaces them in `builtRoutes`.
 const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
   .map((path) => path.replace(/^\//, ""))
   .filter((path) => path && !builtRoutes.some((route) => route.path === path))

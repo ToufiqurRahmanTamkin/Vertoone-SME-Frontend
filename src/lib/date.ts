@@ -2,12 +2,6 @@ import { format, formatDistanceToNow } from "date-fns";
 
 type DateInput = string | Date | number | null | undefined;
 
-// ─── Canonical display formats ────────────────────────────────────────────
-// Every user-facing date in the app must use these two helpers so the format
-// is identical everywhere.
-//   formatDate     →  "Jan 10, 2026"
-//   formatDateTime →  "Jan 10, 2026 12:19 PM"
-
 export const DATE_FORMAT = "MMM d, yyyy";
 export const DATE_TIME_FORMAT = "MMM d, yyyy hh:mm a";
 
@@ -27,12 +21,6 @@ export const formatDateTime = (value: DateInput, fallback = "—"): string => {
   return d ? format(d, DATE_TIME_FORMAT) : fallback;
 };
 
-// ─── Entry-deadline helpers ────────────────────────────────────────────────
-// The entry deadline is a calendar *day*, not an instant. Registration stays
-// open through the end of that day (matching the backend, which expires it at
-// 23:59:59.999). Comparing the raw value — stored at midnight — would close
-// entry the moment the deadline day begins, which is wrong.
-
 export const isEntryClosed = (entryEndDate: DateInput): boolean => {
   const d = toDate(entryEndDate);
   if (!d) return false;
@@ -41,8 +29,6 @@ export const isEntryClosed = (entryEndDate: DateInput): boolean => {
 };
 
 export const isEntryOpen = (entryEndDate: DateInput): boolean => !isEntryClosed(entryEndDate);
-
-// ─── Legacy / advanced helpers (kept for explicit non-standard cases) ─────
 
 export const safeFormat = (
   value: DateInput,
@@ -63,8 +49,6 @@ export const safeToLocaleString = (
   options?: Intl.DateTimeFormatOptions,
   fallback = "—"
 ): string => {
-  // Kept for any caller that needs a locale-driven non-canonical format.
-  // Prefer formatDate / formatDateTime for normal display.
   const d = toDate(value);
   return d ? d.toLocaleDateString(undefined, options) : fallback;
 };

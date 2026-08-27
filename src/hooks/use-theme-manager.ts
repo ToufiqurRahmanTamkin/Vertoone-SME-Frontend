@@ -8,7 +8,6 @@ import React from "react";
 export function useThemeManager() {
   const { theme, setTheme } = useTheme();
 
-  // Simple, reliable theme detection - just follow the theme provider
   const isDarkMode = React.useMemo(() => {
     if (theme === "dark") return true;
     if (theme === "light") return false;
@@ -16,7 +15,6 @@ export function useThemeManager() {
   }, [theme]);
 
   const resetTheme = React.useCallback(() => {
-    // Comprehensive reset of ALL possible CSS variables that could be set by themes
     const root = document.documentElement;
 
     const propertiesToRemove: string[] = [];
@@ -35,7 +33,6 @@ export function useThemeManager() {
       const theme = colorThemes.find((t) => t.value === themeValue);
       if (!theme) return;
 
-      // Reset and apply theme variables
       resetTheme();
       const styles = darkMode ? theme.preset.styles.dark : theme.preset.styles.light;
       const root = document.documentElement;
@@ -49,7 +46,6 @@ export function useThemeManager() {
 
   const applyTweakcnTheme = React.useCallback(
     (themePreset: ThemePreset, darkMode: boolean) => {
-      // Reset and apply theme variables
       resetTheme();
       const styles = darkMode ? themePreset.styles.dark : themePreset.styles.light;
       const root = document.documentElement;

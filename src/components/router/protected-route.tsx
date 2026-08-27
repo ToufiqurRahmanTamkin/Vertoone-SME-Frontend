@@ -19,9 +19,6 @@ export function ProtectedRoute() {
     return <Navigate to={home} replace />;
   }
 
-  // Per-menu access is decided by `ModuleRouteGuard` once the effective
-  // permissions have loaded, which is why the provider sits here rather than
-  // deeper in the tree.
   return (
     <PermissionProvider>
       <Outlet />

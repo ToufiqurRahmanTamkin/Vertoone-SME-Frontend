@@ -23,7 +23,6 @@ import { toast } from "sonner";
 interface TagFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   tag?: Tag | null;
 }
 

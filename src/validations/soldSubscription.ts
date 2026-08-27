@@ -29,7 +29,6 @@ export const SoldSubscriptionSchema = z
     autoRenew: z.boolean(),
     notes: z.string().trim().max(1000),
   })
-  // The backend rejects this too; checking here keeps the message on the field.
   .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
     message: "End date must be after the start date",
     path: ["endDate"],

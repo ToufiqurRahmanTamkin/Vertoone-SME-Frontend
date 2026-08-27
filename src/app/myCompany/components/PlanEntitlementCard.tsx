@@ -25,11 +25,6 @@ const byGroup = (definitions: ModuleDefinition[]): [string, ModuleDefinition[]][
   return [...groups.entries()];
 };
 
-/**
- * Read-only view of what the company's current subscription unlocks. Terms
- * change only when a renewal invoice is paid, which is why this is presented as
- * a statement rather than something editable here.
- */
 export function PlanEntitlementCard({
   modulePermissions,
   isLoading = false,

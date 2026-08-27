@@ -31,7 +31,6 @@ import { useForm } from "react-hook-form";
 interface SisterConcernFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   concern?: SisterConcern | null;
   onSubmit: (values: SisterConcernFormValues) => void;
 }

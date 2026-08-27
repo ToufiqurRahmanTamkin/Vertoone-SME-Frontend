@@ -13,8 +13,6 @@ import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
 interface TimeParts {
   hours: string;
   minutes: string;
@@ -41,24 +39,16 @@ const convertTo24Hour = (hours: string, period: string): number => {
 
 const toISOStringWithTimezone = (date: Date): string => date.toISOString().replace("Z", "+00:00");
 
-// ─── DatePicker (single date, optionally with time) ───────────────────────────
-
 export interface DatePickerProps {
-  /** ISO datetime string, or `yyyy-MM-dd` when `dateOnly`. */
   value?: string | null;
   onValueChange?: (value: string | null) => void;
   placeholder?: string;
   disabled?: boolean;
-  /** Show hour/minute/AM-PM controls and store the time component. */
   includeTime?: boolean;
-  /** Store a local `yyyy-MM-dd` string (no time / timezone shift). */
   dateOnly?: boolean;
-  /** Prevent selecting any day after today (e.g. for "last changed" dates). */
   disableFuture?: boolean;
   align?: "start" | "center" | "end";
-  /** Extra classes for the trigger button. */
   className?: string;
-  /** Render a "Clear" row inside the popover (useful for filters). */
   clearable?: boolean;
   onDateChange?: (date: Date | undefined) => void;
   id?: string;
@@ -86,15 +76,10 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
   ) => {
     const [open, setOpen] = React.useState(false);
     const [tempTime, setTempTime] = React.useState<TimeParts>(getInitialTime);
-    // Touch/wheel forwarding so the popover (calendar + time controls) can be
-    // scrolled on mobile inside a modal, where react-remove-scroll otherwise
-    // swallows the gesture and the time inputs sit unreachable below the fold.
     const scrollRef = useNonPassiveScroll<HTMLDivElement>();
 
     const currentDate = value ? (dateOnly ? parseISO(value) : new Date(value)) : undefined;
 
-    // react-day-picker `disabled` accepts a Matcher: keep the whole calendar
-    // disabled when the field is disabled, otherwise grey out future days only.
     const calendarDisabled = disabled ? true : disableFuture ? { after: new Date() } : undefined;
 
     const emit = (date: Date | null) => {
@@ -107,8 +92,6 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       onDateChange?.(date);
     };
 
-    // Combine the time controls with the chosen day (or the existing value, or
-    // today for an empty field) into a single Date.
     const applyTime = (time: TimeParts, base?: Date): Date => {
       const d = new Date(base ?? currentDate ?? new Date());
       d.setHours(convertTo24Hour(time.hours, time.period));
@@ -118,8 +101,6 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     };
 
     const handleOpenChange = (newOpen: boolean) => {
-      // Seed the time controls from the current value when opening so the inputs
-      // reflect what's stored (falling back to "now" for an empty field).
       if (newOpen && includeTime) {
         setTempTime(currentDate ? dateToTime(currentDate) : getInitialTime());
       }
@@ -134,10 +115,6 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
             type="button"
             variant="outline"
             className={cn(
-              // `min-w-0` + a truncating label keep the trigger inside its grid
-              // or flex column. Without it the button's `whitespace-nowrap`
-              // content sets a min-content width that narrow columns cannot
-              // shrink below, and the trigger spills over its neighbour.
               "w-full min-w-0 justify-start text-left font-normal",
               !value && "text-muted-foreground",
               className
@@ -167,9 +144,6 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               mode="single"
               selected={currentDate}
               onSelect={(date) => {
-                // Keep the time controls' value when switching days; tempTime is
-                // seeded from the existing value on open, so this preserves the
-                // stored time and honours any edits made in the inputs.
                 emit(date ? (includeTime ? applyTime(tempTime, date) : date) : null);
                 if (!includeTime) setOpen(false);
               }}
@@ -246,11 +220,6 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
                   size="sm"
                   className="w-full"
                   onClick={() => {
-                    // Always commit the time shown in the controls, applied to the
-                    // current day (or today for an empty field). This makes "Done"
-                    // authoritative so confirming after only touching hours, minutes
-                    // or AM/PM still updates the field. Without a day picked it
-                    // defaults to today, so the field is never left empty on confirm.
                     emit(applyTime(tempTime));
                     setOpen(false);
                   }}
@@ -284,8 +253,6 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
 );
 DatePicker.displayName = "DatePicker";
 
-// ─── DateRangePicker (two-step from → to) ─────────────────────────────────────
-
 export interface DateRangeValue {
   from?: string;
   to?: string;
@@ -315,8 +282,6 @@ export function DateRangePicker({
   const [rangeStep, setRangeStep] = React.useState<"from" | "to">("from");
   const scrollRef = useNonPassiveScroll<HTMLDivElement>();
   const isMobile = useIsMobile();
-  // Two months side-by-side/stacked overflow a phone viewport, so collapse to a
-  // single month on mobile regardless of the requested count.
   const monthsToShow = isMobile ? 1 : numberOfMonths;
 
   const from = value?.from;
@@ -366,13 +331,11 @@ export function DateRangePicker({
           defaultMonth={from ? new Date(from) : new Date()}
           selected={selected}
           onSelect={(range) => {
-            // Range cleared entirely → reset both ends.
             if (!range || !range.from) {
               onValueChange?.({ from: undefined, to: undefined });
               setRangeStep("from");
               return;
             }
-            // First click sets the start of the day; second sets the end of the day.
             if (rangeStep === "from") {
               onValueChange?.({ from: startOfDay(range.from).toISOString(), to: undefined });
               setRangeStep("to");

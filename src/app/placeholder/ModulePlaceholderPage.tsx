@@ -53,8 +53,6 @@ export default function ModulePlaceholderPage() {
           </p>
         </div>
 
-        {/* Until the real screen exists, showing the resolved grant is the
-            clearest way to confirm what the plan and the owner allow here. */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           {MODULE_ACTIONS.map((action) => (
             <Badge

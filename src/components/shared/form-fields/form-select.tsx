@@ -37,7 +37,6 @@ export function FormSelect<TFieldValues extends FieldValues>({
   options: { label: string; value: string }[];
   disabled?: boolean;
   onValueChange?: (value: string) => void;
-  /** Force the search box. Defaults to showing it once there are >10 options. */
   searchable?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,8 +47,6 @@ export function FormSelect<TFieldValues extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        // min-w-0 lets the trigger truncate instead of overflowing its grid/flex
-        // cell — without it a long selected label pushes into the next field.
         <FormItem className={cn("min-w-0", className)}>
           <FormLabel>{label}</FormLabel>
           <Popover open={open} onOpenChange={setOpen}>

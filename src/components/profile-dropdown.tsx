@@ -22,14 +22,11 @@ export default function ProfileDropdown() {
   if (!user) return null;
 
   const handleLogout = async () => {
-    try {
-      await logoutApi().unwrap();
-    } catch {
-      // The server has no session state to drop — clearing locally is enough.
-    } finally {
-      dispatch(logOut());
-      navigate("/login", { replace: true });
-    }
+    await logoutApi()
+      .unwrap()
+      .catch(() => undefined);
+    dispatch(logOut());
+    navigate("/login", { replace: true });
   };
 
   const initials = user.name

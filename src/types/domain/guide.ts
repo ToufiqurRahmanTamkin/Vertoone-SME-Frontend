@@ -41,7 +41,6 @@ export interface GuideListQuery {
 
 export interface GuidePayload {
   title: string;
-  /** Omitted on create — the server slugifies the title and de-duplicates. */
   slug?: string;
   summary?: string;
   content: string;

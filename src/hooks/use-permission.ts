@@ -14,9 +14,7 @@ export const usePermissions = (): PermissionContextValue =>
 
 export interface ModuleAccess extends ModulePermission {
   moduleKey: string;
-  /** True while permissions are still loading, so screens can hold off. */
   isLoading: boolean;
-  /** How many records the plan still allows; null when unlimited. */
   remaining: (used: number) => number | null;
   isLimitReached: (used: number) => boolean;
 }
@@ -24,10 +22,6 @@ export interface ModuleAccess extends ModulePermission {
 const toModuleKey = (pathOrKey: string): string =>
   pathOrKey.startsWith("/") ? moduleKeyFromPath(pathOrKey) : pathOrKey;
 
-/**
- * Permissions for one menu, addressed either by its route (`/configuration/team`)
- * or by its module key (`CONFIGURATION_TEAM`).
- */
 export const useModulePermission = (pathOrKey: string): ModuleAccess => {
   const { modules, isLoading } = usePermissions();
 
@@ -48,7 +42,6 @@ export const useModulePermission = (pathOrKey: string): ModuleAccess => {
   }, [modules, isLoading, pathOrKey]);
 };
 
-/** Permissions for the screen the user is currently on. */
 export const useCurrentModulePermission = (): ModuleAccess => {
   const { pathname } = useLocation();
   return useModulePermission(pathname);

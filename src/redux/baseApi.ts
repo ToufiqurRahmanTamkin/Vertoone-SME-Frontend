@@ -39,9 +39,6 @@ export interface ApiErrorResponse {
   };
 }
 
-// The backend answers every route with `{ success, message, data, meta? }`.
-// Unwrap it to the inner payload so endpoints type against the domain shape,
-// and fold `meta` in alongside `data` for paginated lists.
 const unwrapEnvelope = (result: Awaited<ReturnType<typeof baseQuery>>) => {
   if (!result.data) return;
   const envelope = result.data as ApiResponse;
@@ -93,8 +90,6 @@ export const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
-  // Another request is already refreshing — wait for it, then replay with the
-  // token it obtained rather than firing a second refresh.
   if (mutex.isLocked()) {
     await mutex.waitForUnlock();
     result = await baseQuery(args, api, extraOptions);
@@ -148,7 +143,6 @@ export const baseQueryWithReauth: BaseQueryFn<
   return result;
 };
 
-// Cache tag types. Each new module adds its own here.
 export const ALL_TAG_TYPES = [
   "Me",
   "Dashboard",
@@ -181,7 +175,6 @@ export const ALL_TAG_TYPES = [
   "LeadSources",
   "LeadSourceSummary",
 ] as const;
-
 
 export type TagType = (typeof ALL_TAG_TYPES)[number];
 

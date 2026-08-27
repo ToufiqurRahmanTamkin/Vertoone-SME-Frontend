@@ -3,7 +3,6 @@ import type { ModulePermissionMap } from "./permission";
 export const BILLING_CYCLES = ["MONTHLY", "QUARTERLY", "HALF_YEARLY", "YEARLY"] as const;
 export type BillingCycle = (typeof BILLING_CYCLES)[number];
 
-/** null means "unlimited" — the backend stores it that way. */
 export interface PlanLimits {
   users: number | null;
 }
@@ -35,7 +34,6 @@ export interface SubscriptionPlan {
   billingCycle: BillingCycle;
   features: string[];
   limits: PlanLimits;
-  /** Menus this plan unlocks, with the actions and record cap for each. */
   modulePermissions: ModulePermissionMap;
   trialDays: number;
   isActive: boolean;

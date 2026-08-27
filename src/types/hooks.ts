@@ -1,17 +1,11 @@
-/**
- * Custom hooks types
- * Type definitions for custom React hooks
- */
 
 import type { FilterState, QueryFilters } from "./common";
 
-// useQueryFilters hook types
 export interface UseQueryFiltersReturn extends FilterState {
   filters: QueryFilters;
   isFiltering: boolean;
 }
 
-// useTheme hook types
 export type ThemeVariant = "sidebar" | "floating" | "inset";
 export type ThemeSide = "left" | "right";
 export type ThemeCollapsible = "icon" | "offcanvas" | "";

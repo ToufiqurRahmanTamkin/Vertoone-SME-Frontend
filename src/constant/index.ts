@@ -27,9 +27,6 @@ import type {
 } from "@/types/domain/activity";
 import type { WipeScope } from "@/types/domain/dataWipe";
 
-// Single source of truth for how every backend enum is presented. Pages read
-// labels and badge colours from here so the same value never renders two ways.
-
 export const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   MONTHLY: "Monthly",
   QUARTERLY: "Quarterly",
@@ -37,7 +34,6 @@ export const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   YEARLY: "Yearly",
 };
 
-/** Months each cycle spans — mirrors BILLING_CYCLE_MONTHS on the backend. */
 export const BILLING_CYCLE_MONTHS: Record<BillingCycle, number> = {
   MONTHLY: 1,
   QUARTERLY: 3,
@@ -217,7 +213,6 @@ export const GUIDE_AUDIENCE_LABELS: Record<GuideAudience, string> = {
   EVERYONE: "Everyone",
 };
 
-/** Builds `[{ label, value }]` options for a FormSelect / toolbar filter. */
 export const toOptions = <T extends string>(labels: Record<T, string>) =>
   (Object.entries(labels) as [T, string][]).map(([value, label]) => ({ value, label }));
 

@@ -51,18 +51,16 @@ export function ThemeTab({
   const { toggleTheme } = useCircularTransition();
 
   const handleRandomShadcn = () => {
-    // Apply a random standard theme
     const randomTheme = colorThemes[Math.floor(Math.random() * colorThemes.length)];
     setSelectedTheme(randomTheme.value);
-    setSelectedTweakcnTheme(""); // Clear advanced selection
+    setSelectedTweakcnTheme("");
     applyTheme(randomTheme.value, isDarkMode);
   };
 
   const handleRandomTweakcn = () => {
-    // Apply a random advanced theme
     const randomTheme = tweakcnThemes[Math.floor(Math.random() * tweakcnThemes.length)];
     setSelectedTweakcnTheme(randomTheme.value);
-    setSelectedTheme(""); // Clear standard selection
+    setSelectedTheme("");
     applyTweakcnTheme(randomTheme.preset, isDarkMode);
   };
 
@@ -101,7 +99,7 @@ export function ThemeTab({
           value={selectedTheme}
           onValueChange={(value) => {
             setSelectedTheme(value);
-            setSelectedTweakcnTheme(""); // Clear advanced selection
+            setSelectedTweakcnTheme("");
             applyTheme(value, isDarkMode);
           }}
         >
@@ -142,7 +140,6 @@ export function ThemeTab({
 
       <Separator />
 
-      {/* Advanced Presets */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">Advanced Presets</Label>
@@ -161,7 +158,7 @@ export function ThemeTab({
           value={selectedTweakcnTheme}
           onValueChange={(value) => {
             setSelectedTweakcnTheme(value);
-            setSelectedTheme(""); // Clear standard selection
+            setSelectedTheme("");
             const selectedPreset = tweakcnThemes.find((t) => t.value === value)?.preset;
             if (selectedPreset) {
               applyTweakcnTheme(selectedPreset, isDarkMode);
@@ -205,7 +202,6 @@ export function ThemeTab({
 
       <Separator />
 
-      {/* Radius Selection */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">Corner Style</Label>
         <div className="grid grid-cols-5 gap-2">
@@ -229,7 +225,6 @@ export function ThemeTab({
 
       <Separator />
 
-      {/* Mode Section */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">Appearance</Label>
         <div className="grid grid-cols-2 gap-2">
@@ -256,13 +251,11 @@ export function ThemeTab({
 
       <Separator />
 
-      {/* Additional Experience Settings */}
       <div className="space-y-4">
         <Label className="text-sm font-semibold flex items-center gap-2">
           <Type className="h-4 w-4" /> Typography & Interactivity
         </Label>
 
-        {/* Font Size */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">Default Font Size</Label>
@@ -278,7 +271,6 @@ export function ThemeTab({
           />
         </div>
 
-        {/* Animation Speed */}
         <div className="space-y-3">
           <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
             <Zap className="h-3 w-3" /> Smoothness
@@ -302,7 +294,6 @@ export function ThemeTab({
           </Tabs>
         </div>
 
-        {/* Header Transparency */}
         <div className="flex items-center justify-between py-1">
           <div className="space-y-0.5">
             <Label className="text-xs text-muted-foreground">Glassmorphism Header</Label>

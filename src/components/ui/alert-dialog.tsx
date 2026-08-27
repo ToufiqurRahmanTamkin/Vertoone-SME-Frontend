@@ -50,12 +50,9 @@ function AlertDialogContent({
         data-size={size}
         className={cn(
           "group/alert-dialog-content fixed top-[50%] left-[50%] z-50 flex flex-col w-full translate-x-[-50%] translate-y-[-50%] gap-0 border bg-background shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-          // Never let the panel touch the viewport edges on a phone.
           "max-w-[calc(100%-2rem)] max-h-[calc(100%-2rem)] rounded-lg [scrollbar-gutter:stable_both-edges]",
           "data-[size=sm]:sm:max-w-xs data-[size=default]:sm:max-w-lg",
           className,
-          // See the note in dialog.tsx: the mobile lock is applied last so a
-          // caller's desktop sizing cannot shrink the phone layout.
           MOBILE_FULL_SCREEN
         )}
         {...props}

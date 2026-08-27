@@ -37,12 +37,7 @@ const authApi = baseApi.injectEndpoints({
       query: () => ({ url: "/auth/me", method: "GET" }),
       providesTags: ["Me"],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(setUser(data));
-        } catch {
-          // A failed /me is handled by the 401 refresh flow in baseApi.
-        }
+        await queryFulfilled.then(({ data }) => dispatch(setUser(data))).catch(() => undefined);
       },
     }),
     updateProfile: builder.mutation<User, UpdateProfileInput>({

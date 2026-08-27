@@ -5,7 +5,6 @@ export interface PermissionContextValue {
   modules: ModulePermissionMap;
   role: string;
   companyId: string | null;
-  /** True until the first fetch settles, so guards can wait instead of denying. */
   isLoading: boolean;
   isError: boolean;
 }

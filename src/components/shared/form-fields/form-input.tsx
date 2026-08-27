@@ -25,8 +25,6 @@ export function FormInput<TFieldValues extends FieldValues>({
 }) {
   const { type = "text", ...inputProps } = props;
   const isNumber = type === "number";
-  // Numbers are positive everywhere in this app; a caller can still pass its
-  // own min (e.g. a negative one) to opt out of the sign guard.
   const min = isNumber ? ((inputProps.min as number | string | undefined) ?? 0) : undefined;
   const blockSigns = isNumber && Number(min) >= 0;
 
@@ -44,8 +42,6 @@ export function FormInput<TFieldValues extends FieldValues>({
               {...field}
               {...inputProps}
               {...(isNumber ? { min } : {})}
-              // An untouched 0 (or empty) default renders as the placeholder,
-              // so users never have to delete a pre-filled 0 before typing.
               value={
                 isNumber && !fieldState.isDirty && (field.value === 0 || field.value == null)
                   ? ""
@@ -68,7 +64,6 @@ export function FormInput<TFieldValues extends FieldValues>({
                   return;
                 }
                 const n = Number(v);
-                // A pasted negative slips past the key guard — strip the sign.
                 field.onChange(blockSigns && n < 0 ? Math.abs(n) : n);
               }}
             />

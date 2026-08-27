@@ -3,7 +3,6 @@ import type { ModulePermissionMap } from "./permission";
 
 export interface TeamMember extends User {
   modulePermissions: ModulePermissionMap;
-  /** The grant narrowed by what the company's plan actually allows. */
   effectivePermissions: ModulePermissionMap;
 }
 

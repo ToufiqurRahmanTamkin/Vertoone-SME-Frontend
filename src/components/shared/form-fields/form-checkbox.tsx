@@ -19,7 +19,6 @@ export function FormCheckbox<TFieldValues extends FieldValues>({
   disabled = false,
 }: BaseProps<TFieldValues> & {
   disabled?: boolean;
-  /** Override the checkbox box styling (e.g. a brand-accent checked colour). */
   checkboxClassName?: string;
 }) {
   return (

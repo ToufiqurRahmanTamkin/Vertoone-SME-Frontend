@@ -14,7 +14,6 @@ interface SettingsState {
   layout: Layout;
   sidebarExpanded: boolean;
   primaryColor?: string;
-  // Theme customizer persistence
   selectedTheme: string;
   selectedTweakcnTheme: string;
   selectedRadius: string;
@@ -25,8 +24,6 @@ interface SettingsState {
 }
 
 const initialState: SettingsState = {
-  // Light theme + the "Starry Night" advanced preset are the application
-  // defaults (and what a Customizer reset restores).
   theme: "light",
   layout: "default",
   sidebarExpanded: true,

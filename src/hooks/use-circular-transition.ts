@@ -24,15 +24,12 @@ export function useCircularTransition(): CircularTransitionHook {
 
     isTransitioningRef.current = true;
 
-    // Set CSS variables for the circular reveal animation - exactly like tweakcn
     const x = (coords.x / window.innerWidth) * 100;
     const y = (coords.y / window.innerHeight) * 100;
 
-    // Set the CSS variables on document element
     document.documentElement.style.setProperty("--x", `${x}%`);
     document.documentElement.style.setProperty("--y", `${y}%`);
 
-    // Check if View Transitions API is supported
     if ("startViewTransition" in document) {
       const transition = (
         document as Document & {
@@ -42,10 +39,6 @@ export function useCircularTransition(): CircularTransitionHook {
         callback();
       });
 
-      // Interrupting a transition (rapid toggling, a skipped transition) rejects
-      // every promise the browser hands back. All three are created whether or
-      // not we read them, so each needs a handler or it surfaces as an uncaught
-      // rejection in the console.
       transition.ready?.catch(() => {});
       transition.updateCallbackDone?.catch(() => {});
       transition.finished
@@ -54,7 +47,6 @@ export function useCircularTransition(): CircularTransitionHook {
           isTransitioningRef.current = false;
         });
     } else {
-      // Fallback for browsers without View Transitions API
       callback();
       setTimeout(() => {
         isTransitioningRef.current = false;

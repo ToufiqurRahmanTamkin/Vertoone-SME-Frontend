@@ -46,27 +46,20 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
   const setSelectedRadius = (radius: string) => dispatch(setReduxSelectedRadius(radius));
 
   const handleReset = () => {
-    // 1. Complete reset to application defaults (light theme + Starry Night).
     dispatch(resetSettings());
 
-    // 2. Completely remove all custom CSS variables.
     resetTheme();
 
-    // 3. Re-apply the default advanced preset (Starry Night) in light mode so a
-    //    reset is deterministic regardless of the theme that was active before.
     const defaultPreset = tweakcnThemes.find((t) => t.value === "starry-night")?.preset;
     if (defaultPreset) {
       applyTweakcnTheme(defaultPreset, false);
     }
 
-    // 4. Reset the radius to default (after the preset, which clears CSS vars).
     applyRadius("0.5rem");
 
-    // 5. Reset sidebar to defaults.
     updateSidebarConfig({ collapsible: "icon", side: "left" });
   };
 
-  // Re-apply themes when theme mode changes
   React.useEffect(() => {
     if (selectedTheme) {
       applyTheme(selectedTheme, isDarkMode);
@@ -156,7 +149,6 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
   );
 }
 
-// Floating trigger button - positioned dynamically based on sidebar side
 export function ThemeCustomizerTrigger({
   onClick,
   variant = "outline",

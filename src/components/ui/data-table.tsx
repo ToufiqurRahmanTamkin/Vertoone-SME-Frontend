@@ -61,7 +61,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {/* Desktop / tablet table view */}
       <div className={mobileCard ? "hidden md:block" : undefined}>
         <div className="overflow-x-auto rounded-xl border">
           <table data-slot="table" className="w-full caption-bottom text-sm">
@@ -131,7 +130,6 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Mobile card view */}
       {mobileCard && (
         <div className="md:hidden space-y-3">
           {isLoading ? (

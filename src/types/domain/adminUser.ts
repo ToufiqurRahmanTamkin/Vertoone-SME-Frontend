@@ -3,7 +3,6 @@ import type { Role, User, UserStatus } from "./auth";
 export type CompanyRole = Extract<Role, "COMPANY_OWNER" | "COMPANY_USER">;
 
 export interface AdminUser extends User {
-  /** Resolved company name, or an em dash when the account has no company. */
   companyName: string;
 }
 

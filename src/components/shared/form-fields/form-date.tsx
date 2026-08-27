@@ -25,13 +25,7 @@ export function FormDate<TFieldValues extends FieldValues>({
 }: BaseProps<TFieldValues> & {
   disabled?: boolean;
   includeTime?: boolean;
-  /** Prevent selecting any day after today. */
   disableFuture?: boolean;
-  /**
-   * Store the value as a local `yyyy-MM-dd` string (no time / timezone shift)
-   * instead of a full ISO datetime. Use for date-only fields whose backend
-   * contract is a calendar date. Cannot be combined with `includeTime`.
-   */
   dateOnly?: boolean;
   onDateChange?: (date: Date | undefined) => void;
 }) {

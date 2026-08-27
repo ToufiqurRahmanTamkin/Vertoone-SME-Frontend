@@ -27,10 +27,6 @@ import PhoneInputWithCountry, {
 } from "react-phone-number-input";
 import type { BaseProps } from "./types";
 
-/**
- * Regional-indicator emoji for an ISO country code — "BD" → 🇧🇩. Avoids pulling
- * a flag-sprite dependency in just for the picker.
- */
 const flagEmoji = (code: string): string =>
   code
     .toUpperCase()
@@ -51,11 +47,6 @@ interface CountrySelectProps {
   readOnly?: boolean;
 }
 
-/**
- * The country half of the phone control. `react-phone-number-input` owns the
- * value and hands us the option list; this only renders it in the app's own
- * popover/command styling instead of a bare <select>.
- */
 function CountrySelect({ value, onChange, options, disabled, readOnly }: CountrySelectProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -94,7 +85,6 @@ function CountrySelect({ value, onChange, options, disabled, readOnly }: Country
                 const dial = `+${getCountryCallingCode(country)}`;
                 return (
                   <CommandItem
-                    // Searchable by name, ISO code and dial code.
                     value={`${option.label} ${country} ${dial}`}
                     key={country}
                     className={cn(value === country && "bg-primary/10")}
@@ -142,7 +132,6 @@ export function FormPhone<TFieldValues extends FieldValues>({
   defaultCountry = "BD",
 }: BaseProps<TFieldValues> & {
   disabled?: boolean;
-  /** Country selected before the user picks one. Vertoone is BD-based. */
   defaultCountry?: Country;
 }) {
   return (
@@ -154,15 +143,11 @@ export function FormPhone<TFieldValues extends FieldValues>({
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <PhoneInputWithCountry
-              // Stored as E.164 ("+8801711223344"), so the dial code travels
-              // with the number and the backend needs no country column.
               international
               countryCallingCodeEditable={false}
               addInternationalOption={false}
               defaultCountry={defaultCountry}
               value={field.value ?? undefined}
-              // An emptied input yields `undefined`; persist "" so the field
-              // clears rather than being omitted from the payload.
               onChange={(value) => field.onChange(value ?? "")}
               onBlur={field.onBlur}
               disabled={disabled}

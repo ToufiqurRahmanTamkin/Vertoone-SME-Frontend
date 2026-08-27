@@ -6,10 +6,6 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Shared by Dialog and AlertDialog so both kinds of modal behave the same on a
- * phone: edge to edge, square corners, no border.
- */
 export const MOBILE_FULL_SCREEN =
   "max-sm:h-full max-sm:max-h-full max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0";
 
@@ -58,17 +54,10 @@ function DialogContent({
         onInteractOutside={(e) => e.preventDefault()}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex flex-col w-full translate-x-[-50%] translate-y-[-50%] border gap-0 shadow-lg duration-200 overflow-y-auto",
-          // Reserve the scrollbar gutter on BOTH edges. Without this a
-          // scrolling dialog takes its track out of the right padding only,
-          // so the content sits visibly off-centre.
           "[scrollbar-gutter:stable_both-edges]",
           "max-w-full max-h-full h-full rounded-none sm:max-w-lg sm:h-auto sm:rounded-lg",
           "print:shadow-none print:border-none print:rounded-none print:fixed print:inset-0 print:top-0 print:left-0 print:translate-x-0 print:translate-y-0 print:max-w-full print:max-h-full print:h-auto print:overflow-visible print:z-auto",
           className,
-          // Below `sm` every modal fills the screen. Deliberately appended
-          // after the caller's own classes: a per-modal `max-h-[90svh]` or
-          // width cap is meant for the desktop panel and must not shrink the
-          // sheet on a phone.
           MOBILE_FULL_SCREEN
         )}
         {...props}

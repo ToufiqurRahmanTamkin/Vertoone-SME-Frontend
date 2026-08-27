@@ -1,12 +1,7 @@
-/**
- * UI Component types
- * Shared types for UI components and state management
- */
 
 import type { ReactNode } from "react";
 import type { Pagination } from "./api";
 
-// Dialog/Modal types
 export interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -18,7 +13,6 @@ export interface ModalProps extends DialogProps {
   isLoading?: boolean;
 }
 
-// Form types
 export interface FormFieldError {
   message: string;
   code?: string;
@@ -39,7 +33,6 @@ export interface FormState {
   errors?: Record<string, string>;
 }
 
-// Table/DataTable types
 export type FilterFieldType = "text" | "select" | "date" | "date-range";
 
 export interface FilterConfig {
@@ -70,7 +63,6 @@ export interface DataTableToolbarProps {
   isLoading?: boolean;
 }
 
-// Button/Action types
 export interface ActionButtonProps {
   label: string;
   onClick: () => void | Promise<void>;
@@ -79,7 +71,6 @@ export interface ActionButtonProps {
   variant?: "primary" | "secondary" | "danger";
 }
 
-// Notification/Toast types
 export interface Toast {
   id: string;
   type: "success" | "error" | "warning" | "info";
@@ -87,7 +78,6 @@ export interface Toast {
   duration?: number;
 }
 
-// Dropdown/Menu types
 export interface MenuItem {
   label: string;
   value: string;
@@ -95,13 +85,11 @@ export interface MenuItem {
   disabled?: boolean;
 }
 
-// Badge types
 export interface BadgeProps {
   variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning";
   children: ReactNode;
 }
 
-// Breadcrumb types
 export interface BreadcrumbItem {
   label: string;
   href?: string;

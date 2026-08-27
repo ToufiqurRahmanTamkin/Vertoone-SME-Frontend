@@ -70,7 +70,6 @@ export default function SoldSubscriptionsPage() {
     status: filters.status as SubscriptionStatus | undefined,
     paymentStatus: filters.paymentStatus as PaymentStatus | undefined,
     billingOrigin: filters.billingOrigin as BillingOrigin | undefined,
-    // The date-range filter writes the shared `from`/`to` params.
     startDateFrom: filters.from as string | undefined,
     startDateTo: filters.to as string | undefined,
   });

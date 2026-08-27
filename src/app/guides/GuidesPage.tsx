@@ -48,7 +48,6 @@ export default function GuidesPage() {
     search: filters.search,
     category: filters.category as GuideCategory | undefined,
     audience: filters.audience as GuideAudience | undefined,
-    // Forwarded as the literal "true"/"false" the backend's schema expects.
     isPublished: filters.isPublished as unknown as boolean | undefined,
   });
 

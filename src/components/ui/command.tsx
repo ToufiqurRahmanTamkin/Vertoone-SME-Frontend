@@ -11,14 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// ─── A dependency-free command palette / combobox ───────────────────────────
-//
-// Reimplements the small slice of the `cmdk` API this app relies on (filtering,
-// keyboard navigation, grouped items, empty state) so we can drop the external
-// package. The exported component surface is unchanged, so existing consumers
-// keep working: <Command>, <CommandInput>, <CommandList>, <CommandEmpty>,
-// <CommandGroup>, <CommandItem>, <CommandSeparator>, <CommandShortcut>.
-
 interface ItemReg {
   value: string;
   disabled?: boolean;
@@ -81,9 +73,6 @@ function Command({
     [isVisible],
   );
 
-  // Keep the active (highlighted) item on something that is actually visible,
-  // and publish whether the filter matched anything so CommandEmpty can render
-  // from state rather than reading the item ref mid-render.
   React.useEffect(() => {
     const vis = visibleValues();
     setHasVisibleItems(itemsRef.current.some((i) => isVisible(i.value)));
@@ -155,7 +144,6 @@ function Command({
   );
 }
 
-// Share the list DOM ref with CommandList without widening the public context.
 const ListRefContext = React.createContext<React.MutableRefObject<HTMLDivElement | null> | null>(
   null,
 );
@@ -227,9 +215,6 @@ function CommandInput({
 
 function CommandList({ className, ...props }: React.ComponentProps<"div">) {
   const listRef = React.useContext(ListRefContext);
-  // Manual wheel + touch forwarding so the list scrolls inside modal popovers,
-  // where react-remove-scroll swallows both wheel and touchmove (the latter is
-  // why a command list inside a popover wouldn't scroll on mobile).
   const wheelRef = useNonPassiveScroll<HTMLDivElement>();
 
   return (
@@ -295,7 +280,6 @@ function CommandItem({
     onSelectRef.current = onSelect;
   }, [onSelect]);
 
-  // Register so keyboard nav / Enter can find this item even while filtered.
   React.useLayoutEffect(() => {
     return registerItem({ value, disabled, onSelect: (v) => onSelectRef.current?.(v) });
   }, [value, disabled, registerItem]);

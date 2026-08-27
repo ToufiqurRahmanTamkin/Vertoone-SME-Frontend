@@ -11,12 +11,6 @@ export interface QueryParams {
   [key: string]: string | number | undefined;
 }
 
-/**
- * The URL is the filter state, so any page can read its own params off this.
- * The index signature is declared explicitly: spreading the parsed params and
- * then overriding known keys widens to an object literal type that drops it,
- * which would make every module-specific filter a type error at the call site.
- */
 export interface ResolvedFilters {
   page: number;
   limit: number;
@@ -51,11 +45,6 @@ export const useQueryFilters = (defaultLimit = 10) => {
     };
   }, [searchParams, defaultLimit]);
 
-  // setSearchParams (even its functional form) builds from the last *committed*
-  // location, so two setFilter calls in the same tick — e.g. a date range
-  // writing `from` then `to` — would both start from the same snapshot and the
-  // last write would win, silently dropping the first. Chain same-tick updates
-  // through this ref; it resets once the navigation commits.
   const pendingRef = useRef<URLSearchParams | null>(null);
   useEffect(() => {
     pendingRef.current = null;
@@ -69,7 +58,6 @@ export const useQueryFilters = (defaultLimit = 10) => {
       } else {
         next.set(name, String(value));
       }
-      // Reset page when other filters change
       if (name !== "page") {
         next.delete("page");
       }

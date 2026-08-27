@@ -1,9 +1,4 @@
-/**
- * Common/Utility types
- * Shared types used across the application
- */
 
-// Status enums
 export type Status =
   | "ACTIVE"
   | "INACTIVE"
@@ -13,7 +8,6 @@ export type Status =
   | "SUSPENDED"
   | "CANCELLED";
 
-// Entity base types
 export interface BaseEntity {
   _id: string;
   createdAt: string;
@@ -24,7 +18,6 @@ export interface SoftDeleteEntity extends BaseEntity {
   deletedAt?: string | null;
 }
 
-// Query and filter types
 export interface QueryFilters {
   page?: number;
   limit?: number;
@@ -43,7 +36,6 @@ export interface FilterState {
   resetFilter: (name: string) => void;
 }
 
-// Date range types
 export interface DateRange {
   from?: Date;
   to?: Date;
@@ -54,17 +46,14 @@ export interface DateRangeString {
   to?: string;
 }
 
-// Utility types
 export type Maybe<T> = T | null | undefined;
 
 export type Nullable<T> = T | null;
 
 export type Optional<T> = T | undefined;
 
-// Result type for error handling
 export type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
 
-// Error type definitions (actual classes should be in utils/errors.ts)
 export interface ValidationErrorType {
   name: "ValidationError";
   message: string;
@@ -81,7 +70,6 @@ export interface UnauthorizedErrorType {
   message: string;
 }
 
-// Async operation states
 export type AsyncStatus = "idle" | "loading" | "success" | "error";
 
 export interface LoadingState {
@@ -90,7 +78,6 @@ export interface LoadingState {
   isDone: boolean;
 }
 
-// Selection/Multi-select types
 export interface SelectOption<T = string> {
   label: string;
   value: T;
@@ -98,5 +85,4 @@ export interface SelectOption<T = string> {
   description?: string;
 }
 
-// Keyed collection
 export type KeyedCollection<T> = Record<string, T>;

@@ -31,8 +31,6 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginValues) => {
     try {
-      // The mutation stores the session in `authSlice` via onQueryStarted, so
-      // by the time this resolves the route guard already sees a token.
       const session = await login(data).unwrap();
       const home = HOME_ROUTE_BY_ROLE[session.user.role] ?? "/dashboard";
       const from = location.state?.from?.pathname || home;
@@ -44,8 +42,6 @@ export default function LoginPage() {
   };
 
   return (
-    // Centred-spotlight auth layout. Every colour comes from the active theme's
-    // tokens, so this screen matches whatever preset the app is running.
     <div className="relative flex min-h-svh flex-col items-center overflow-hidden bg-background px-4 py-8 text-foreground sm:px-6 lg:h-svh lg:py-5">
       <AuthAurora />
 

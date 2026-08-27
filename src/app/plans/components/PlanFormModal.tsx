@@ -33,7 +33,6 @@ import { toast } from "sonner";
 interface PlanFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   plan?: SubscriptionPlan | null;
   defaultCurrency?: string;
 }
@@ -48,10 +47,6 @@ const STEPS: readonly StepperStep[] = [
   { id: "availability", label: "Availability" },
 ];
 
-/**
- * Fields each step owns. Advancing validates only these, so a half-filled later
- * step never blocks the one in front of the user.
- */
 const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
   ["name", "billingCycle", "price", "currency", "trialDays", "description", "features"],
   ["limitUsers"],
@@ -124,16 +119,11 @@ export function PlanFormModal({
     defaultValues: emptyValues(defaultCurrency),
   });
 
-  // Re-seed whenever the dialog opens so an edit never shows the previous
-  // record's values and a create always starts clean.
   React.useEffect(() => {
     if (!open) return;
     form.reset(plan ? toFormValues(plan) : emptyValues(defaultCurrency));
   }, [open, plan, defaultCurrency, form]);
 
-  // The matrix and the step cursor are plain state rather than form fields, so
-  // they are re-seeded during render — the sanctioned way to reset state when
-  // props change.
   const [seededFor, setSeededFor] = React.useState<string | null>(null);
   const seedKey = open ? (plan?._id ?? "new") : null;
 
@@ -141,7 +131,6 @@ export function PlanFormModal({
     setSeededFor(seedKey);
     setModulePermissions(seedKey === null ? {} : (plan?.modulePermissions ?? {}));
     setStep(0);
-    // An existing plan is already complete, so every step is reachable at once.
     setFurthestStep(seedKey !== null && plan ? LAST_STEP : 0);
   }
 
@@ -187,8 +176,6 @@ export function PlanFormModal({
     }
   };
 
-  // A field that failed on an earlier step would otherwise fail silently, so
-  // the stepper jumps back to the first step that still has an error.
   const onInvalid = (errors: Record<string, unknown>) => {
     const firstStep = Object.keys(errors).map(stepOf).sort((a, b) => a - b)[0];
     if (firstStep !== undefined) setStep(firstStep);
@@ -232,9 +219,6 @@ export function PlanFormModal({
                 onStepSelect={setStep}
               />
 
-              {/* Compact layout: a 6-column grid lets the short numeric fields
-                  share rows instead of each taking a full one, which keeps the
-                  step on screen without scrolling on a laptop. */}
               {step === 0 && (
                 <div className="grid grid-cols-6 gap-x-3 gap-y-3">
                   <FormInput
@@ -394,12 +378,12 @@ export function PlanFormModal({
                   )}
                 </Button>
                 {step < LAST_STEP ? (
-                  <Button type="button" onClick={() => void goNext()}>
+                  <Button key="wizard-next" type="button" onClick={() => void goNext()}>
                     Next
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={isSaving}>
+                  <Button key="wizard-submit" type="submit" disabled={isSaving}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEdit ? "Save changes" : "Create plan"}
                   </Button>

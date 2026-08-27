@@ -16,7 +16,6 @@ export const GuideSchema = z.object({
   content: z.string().min(1, "Content is required"),
   category: z.enum(GUIDE_CATEGORIES),
   audience: z.enum(GUIDE_AUDIENCES),
-  // Comma-separated in the input; split on submit.
   tags: z.string().max(800).optional(),
   sortOrder: z.number().int(),
   isPublished: z.boolean(),

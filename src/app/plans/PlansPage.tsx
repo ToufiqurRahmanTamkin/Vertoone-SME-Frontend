@@ -43,8 +43,6 @@ export default function PlansPage() {
     limit: filters.limit,
     search: filters.search,
     billingCycle: filters.billingCycle as BillingCycle | undefined,
-    // The backend parses this as the literal string "true"/"false", so it is
-    // forwarded as-is rather than coerced to a boolean here.
     isActive: filters.isActive as unknown as boolean | undefined,
   });
 
@@ -70,8 +68,6 @@ export default function PlansPage() {
       toast.success("Plan deleted");
       setPendingDelete(null);
     } catch (error: unknown) {
-      // A plan with sales cannot be deleted — the server explains why, so
-      // surface its message rather than a generic failure.
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not delete the plan");
       setPendingDelete(null);

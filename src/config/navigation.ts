@@ -141,12 +141,9 @@ export interface MenuItem {
   title: string;
   path: string;
   icon: string;
-  /** Starts a new sidebar group under this label; null continues the current one. */
   section: string | null;
   roles: string[];
-  /** One-line summary of the screen, surfaced by the placeholder page. */
   description?: string;
-  /** Match the path exactly instead of also allowing `${path}/...` descendants. */
   exact?: boolean;
   items?: MenuItem[];
   shownInSidebar?: boolean;
@@ -154,8 +151,6 @@ export interface MenuItem {
 
 const OWNER = ["COMPANY_OWNER", "COMPANY_USER"];
 
-// The single source of truth for both the sidebar and the route guard. Every
-// new module adds its entry here and nowhere else.
 export const MENU_ITEMS: MenuItem[] = [
   {
     title: "Dashboard",
@@ -997,14 +992,8 @@ export const MENU_ITEMS: MenuItem[] = [
   },
 ];
 
-/** The permission key a menu entry is gated by, derived from its own path. */
 export const menuModuleKey = (item: MenuItem): string => moduleKeyFromPath(item.path);
 
-/**
- * A leaf is visible when its own module grants `canView`; a parent is visible
- * when at least one of its children is. That way switching off every child of a
- * group removes the group header too.
- */
 export const isMenuItemVisible = (
   item: MenuItem,
   role: string,
@@ -1022,7 +1011,7 @@ export const getNavigation = (
   modules: ModulePermissionMap | undefined
 ): NavGroup[] => {
   const groups: NavGroup[] = [];
-  let currentGroup: NavGroup | null = null;
+  let currentSection: string | null = null;
 
   const buildNavItem = (item: MenuItem): NavItem => ({
     title: item.title,
@@ -1035,22 +1024,28 @@ export const getNavigation = (
       : undefined,
   });
 
+  const groupFor = (label: string): NavGroup => {
+    const existing = groups.find((group) => group.label === label);
+    if (existing) return existing;
+
+    const created: NavGroup = { label, items: [] };
+    groups.push(created);
+    return created;
+  };
+
   MENU_ITEMS.forEach((item) => {
-    // The section header belongs to the first item that declares it, so it has
-    // to be opened even when that very item turns out to be hidden.
     if (item.section !== null && item.section !== undefined) {
-      const existing = groups.find((group) => group.label === item.section);
-      currentGroup = existing ?? { label: item.section, items: [] };
-      if (!existing) groups.push(currentGroup);
+      currentSection = item.section;
     }
 
     if (item.shownInSidebar === false) return;
+    if (currentSection === null) return;
     if (!isMenuItemVisible(item, role, modules)) return;
 
-    currentGroup?.items.push(buildNavItem(item));
+    groupFor(currentSection).items.push(buildNavItem(item));
   });
 
-  return groups.filter((group) => group.items.length > 0);
+  return groups;
 };
 
 export interface BreadcrumbEntry {

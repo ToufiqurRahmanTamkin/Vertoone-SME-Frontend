@@ -19,11 +19,6 @@ function Stat({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-/**
- * The standard row of stat cards. Mobile is always two-up; a lone trailing card
- * would leave a hole in that grid, so it takes the full width instead. Callers
- * pass their own `sm:`/`xl:` column counts for larger screens.
- */
 function StatGrid({ className, children, ...props }: React.ComponentProps<"div">) {
   const count = React.Children.count(children);
 

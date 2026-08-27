@@ -20,15 +20,8 @@ export interface FilterConfig {
   type: FilterFieldType;
   placeholder?: string;
   options?: { label: string; value: string }[];
-  /**
-   * Select-only: option value treated as "unset" (stored as undefined).
-   * Defaults to "all" — set when the neutral state has its own meaning,
-   * e.g. the sessions payment filter defaulting to "unpaid".
-   */
   defaultValue?: string;
-  /** Select-only: hide the auto "All {label}" option when `options` already cover every state. */
   hideAllOption?: boolean;
-  /** Select-only: extra classes for the inline (non-drawer) trigger, e.g. a wider desktop width. */
   triggerClassName?: string;
 }
 
@@ -49,26 +42,9 @@ interface DataTableToolbarProps {
   onFilterChange: (name: string, value: string | number | undefined) => void;
   onClear: () => void;
   isLoading?: boolean;
-  /**
-   * Primary page action(s) (e.g. Create / Add / Upload). Rendered on the
-   * opposite side of the filters (`justify-between`) on the same row.
-   */
   actions?: React.ReactNode;
-  /**
-   * Mobile (<sm) filter presentation. "drawer" (default) collapses the
-   * filters behind a funnel icon that opens a bottom sheet with one labeled
-   * row per filter; "inline" keeps them on the toolbar row — use it for
-   * pages with a single compact select.
-   */
   mobileFilters?: "drawer" | "inline";
-  /**
-   * Extra content rendered inside the mobile filter drawer (below the
-   * filters, above the footer). Use for secondary admin actions that would
-   * crowd the toolbar row on mobile. When provided, the funnel trigger shows
-   * even if there are no filters.
-   */
   mobileDrawerExtra?: React.ReactNode;
-  /** Heading shown at the top of the mobile drawer. Defaults to "Filters". */
   mobileDrawerTitle?: string;
 }
 
@@ -89,9 +65,6 @@ export function DataTableToolbar({
   const [localSearch, setLocalSearch] = useState(searchValue || "");
   const [prevSearchValue, setPrevSearchValue] = useState(searchValue);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  // Mobile drawer staging: changes inside the drawer are held here and only
-  // committed to the URL/API when the user taps "Done". Closing via the overlay
-  // or Escape discards them (re-snapshotted from the applied filters on reopen).
   const [pendingFilters, setPendingFilters] = useState<
     Record<string, string | number | boolean | undefined>
   >({});
@@ -103,13 +76,10 @@ export function DataTableToolbar({
   };
 
   const openDrawer = () => {
-    // Snapshot the currently applied filters so the drawer starts from them.
     setPendingFilters({ ...currentFilters });
     setIsDrawerOpen(true);
   };
 
-  // Every query param a filter control owns — a date range spans from/to, so it
-  // contributes two keys rather than one.
   const filterParamKeys = filters.flatMap((f) =>
     f.type === "date-range" ? ["from", "to"] : [f.name]
   );
@@ -132,9 +102,6 @@ export function DataTableToolbar({
     return v !== "" && v !== "all" && v !== undefined;
   });
 
-  // While the mobile filter drawer is open: lock body scroll, close on Escape,
-  // and move focus into the drawer (restored on close) — the behaviors the
-  // modal Sheet used to provide.
   useEffect(() => {
     if (!isDrawerOpen) return;
     restoreFocusRef.current = document.activeElement as HTMLElement | null;
@@ -172,7 +139,6 @@ export function DataTableToolbar({
       return v !== "" && v !== "all" && v !== undefined;
     })
     .map(([key]) => key);
-  // A date range sets both `from` and `to` but is a single filter to the user.
   const activeFilterCount =
     activeFilterKeys.length -
     (activeFilterKeys.includes("from") && activeFilterKeys.includes("to") ? 1 : 0);
@@ -184,11 +150,7 @@ export function DataTableToolbar({
     onClear();
   };
 
-  /** One filter control; drawer rows stretch full width, toolbar ones stay compact. */
   const renderFilter = (filter: FilterConfig, inDrawer: boolean) => {
-    // In the drawer, controls read from / write to the staged `pendingFilters`
-    // so nothing hits the API until "Done". Inline (desktop / mobile-inline)
-    // controls apply immediately.
     const source = inDrawer ? pendingFilters : currentFilters;
     const change = inDrawer ? setPendingFilter : onFilterChange;
     const value = source[filter.name];
@@ -249,7 +211,6 @@ export function DataTableToolbar({
       );
     }
 
-
     return null;
   };
 
@@ -270,7 +231,6 @@ export function DataTableToolbar({
           />
         </div>
 
-        {/* Inline filters — always on desktop; on mobile only in "inline" mode. */}
         <div
           className={cn(
             "flex-wrap items-center gap-2",
@@ -296,7 +256,6 @@ export function DataTableToolbar({
           )}
         </div>
 
-        {/* Mobile drawer trigger */}
         {useDrawer && (
           <Button
             variant="outline"
@@ -318,13 +277,6 @@ export function DataTableToolbar({
 
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
 
-      {/* Mobile bottom drawer with one labeled row per filter. Deliberately
-          NOT a Radix Sheet — same reasoning as MobileSidebar in sidebar.tsx:
-          the Sheet unmounts its children when closed, so every open re-mounts
-          each filter control and runs Radix's forced reflows, making the
-          slide-up stutter. Keeping the drawer mounted makes opening a pure
-          transform/opacity transition; `inert` keeps the closed drawer out of
-          the tab order and the accessibility tree. */}
       {useDrawer && (
         <div inert={!isDrawerOpen} className="sm:hidden">
           <div
@@ -372,8 +324,6 @@ export function DataTableToolbar({
                 <Button
                   variant="outline"
                   className="flex-1"
-                  // Clears the staged selections only; nothing is committed until
-                  // "Done" applies the (now empty) staged filters.
                   onClick={() => setPendingFilters({})}
                   disabled={isLoading || !hasPendingFilters}
                 >

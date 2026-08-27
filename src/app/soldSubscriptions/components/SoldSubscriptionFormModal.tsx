@@ -47,7 +47,6 @@ import { toast } from "sonner";
 interface SoldSubscriptionFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Absent for a create. */
   record?: SoldSubscription | null;
   defaultCurrency?: string;
 }
@@ -60,7 +59,6 @@ const toDateInput = (value: Date): string => {
   return new Date(value.getTime() - offset * 60_000).toISOString().slice(0, 10);
 };
 
-/** Mirrors the backend's addMonths: clamps to the last day of a short month. */
 const addMonths = (date: Date, months: number): Date => {
   const result = new Date(date);
   const targetDay = result.getDate();
@@ -112,7 +110,6 @@ export function SoldSubscriptionFormModal({
   defaultCurrency = "BDT",
 }: SoldSubscriptionFormModalProps) {
   const isEdit = Boolean(record);
-  // Only active plans can be sold; the full list is small enough to load at once.
   const { data: planData } = useGetPlansQuery({ limit: 100, isActive: true as never });
   const [createSale, { isLoading: isCreating }] = useCreateSoldSubscriptionMutation();
   const [updateSale, { isLoading: isUpdating }] = useUpdateSoldSubscriptionMutation();
@@ -130,9 +127,6 @@ export function SoldSubscriptionFormModal({
     form.reset(record ? toFormValues(record) : emptyValues(defaultCurrency));
   }, [open, record, defaultCurrency, form]);
 
-  // Picking a plan pre-fills price, currency and the end date from its billing
-  // cycle — the same defaults the server would apply, shown up front so the
-  // operator can override them before saving.
   const onPlanChange = (planId: string) => {
     const plan = plans.find((p) => p._id === planId);
     if (!plan) return;
@@ -176,7 +170,6 @@ export function SoldSubscriptionFormModal({
 
     try {
       if (record) {
-        // planId is intentionally omitted — the server ignores it on update.
         await updateSale({ id: record._id, body: shared }).unwrap();
         toast.success("Subscription updated");
       } else {

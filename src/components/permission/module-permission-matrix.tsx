@@ -21,13 +21,7 @@ interface ModulePermissionMatrixProps {
   modules: ModuleDefinition[];
   value: ModulePermissionMap;
   onChange: (next: ModulePermissionMap) => void;
-  /** Show the per-module record cap column. */
   showLimits?: boolean;
-  /**
-   * An upper bound the selection cannot exceed — the company's entitlement when
-   * an owner is granting menus to an employee. Modules absent from it are shown
-   * as unavailable rather than hidden, so it is obvious what the plan is missing.
-   */
   ceiling?: ModulePermissionMap;
   disabled?: boolean;
   emptyMessage?: string;
@@ -79,8 +73,6 @@ export function ModulePermissionMatrix({
     const current = permissionFor(value, definition.key);
     const draft: ModulePermission = { ...current, [action]: on };
 
-    // Nothing is reachable without view access, so turning view off clears the
-    // row and turning any other action on implies it.
     if (action === "canView" && !on) {
       writeModule(definition.key, emptyPermission());
       return;

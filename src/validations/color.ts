@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Matches the backend's hex rule so the form fails before the request does. */
 export const hexColorValidation = z
   .string()
   .trim()

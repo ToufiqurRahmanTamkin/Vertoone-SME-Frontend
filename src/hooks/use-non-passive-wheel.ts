@@ -1,14 +1,5 @@
 import { useEffect, useRef } from "react";
 
-/**
- * Manual wheel forwarding so a scrollable element keeps scrolling inside
- * modal popovers/dialogs, where react-remove-scroll swallows wheel events.
- * React registers `onWheel` passively (preventDefault() is ignored there and
- * Chrome warns "Unable to preventDefault inside passive event listener"), so
- * the handler must be a native listener attached with `passive: false`.
- *
- * Returns a ref callback to attach to the scrollable element.
- */
 export function useNonPassiveWheel<T extends HTMLElement>() {
   const elRef = useRef<T | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
@@ -42,15 +33,6 @@ export function useNonPassiveWheel<T extends HTMLElement>() {
   return setRef;
 }
 
-/**
- * Like {@link useNonPassiveWheel} but also forwards touch scrolling, so a list
- * scrolls on mobile inside modal popovers/dialogs where react-remove-scroll
- * swallows `touchmove` the same way it swallows `wheel`. Manually drives
- * `scrollTop` and only consumes the gesture while there's room to scroll, so at
- * the boundaries the parent/modal still behaves normally.
- *
- * Returns a ref callback to attach to the scrollable element.
- */
 export function useNonPassiveScroll<T extends HTMLElement>() {
   const elRef = useRef<T | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
@@ -89,7 +71,7 @@ export function useNonPassiveScroll<T extends HTMLElement>() {
     const onTouchMove = (e: TouchEvent) => {
       if (!canScroll()) return;
       const y = e.touches[0]?.clientY ?? 0;
-      const delta = lastYRef.current - y; // finger up → positive → scroll down
+      const delta = lastYRef.current - y;
       lastYRef.current = y;
       if ((delta < 0 && atTop()) || (delta > 0 && atBottom())) return;
       node.scrollTop += delta;

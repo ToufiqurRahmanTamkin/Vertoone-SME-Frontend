@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import type { FieldValues } from "react-hook-form";
 import type { BaseProps } from "./types";
 
-/** A short, high-contrast set that reads well as a chip in both themes. */
 export const COLOR_PRESETS = [
   "#ef4444",
   "#f97316",
@@ -51,8 +50,6 @@ export function FormColor<TFieldValues extends FieldValues>({
               <FormControl>
                 <Input
                   type="color"
-                  // The native swatch has no useful text affordance, so it is
-                  // kept small and paired with the hex field beside it.
                   className="h-9 w-12 cursor-pointer p-1"
                   value={/^#[0-9a-f]{6}$/.test(value) ? value : "#6366f1"}
                   disabled={disabled}

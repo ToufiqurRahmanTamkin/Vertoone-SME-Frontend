@@ -14,9 +14,6 @@ const RECONNECT_DELAY_MAX_MS = 15_000;
 let socket: AppSocket | null = null;
 let currentToken: string | null = null;
 
-// The connection state lives here rather than in component state so React can
-// read it with useSyncExternalStore — no effect ever has to push a status into
-// setState, which is what makes the status cascade-free.
 const listeners = new Set<() => void>();
 let status: RealtimeStatus = envConfig.socketEnabled ? "DISCONNECTED" : "DISABLED";
 
@@ -46,19 +43,12 @@ const bindStatusEvents = (instance: AppSocket): void => {
   instance.io.on("reconnect_attempt", () => setStatus("CONNECTING"));
 };
 
-/**
- * Opens the connection, or re-authenticates the existing one when the access
- * token has been rotated by the refresh flow. Calling it repeatedly with the
- * same token is a no-op, so it is safe to run on every render pass.
- */
 export const connectSocket = (token: string): AppSocket | null => {
   if (!envConfig.socketEnabled || !token) return null;
 
   if (socket) {
     if (currentToken === token) return socket;
 
-    // A rotated token has to travel in a fresh handshake — the server reads it
-    // once, in the connect middleware.
     currentToken = token;
     socket.auth = { token };
     setStatus("CONNECTING");
@@ -72,8 +62,6 @@ export const connectSocket = (token: string): AppSocket | null => {
   socket = io(envConfig.socketURL, {
     path: envConfig.socketPath,
     auth: { token },
-    // WebSocket first, with polling kept as the fallback for networks and
-    // proxies that block the upgrade.
     transports: ["websocket", "polling"],
     withCredentials: true,
     reconnection: true,
