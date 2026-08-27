@@ -17,6 +17,15 @@ export interface LeadSourceListQuery {
   isActive?: boolean;
 }
 
+
+export interface LeadSourceSummary {
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  activeCount: number;
+  inactiveCount: number;
+}
+
 export interface CreateLeadSourcePayload {
   name: string;
   color: string;

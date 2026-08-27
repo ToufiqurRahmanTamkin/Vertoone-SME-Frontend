@@ -3,6 +3,7 @@ import type {
   CreateTagPayload,
   Tag,
   TagListQuery,
+  TagSummary,
   UpdateTagPayload,
 } from "@/types/domain/tag";
 import { baseApi } from "../baseApi";
@@ -13,6 +14,8 @@ interface TagListResult {
   meta: Pagination;
 }
 
+const TAG_TAGS = ["Tags", "TagSummary"] as const;
+
 const tagApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getTags: builder.query<TagListResult, TagListQuery | void>({
@@ -22,27 +25,32 @@ const tagApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Tags"],
     }),
+    getTagSummary: builder.query<TagSummary, void>({
+      query: () => ({ url: "/crm/tags/summary", method: "GET" }),
+      providesTags: ["TagSummary"],
+    }),
     getTag: builder.query<Tag, string>({
       query: (id) => ({ url: `/crm/tags/${id}`, method: "GET" }),
       providesTags: ["Tags"],
     }),
     createTag: builder.mutation<Tag, CreateTagPayload>({
       query: (body) => ({ url: "/crm/tags", method: "POST", body }),
-      invalidatesTags: ["Tags"],
+      invalidatesTags: [...TAG_TAGS],
     }),
     updateTag: builder.mutation<Tag, { id: string; body: UpdateTagPayload }>({
       query: ({ id, body }) => ({ url: `/crm/tags/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["Tags"],
+      invalidatesTags: [...TAG_TAGS],
     }),
     deleteTag: builder.mutation<null, string>({
       query: (id) => ({ url: `/crm/tags/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Tags"],
+      invalidatesTags: [...TAG_TAGS],
     }),
   }),
 });
 
 export const {
   useGetTagsQuery,
+  useGetTagSummaryQuery,
   useGetTagQuery,
   useCreateTagMutation,
   useUpdateTagMutation,

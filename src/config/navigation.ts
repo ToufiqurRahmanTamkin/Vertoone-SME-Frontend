@@ -793,6 +793,22 @@ export const MENU_ITEMS: MenuItem[] = [
     description: "Unqualified interest captured from every channel.",
   },
   {
+    title: "Lead Sources",
+    path: "/crm/lead-sources",
+    icon: "Network",
+    section: null,
+    roles: OWNER,
+    description: "Where your enquiries come from, each with its own colour.",
+  },
+  {
+    title: "Tags",
+    path: "/crm/tags",
+    icon: "Tags",
+    section: null,
+    roles: OWNER,
+    description: "Colour-coded labels for grouping records.",
+  },
+  {
     title: "Contacts",
     path: "/crm/contacts",
     icon: "Contact",

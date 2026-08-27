@@ -17,6 +17,15 @@ export interface TagListQuery {
   isActive?: boolean;
 }
 
+
+export interface TagSummary {
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  activeCount: number;
+  inactiveCount: number;
+}
+
 export interface CreateTagPayload {
   name: string;
   color: string;

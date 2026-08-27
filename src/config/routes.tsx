@@ -33,6 +33,8 @@ const SecurityReport = lazy(() => import("@/app/reports/SecurityReportPage"));
 const CompanyProfile = lazy(() => import("@/app/organization/CompanyProfilePage"));
 const SisterConcerns = lazy(() => import("@/app/organization/SisterConcernsPage"));
 const TeamMembers = lazy(() => import("@/app/configuration/team/TeamMembersPage"));
+const Tags = lazy(() => import("@/app/crm/tags/TagsPage"));
+const LeadSources = lazy(() => import("@/app/crm/leadSources/LeadSourcesPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -70,6 +72,8 @@ const builtRoutes: RouteConfig[] = [
   { path: "organization/profile", element: <CompanyProfile /> },
   { path: "organization/sister-concerns", element: <SisterConcerns /> },
   { path: "configuration/team", element: <TeamMembers /> },
+  { path: "crm/tags", element: <Tags /> },
+  { path: "crm/lead-sources", element: <LeadSources /> },
   { path: "settings/account", element: <AccountSettings /> },
 ];
 
