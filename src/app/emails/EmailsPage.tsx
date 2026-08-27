@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import { Stat, StatGrid, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
   EMAIL_STATUS_COLORS,
   EMAIL_STATUS_LABELS,
@@ -106,7 +106,7 @@ export default function EmailsPage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -120,7 +120,7 @@ export default function EmailsPage() {
             </StatIndicator>
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
@@ -187,10 +187,7 @@ export default function EmailsPage() {
         )}
       />
 
-      <EmailPreviewModal
-        emailId={previewId}
-        onOpenChange={(open) => !open && setPreviewId(null)}
-      />
+      <EmailPreviewModal emailId={previewId} onOpenChange={(open) => !open && setPreviewId(null)} />
     </>
   );
 }

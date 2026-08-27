@@ -2,7 +2,14 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatDescription, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import {
+  Stat,
+  StatDescription,
+  StatGrid,
+  StatIndicator,
+  StatLabel,
+  StatValue,
+} from "@/components/ui/stat";
 import {
   COMPANY_STATUS_COLORS,
   COMPANY_STATUS_LABELS,
@@ -32,8 +39,8 @@ const InvoiceRow = ({ invoice }: { invoice: CompanyInvoice }) => (
     <div className="min-w-0 flex-1">
       <p className="truncate font-medium">{invoice.planName}</p>
       <p className="truncate text-xs text-muted-foreground">
-        <span className="font-mono">{invoice.invoiceNumber}</span> ·{" "}
-        {formatDate(invoice.startDate)} — {formatDate(invoice.endDate)}
+        <span className="font-mono">{invoice.invoiceNumber}</span> · {formatDate(invoice.startDate)}{" "}
+        — {formatDate(invoice.endDate)}
       </p>
     </div>
     <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -118,7 +125,7 @@ export default function MyCompanyPage() {
         description="Your company profile, subscription and billing history."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-4">
         {cards.map(({ label, value, description, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -133,7 +140,7 @@ export default function MyCompanyPage() {
             {!isLoading && <StatDescription>{description}</StatDescription>}
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       {company && company.status !== "APPROVED" && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm">

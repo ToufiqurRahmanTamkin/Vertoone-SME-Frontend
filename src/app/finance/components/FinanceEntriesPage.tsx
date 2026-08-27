@@ -1,11 +1,11 @@
+import { ActionButton, CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import { Stat, StatGrid, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
   INVOICE_STATUS_COLORS,
   INVOICE_STATUS_LABELS,
@@ -64,9 +64,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
   const expenseSummary = useGetExpenseSummaryQuery(undefined, { skip: isIncome });
 
   const { data, isLoading, isFetching } = isIncome ? incomeQuery : expenseQuery;
-  const { data: summary, isLoading: isSummaryLoading } = isIncome
-    ? incomeSummary
-    : expenseSummary;
+  const { data: summary, isLoading: isSummaryLoading } = isIncome ? incomeSummary : expenseSummary;
 
   const [deleteIncome, deleteIncomeState] = useDeleteIncomeMutation();
   const [deleteExpense, deleteExpenseState] = useDeleteExpenseMutation();
@@ -166,7 +164,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
     <>
       <PageHeader title={copy.pageTitle} description={copy.pageDescription} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <StatGrid className="xl:grid-cols-3">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -180,7 +178,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
             </StatIndicator>
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
@@ -191,12 +189,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {copy.newButtonLabel}
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label={copy.newButtonLabel} onClick={openCreate} />}
       />
 
       <DataTable
@@ -276,26 +269,19 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
                 </p>
               )}
               <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="cursor-pointer"
+                <CardActionButton
+                  icon={Pencil}
+                  label="Edit"
                   onClick={() => openEdit(entry)}
                   disabled={locked}
-                >
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="cursor-pointer text-destructive hover:text-destructive"
+                />
+                <CardActionButton
+                  icon={Trash2}
+                  label="Delete"
+                  className="text-destructive hover:text-destructive"
                   onClick={() => setPendingDelete(entry)}
                   disabled={locked}
-                >
-                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                  Delete
-                </Button>
+                />
               </div>
             </div>
           );

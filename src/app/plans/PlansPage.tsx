@@ -1,5 +1,5 @@
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
@@ -102,12 +102,7 @@ export default function PlansPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New plan
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label="New plan" onClick={openCreate} />}
       />
 
       <DataTable

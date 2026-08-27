@@ -1,6 +1,6 @@
+import { CardActionButton } from "@/components/shared/action-button";
 import type { CompanyAction } from "@/app/companies/companies.columns";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   COMPANY_STATUS_COLORS,
   COMPANY_STATUS_LABELS,
@@ -81,56 +81,41 @@ export function CompanyMobileCard({ company, onAction }: CompanyMobileCardProps)
       <div className="mt-4 flex flex-wrap gap-2">
         {company.status === "PENDING" && (
           <>
-            <Button
-              size="sm"
-              className="cursor-pointer"
+            <CardActionButton
+              icon={CheckCircle2}
+              label="Approve"
               onClick={() => onAction(company, "APPROVE")}
-            >
-              <CheckCircle2 className="mr-1.5 h-4 w-4" />
-              Approve
-            </Button>
-            <Button
-              size="sm"
+            />
+            <CardActionButton
+              icon={XCircle}
+              label="Reject"
               variant="destructive"
-              className="cursor-pointer"
               onClick={() => onAction(company, "REJECT")}
-            >
-              <XCircle className="mr-1.5 h-4 w-4" />
-              Reject
-            </Button>
+            />
           </>
         )}
         {company.status === "APPROVED" && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="cursor-pointer"
+          <CardActionButton
+            icon={Ban}
+            label="Suspend"
             onClick={() => onAction(company, "SUSPEND")}
-          >
-            <Ban className="mr-1.5 h-4 w-4" />
-            Suspend
-          </Button>
+          />
         )}
         {company.status === "SUSPENDED" && (
-          <Button
-            size="sm"
-            className="cursor-pointer"
+          <CardActionButton
+            icon={PlayCircle}
+            label="Reactivate"
             onClick={() => onAction(company, "REACTIVATE")}
-          >
-            <PlayCircle className="mr-1.5 h-4 w-4" />
-            Reactivate
-          </Button>
+          />
         )}
         {company.status !== "APPROVED" && (
-          <Button
-            size="sm"
+          <CardActionButton
+            icon={Trash2}
+            label="Delete"
             variant="ghost"
-            className="cursor-pointer text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive"
             onClick={() => onAction(company, "DELETE")}
-          >
-            <Trash2 className="mr-1.5 h-4 w-4" />
-            Delete
-          </Button>
+          />
         )}
       </div>
     </div>

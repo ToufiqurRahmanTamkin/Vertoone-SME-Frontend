@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import { Stat, StatGrid, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
   ACTIVITY_ACTION_LABELS,
   ACTIVITY_CATEGORY_COLORS,
@@ -20,11 +20,7 @@ import {
   useGetActivityCompaniesQuery,
   useGetActivitySummaryQuery,
 } from "@/redux/apis/activityApis";
-import type {
-  ActivityAction,
-  ActivityCategory,
-  ActivitySeverity,
-} from "@/types/domain/activity";
+import type { ActivityAction, ActivityCategory, ActivitySeverity } from "@/types/domain/activity";
 import { Activity as ActivityIcon, Building2, CalendarClock, TriangleAlert } from "lucide-react";
 import * as React from "react";
 import { activityColumns } from "./activity.columns";
@@ -125,7 +121,7 @@ export default function ActivityPage() {
         description="Every action taken across the system, who took it, and which company it touched."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -139,7 +135,7 @@ export default function ActivityPage() {
             </StatIndicator>
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}

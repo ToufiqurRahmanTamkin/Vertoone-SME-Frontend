@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
+import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
@@ -8,7 +8,7 @@ function Stat({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="stat"
       className={cn(
-        "grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 rounded-xl border bg-card p-4 text-card-foreground shadow-sm",
+        "grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 rounded-xl border bg-card p-3 text-card-foreground shadow-sm sm:gap-x-4 sm:p-4",
         "**:data-[slot=stat-label]:col-span-1 **:data-[slot=stat-value]:col-span-1",
         "**:data-[slot=stat-indicator]:col-start-2 **:data-[slot=stat-indicator]:row-span-2 **:data-[slot=stat-indicator]:row-start-1 **:data-[slot=stat-indicator]:self-start",
         "**:data-[slot=stat-description]:col-span-2 **:data-[slot=stat-separator]:col-span-2 **:data-[slot=stat-trend]:col-span-2",
@@ -19,11 +19,34 @@ function Stat({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * The standard row of stat cards. Mobile is always two-up; a lone trailing card
+ * would leave a hole in that grid, so it takes the full width instead. Callers
+ * pass their own `sm:`/`xl:` column counts for larger screens.
+ */
+function StatGrid({ className, children, ...props }: React.ComponentProps<"div">) {
+  const count = React.Children.count(children);
+
+  return (
+    <div
+      data-slot="stat-grid"
+      className={cn(
+        "grid grid-cols-2 gap-3 sm:gap-4",
+        count % 2 === 1 && "[&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
 function StatLabel({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="stat-label"
-      className={cn("font-medium text-muted-foreground text-sm", className)}
+      className={cn("font-medium text-muted-foreground text-xs sm:text-sm", className)}
       {...props}
     />
   );
@@ -80,7 +103,7 @@ function StatValue({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="stat-value"
-      className={cn("font-semibold text-2xl tracking-tight", className)}
+      className={cn("font-semibold text-xl tracking-tight sm:text-2xl", className)}
       {...props}
     />
   );
@@ -123,4 +146,13 @@ function StatDescription({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-export { Stat, StatDescription, StatIndicator, StatLabel, StatSeparator, StatTrend, StatValue };
+export {
+  Stat,
+  StatDescription,
+  StatGrid,
+  StatIndicator,
+  StatLabel,
+  StatSeparator,
+  StatTrend,
+  StatValue,
+};

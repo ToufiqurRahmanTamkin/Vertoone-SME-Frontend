@@ -1,12 +1,19 @@
+import { ActionButton } from "@/components/shared/action-button";
 import { CompanyMobileCard } from "@/app/companies/components/CompanyMobileCard";
 import { CompanyCreateModal } from "@/app/companies/components/CompanyCreateModal";
 import { CompanyReviewModal } from "@/app/companies/components/CompanyReviewModal";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatDescription, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import {
+  Stat,
+  StatDescription,
+  StatGrid,
+  StatIndicator,
+  StatLabel,
+  StatValue,
+} from "@/components/ui/stat";
 import { COMPANY_STATUS_LABELS, EMPLOYEE_RANGE_LABELS, toOptions } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatNumber } from "@/lib/amount";
@@ -100,7 +107,7 @@ export default function CompaniesPage() {
         description="Every registration, self-service or created here. Approving one unlocks sign-in for its owner and marks the registration invoice paid."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-4">
         {cards.map(({ label, value, description, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -115,7 +122,7 @@ export default function CompaniesPage() {
             {!isLoadingSummary && <StatDescription>{description}</StatDescription>}
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
@@ -127,10 +134,7 @@ export default function CompaniesPage() {
         onClear={clearFilters}
         isLoading={isFetching}
         actions={
-          <Button className="cursor-pointer" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New company
-          </Button>
+          <ActionButton icon={Plus} label="New company" onClick={() => setCreateOpen(true)} />
         }
       />
 
@@ -146,9 +150,7 @@ export default function CompaniesPage() {
         onPageChange={(page) => setFilter("page", page)}
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
-        mobileCard={(company) => (
-          <CompanyMobileCard company={company} onAction={openReview} />
-        )}
+        mobileCard={(company) => <CompanyMobileCard company={company} onAction={openReview} />}
       />
 
       <CompanyCreateModal open={createOpen} onOpenChange={setCreateOpen} />

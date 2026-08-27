@@ -1,6 +1,6 @@
+import { ActionButton, CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
@@ -16,8 +16,18 @@ import { GuideFormModal } from "./components/GuideFormModal";
 import { guideColumns } from "./guides.columns";
 
 const FILTERS: FilterConfig[] = [
-  { name: "category", label: "Category", type: "select", options: toOptions(GUIDE_CATEGORY_LABELS) },
-  { name: "audience", label: "Audience", type: "select", options: toOptions(GUIDE_AUDIENCE_LABELS) },
+  {
+    name: "category",
+    label: "Category",
+    type: "select",
+    options: toOptions(GUIDE_CATEGORY_LABELS),
+  },
+  {
+    name: "audience",
+    label: "Audience",
+    type: "select",
+    options: toOptions(GUIDE_AUDIENCE_LABELS),
+  },
   {
     name: "isPublished",
     label: "Status",
@@ -94,12 +104,7 @@ export default function GuidesPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New guide
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label="New guide" onClick={openCreate} />}
       />
 
       <DataTable
@@ -142,24 +147,13 @@ export default function GuidesPage() {
               {GUIDE_CATEGORY_LABELS[guide.category]} · {GUIDE_AUDIENCE_LABELS[guide.audience]}
             </p>
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={() => openEdit(guide)}
-              >
-                <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer text-destructive hover:text-destructive"
+              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(guide)} />
+              <CardActionButton
+                icon={Trash2}
+                label="Delete"
+                className="text-destructive hover:text-destructive"
                 onClick={() => setPendingDelete(guide)}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                Delete
-              </Button>
+              />
             </div>
           </div>
         )}

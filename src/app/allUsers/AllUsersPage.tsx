@@ -1,16 +1,13 @@
+import { CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { ROLE_LABELS, USER_STATUS_COLORS, USER_STATUS_LABELS } from "@/constant";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import {
-  useGetAllUserCompaniesQuery,
-  useGetAllUsersQuery,
-} from "@/redux/apis/adminUserApis";
+import { useGetAllUserCompaniesQuery, useGetAllUsersQuery } from "@/redux/apis/adminUserApis";
 import type { AdminUser, CompanyRole } from "@/types/domain/adminUser";
 import type { UserStatus } from "@/types/domain/auth";
 import { KeyRound } from "lucide-react";
@@ -133,16 +130,12 @@ export default function AllUsersPage() {
               </div>
             </dl>
             <div className="mt-3 flex justify-end border-t pt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
+              <CardActionButton
+                icon={KeyRound}
+                label="Reset password"
                 onClick={() => openReset(user)}
                 disabled={!access.canEdit}
-              >
-                <KeyRound className="mr-1.5 h-3.5 w-3.5" />
-                Reset password
-              </Button>
+              />
             </div>
           </div>
         )}

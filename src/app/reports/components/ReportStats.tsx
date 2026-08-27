@@ -1,5 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatDescription, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import {
+  Stat,
+  StatDescription,
+  StatGrid,
+  StatIndicator,
+  StatLabel,
+  StatValue,
+} from "@/components/ui/stat";
 import type { LucideIcon } from "lucide-react";
 
 export interface ReportStatItem {
@@ -17,7 +24,7 @@ interface ReportStatsProps {
 
 export function ReportStats({ items, isLoading = false }: ReportStatsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <StatGrid className="xl:grid-cols-4">
       {items.map((item) => (
         <Stat key={item.label}>
           <StatLabel>{item.label}</StatLabel>
@@ -29,11 +36,9 @@ export function ReportStats({ items, isLoading = false }: ReportStatsProps) {
           <StatIndicator variant="icon" color={item.color ?? "default"}>
             <item.icon />
           </StatIndicator>
-          {!isLoading && item.description && (
-            <StatDescription>{item.description}</StatDescription>
-          )}
+          {!isLoading && item.description && <StatDescription>{item.description}</StatDescription>}
         </Stat>
       ))}
-    </div>
+    </StatGrid>
   );
 }

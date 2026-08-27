@@ -1,5 +1,5 @@
+import { CardActionButton } from "@/components/shared/action-button";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
@@ -56,19 +56,13 @@ export function PlanMobileCard({ plan, onEdit, onDelete }: PlanMobileCardProps) 
       </dl>
 
       <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-        <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => onEdit(plan)}>
-          <Pencil className="mr-1.5 h-3.5 w-3.5" />
-          Edit
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="cursor-pointer text-destructive hover:text-destructive"
+        <CardActionButton icon={Pencil} label="Edit" onClick={() => onEdit(plan)} />
+        <CardActionButton
+          icon={Trash2}
+          label="Delete"
+          className="text-destructive hover:text-destructive"
           onClick={() => onDelete(plan)}
-        >
-          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-          Delete
-        </Button>
+        />
       </div>
     </div>
   );

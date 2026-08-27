@@ -8,6 +8,7 @@ import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatGrid } from "@/components/ui/stat";
 import {
   BILLING_ORIGIN_COLORS,
   BILLING_ORIGIN_LABELS,
@@ -262,17 +263,17 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-4">
         {primaryCards.map((card) => (
           <KpiCard key={card.label} {...card} isLoading={isLoading} />
         ))}
-      </div>
+      </StatGrid>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatGrid className="lg:grid-cols-4">
         {secondaryCards.map((card) => (
           <KpiCard key={card.label} {...card} isLoading={isLoading} />
         ))}
-      </div>
+      </StatGrid>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <SectionCard
@@ -551,11 +552,7 @@ export default function DashboardPage() {
       </SectionCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <SectionCard
-          icon={Trophy}
-          title="Top customers"
-          description="By total approved spend."
-        >
+        <SectionCard icon={Trophy} title="Top customers" description="By total approved spend.">
           {isLoading ? (
             <div className="space-y-2">
               {Array.from({ length: 5 }).map((_, index) => (

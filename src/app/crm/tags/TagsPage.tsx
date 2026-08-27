@@ -1,18 +1,14 @@
+import { ActionButton, CardActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
-import { Stat, StatDescription, StatLabel, StatValue } from "@/components/ui/stat";
+import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import {
-  useDeleteTagMutation,
-  useGetTagsQuery,
-  useGetTagSummaryQuery,
-} from "@/redux/apis/tagApis";
+import { useDeleteTagMutation, useGetTagsQuery, useGetTagSummaryQuery } from "@/redux/apis/tagApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Tag } from "@/types/domain/tag";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -98,7 +94,7 @@ export default function TagsPage() {
         description="Colour-coded labels your team can attach to records to group and find them quickly."
       />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <StatGrid className="sm:grid-cols-3">
         <Stat>
           <StatLabel>Tags</StatLabel>
           <StatValue>{used}</StatValue>
@@ -115,12 +111,10 @@ export default function TagsPage() {
           <StatLabel>Remaining</StatLabel>
           <StatValue>{summary?.remaining ?? "∞"}</StatValue>
           <StatDescription>
-            {limit === null
-              ? "Your plan sets no cap"
-              : "Left before you reach the plan limit"}
+            {limit === null ? "Your plan sets no cap" : "Left before you reach the plan limit"}
           </StatDescription>
         </Stat>
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
@@ -133,8 +127,10 @@ export default function TagsPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <Button
-              className="cursor-pointer"
+            <ActionButton
+              icon={Plus}
+              label="Add tag"
+
               onClick={openCreate}
               disabled={isLimitReached}
               title={
@@ -142,18 +138,15 @@ export default function TagsPage() {
                   ? `Your plan allows ${limit} tags. Delete one or upgrade to add more.`
                   : undefined
               }
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              Add tag
-            </Button>
+            />
           )
         }
       />
 
       {isLimitReached && (
         <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-          You have used all {limit} tags your plan allows. Delete one or upgrade your
-          subscription to add more.
+          You have used all {limit} tags your plan allows. Delete one or upgrade your subscription
+          to add more.
         </p>
       )}
 
@@ -182,26 +175,19 @@ export default function TagsPage() {
               <p className="mt-3 text-xs text-muted-foreground">{tag.description}</p>
             )}
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
+              <CardActionButton
+                icon={Pencil}
+                label="Edit"
                 onClick={() => openEdit(tag)}
                 disabled={!access.canEdit}
-              >
-                <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer text-destructive hover:text-destructive"
+              />
+              <CardActionButton
+                icon={Trash2}
+                label="Delete"
+                className="text-destructive hover:text-destructive"
                 onClick={() => setPendingDelete(tag)}
                 disabled={!access.canDelete}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                Delete
-              </Button>
+              />
             </div>
           </div>
         )}

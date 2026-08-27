@@ -1,11 +1,11 @@
+import { ActionButton, CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import { Stat, StatGrid, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
   INVOICE_ORIGIN_LABELS,
   INVOICE_STATUS_COLORS,
@@ -30,7 +30,16 @@ import {
   type InvoiceStatus,
   type InvoiceType,
 } from "@/types/domain/invoice";
-import { Clock3, Eye, FileText, Pencil, Plus, TrendingDown, TrendingUp, Trash2 } from "lucide-react";
+import {
+  Clock3,
+  Eye,
+  FileText,
+  Pencil,
+  Plus,
+  TrendingDown,
+  TrendingUp,
+  Trash2,
+} from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { InvoiceDetailDialog } from "./components/InvoiceDetailDialog";
@@ -141,7 +150,7 @@ export default function InvoicesPage() {
         description="Every income and expense entry is invoiced. Raise a standalone invoice here and attach it to an entry whenever you are ready."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -155,7 +164,7 @@ export default function InvoicesPage() {
             </StatIndicator>
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
@@ -166,12 +175,7 @@ export default function InvoicesPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New invoice
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label="New invoice" onClick={openCreate} />}
       />
 
       <DataTable
@@ -215,33 +219,14 @@ export default function InvoicesPage() {
             </p>
 
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={() => setViewing(invoice)}
-              >
-                <Eye className="mr-1.5 h-3.5 w-3.5" />
-                View
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={() => openEdit(invoice)}
-              >
-                <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer text-destructive hover:text-destructive"
+              <CardActionButton icon={Eye} label="View" onClick={() => setViewing(invoice)} />
+              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(invoice)} />
+              <CardActionButton
+                icon={Trash2}
+                label="Delete"
+                className="text-destructive hover:text-destructive"
                 onClick={() => setPendingDelete(invoice)}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                Delete
-              </Button>
+              />
             </div>
           </div>
         )}

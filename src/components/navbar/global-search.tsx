@@ -57,7 +57,10 @@ export function GlobalSearch() {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="group h-8 cursor-pointer justify-start gap-2 rounded-lg border-border/70 bg-muted/40 px-2.5 text-muted-foreground shadow-none transition-colors hover:bg-muted hover:text-foreground lg:w-56 xl:w-64"
+        // A phone reaches every screen through the sidebar, and the header has
+        // no room to spare, so the trigger only appears from `sm` up — the same
+        // width at which the header's other optional controls come back.
+        className="group hidden h-8 cursor-pointer justify-start gap-2 rounded-lg border-border/70 bg-muted/40 px-2.5 text-muted-foreground shadow-none transition-colors hover:bg-muted hover:text-foreground sm:inline-flex lg:w-56 xl:w-64"
         aria-label="Search pages"
       >
         <Search className="size-[1.05rem] shrink-0" />

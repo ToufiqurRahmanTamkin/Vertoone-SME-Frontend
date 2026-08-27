@@ -1,11 +1,18 @@
+import { ActionButton, CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
-import { Stat, StatDescription, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import {
+  Stat,
+  StatDescription,
+  StatGrid,
+  StatIndicator,
+  StatLabel,
+  StatValue,
+} from "@/components/ui/stat";
 import { EMPLOYEE_RANGE_LABELS } from "@/constant";
 import type { EmployeeRange } from "@/types/domain/company";
 import { sisterConcernModules, type SisterConcern } from "@/types/domain/organization";
@@ -199,7 +206,7 @@ export default function SisterConcernsPage() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <StatGrid className="sm:grid-cols-3">
         {cards.map(({ label, value, description, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -210,7 +217,7 @@ export default function SisterConcernsPage() {
             <StatDescription>{description}</StatDescription>
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={search}
@@ -225,12 +232,7 @@ export default function SisterConcernsPage() {
           setFilters({});
           setSearch("");
         }}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Add sister concern
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label="Add sister concern" onClick={openCreate} />}
       />
 
       <DataTable
@@ -263,30 +265,22 @@ export default function SisterConcernsPage() {
             </p>
             <div className="mt-2 flex flex-wrap gap-1">
               {sisterConcernModules(concern).map((module) => (
-                <span key={module} className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">
+                <span
+                  key={module}
+                  className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
+                >
                   {module}
                 </span>
               ))}
             </div>
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={() => openEdit(concern)}
-              >
-                <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer text-destructive hover:text-destructive"
+              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(concern)} />
+              <CardActionButton
+                icon={Trash2}
+                label="Remove"
+                className="text-destructive hover:text-destructive"
                 onClick={() => setPendingDelete(concern)}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                Remove
-              </Button>
+              />
             </div>
           </div>
         )}

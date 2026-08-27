@@ -1,10 +1,10 @@
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import { Stat, StatGrid, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
 import {
   BILLING_ORIGIN_LABELS,
   PAYMENT_REVIEW_ACTION_LABELS,
@@ -28,23 +28,12 @@ import type {
   SoldSubscription,
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
-import {
-  CircleCheck,
-  Clock,
-  HandCoins,
-  Plus,
-  Receipt,
-  RefreshCcw,
-  Wallet,
-} from "lucide-react";
+import { CircleCheck, Clock, HandCoins, Plus, Receipt, RefreshCcw, Wallet } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { SoldSubscriptionFormModal } from "./components/SoldSubscriptionFormModal";
 import { SoldSubscriptionMobileCard } from "./components/SoldSubscriptionMobileCard";
-import {
-  PaymentReviewModal,
-  type PaymentReviewMode,
-} from "./components/PaymentReviewModal";
+import { PaymentReviewModal, type PaymentReviewMode } from "./components/PaymentReviewModal";
 import { soldSubscriptionColumns } from "./sold-subscriptions.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -186,7 +175,7 @@ export default function SoldSubscriptionsPage() {
         description="Every subscription sold, with its invoice, term and payment state."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <StatGrid className="xl:grid-cols-5">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -200,7 +189,7 @@ export default function SoldSubscriptionsPage() {
             </StatIndicator>
           </Stat>
         ))}
-      </div>
+      </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
@@ -211,12 +200,7 @@ export default function SoldSubscriptionsPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Record sale
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label="Record sale" onClick={openCreate} />}
       />
 
       <DataTable
@@ -265,18 +249,14 @@ export default function SoldSubscriptionsPage() {
                 <span className="text-muted-foreground">Payment review</span>
                 <span className="font-medium">
                   {PAYMENT_REVIEW_ACTION_LABELS[record.paymentReviewAction]}
-                  {record.paymentReviewedAt
-                    ? ` · ${formatDate(record.paymentReviewedAt)}`
-                    : ""}
+                  {record.paymentReviewedAt ? ` · ${formatDate(record.paymentReviewedAt)}` : ""}
                 </span>
               </div>
             )}
             {record.paymentReviewNote && (
               <div className="sm:col-span-2 lg:col-span-3">
                 <span className="text-muted-foreground">Review note</span>
-                <p className="mt-0.5 whitespace-pre-wrap font-medium">
-                  {record.paymentReviewNote}
-                </p>
+                <p className="mt-0.5 whitespace-pre-wrap font-medium">{record.paymentReviewNote}</p>
               </div>
             )}
             {record.notes && (

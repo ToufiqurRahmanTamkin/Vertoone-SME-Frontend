@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatGrid } from "@/components/ui/stat";
 import {
   LOGIN_DEVICE_TYPE_LABELS,
   LOGIN_FAILURE_REASON_LABELS,
@@ -95,7 +96,7 @@ export function LoginHistoryCard() {
         </Select>
       }
     >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <StatGrid className="lg:grid-cols-4">
         <SummaryTile
           label="Total attempts"
           value={formatNumber(summary?.total)}
@@ -116,7 +117,7 @@ export function LoginHistoryCard() {
           value={formatNumber(summary?.distinctDevices)}
           isLoading={isSummaryLoading}
         />
-      </div>
+      </StatGrid>
 
       <DataTable
         columns={columns}
@@ -173,9 +174,7 @@ export function LoginHistoryCard() {
                 {entry.failureReason && (
                   <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">Reason</dt>
-                    <dd className="truncate">
-                      {LOGIN_FAILURE_REASON_LABELS[entry.failureReason]}
-                    </dd>
+                    <dd className="truncate">{LOGIN_FAILURE_REASON_LABELS[entry.failureReason]}</dd>
                   </div>
                 )}
               </dl>

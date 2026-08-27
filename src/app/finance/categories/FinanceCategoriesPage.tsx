@@ -1,14 +1,10 @@
+import { ActionButton, CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
-import {
-  FINANCE_CATEGORY_TYPE_COLORS,
-  FINANCE_CATEGORY_TYPE_LABELS,
-  toOptions,
-} from "@/constant";
+import { FINANCE_CATEGORY_TYPE_COLORS, FINANCE_CATEGORY_TYPE_LABELS, toOptions } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import {
   useDeleteFinanceCategoryMutation,
@@ -103,12 +99,7 @@ export default function FinanceCategoriesPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button className="cursor-pointer" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New category
-          </Button>
-        }
+        actions={<ActionButton icon={Plus} label="New category" onClick={openCreate} />}
       />
 
       <DataTable
@@ -144,25 +135,14 @@ export default function FinanceCategoriesPage() {
               </p>
             )}
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                onClick={() => openEdit(category)}
-              >
-                <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer text-destructive hover:text-destructive"
+              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(category)} />
+              <CardActionButton
+                icon={Trash2}
+                label="Delete"
+                className="text-destructive hover:text-destructive"
                 onClick={() => setPendingDelete(category)}
                 disabled={category.isSystem}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                Delete
-              </Button>
+              />
             </div>
           </div>
         )}
