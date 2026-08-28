@@ -1,3 +1,5 @@
+import type { DepartmentRef } from "./department";
+import type { DesignationRef } from "./designation";
 import type { TagRef } from "./tag";
 
 export const EMPLOYEE_STATUSES = [
@@ -74,8 +76,10 @@ export interface Employee {
   presentAddress: string;
   permanentAddress: string;
   emergencyContact: EmergencyContact;
-  department: string;
-  designation: string;
+  departments: DepartmentRef[];
+  departmentIds: string[];
+  designations: DesignationRef[];
+  designationIds: string[];
   employmentType: EmploymentType;
   workLocation: string;
   joiningDate: string;
@@ -100,8 +104,8 @@ export interface EmployeeListQuery {
   search?: string;
   status?: EmployeeStatus;
   employmentType?: EmploymentType;
-  department?: string;
-  designation?: string;
+  departmentIds?: string;
+  designationIds?: string;
   tagIds?: string;
 }
 
@@ -131,11 +135,13 @@ export interface EmployeePayload {
   maritalStatus?: MaritalStatus | null;
   bloodGroup?: BloodGroup | null;
   nationalId?: string;
+  photoUrl?: string | null;
+  photoPublicId?: string | null;
   presentAddress?: string;
   permanentAddress?: string;
   emergencyContact?: Partial<EmergencyContact>;
-  department?: string;
-  designation?: string;
+  departmentIds: string[];
+  designationIds: string[];
   employmentType?: EmploymentType;
   workLocation?: string;
   joiningDate: string;

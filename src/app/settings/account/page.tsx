@@ -4,6 +4,7 @@ import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { ROLE_LABELS } from "@/constant";
 import { formatDateTime } from "@/lib/date";
 import { useChangePasswordMutation, useUpdateProfileMutation } from "@/redux/apis/authApis";
 import { selectCurrentUser } from "@/redux/authSlice";
@@ -120,7 +121,7 @@ export default function AccountSettingsPage() {
               {user?.email ?? "—"}
             </DetailRow>
             <DetailRow icon={ShieldCheck} label="Role">
-              {user?.role === "SUPER_ADMIN" ? "Super Admin" : (user?.role ?? "—")}
+              {user?.role ? (ROLE_LABELS[user.role] ?? user.role) : "—"}
             </DetailRow>
             <DetailRow icon={CalendarClock} label="Last sign-in">
               {formatDateTime(user?.lastLoginAt)}

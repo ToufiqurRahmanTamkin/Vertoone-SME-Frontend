@@ -34,6 +34,10 @@ const CompanyProfile = lazy(() => import("@/app/organization/CompanyProfilePage"
 const SisterConcerns = lazy(() => import("@/app/organization/SisterConcernsPage"));
 const TeamMembers = lazy(() => import("@/app/configuration/team/TeamMembersPage"));
 const Tags = lazy(() => import("@/app/crm/tags/TagsPage"));
+const Employees = lazy(() => import("@/app/hrms/people/employees/EmployeesPage"));
+const Departments = lazy(() => import("@/app/hrms/people/departments/DepartmentsPage"));
+const Designations = lazy(() => import("@/app/hrms/people/designations/DesignationsPage"));
+const Teams = lazy(() => import("@/app/hrms/people/teams/TeamsPage"));
 const LeadSources = lazy(() => import("@/app/crm/leadSources/LeadSourcesPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
@@ -72,6 +76,10 @@ const builtRoutes: RouteConfig[] = [
   { path: "organization/profile", element: <CompanyProfile /> },
   { path: "organization/sister-concerns", element: <SisterConcerns /> },
   { path: "configuration/team", element: <TeamMembers /> },
+  { path: "hrms/people/employees", element: <Employees /> },
+  { path: "hrms/people/teams", element: <Teams /> },
+  { path: "hrms/people/departments", element: <Departments /> },
+  { path: "hrms/people/designations", element: <Designations /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
   { path: "settings/account", element: <AccountSettings /> },

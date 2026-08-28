@@ -342,6 +342,14 @@ export const MENU_ITEMS: MenuItem[] = [
         description: "Every employee on the payroll, with their profile and job details.",
       },
       {
+        title: "Teams",
+        path: "/hrms/people/teams",
+        icon: "Users",
+        section: null,
+        roles: OWNER,
+        description: "Groups of employees, each with a team lead and a supervisor.",
+      },
+      {
         title: "Departments",
         path: "/hrms/people/departments",
         icon: "Network",

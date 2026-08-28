@@ -178,6 +178,12 @@ export const ALL_TAG_TYPES = [
   "EmployeeOptions",
   "Teams",
   "TeamsSummary",
+  "Departments",
+  "DepartmentSummary",
+  "DepartmentOptions",
+  "Designations",
+  "DesignationSummary",
+  "DesignationOptions",
   "LeadSources",
   "LeadSourceSummary",
 ] as const;

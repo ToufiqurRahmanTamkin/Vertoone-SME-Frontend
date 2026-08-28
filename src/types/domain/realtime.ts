@@ -19,6 +19,8 @@ export const SOCKET_RESOURCES = [
   "LEAD_SOURCES",
   "EMPLOYEES",
   "TEAMS",
+  "DEPARTMENTS",
+  "DESIGNATIONS",
 ] as const;
 export type SocketResource = (typeof SOCKET_RESOURCES)[number];
 

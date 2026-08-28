@@ -1,4 +1,10 @@
-import { FormColor, FormInput, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
+import {
+  FormColor,
+  FormInput,
+  FormMultiSelect,
+  FormSwitch,
+  FormTextarea,
+} from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +18,9 @@ import {
 import { Form } from "@/components/ui/form";
 import { useCreateTagMutation, useUpdateTagMutation } from "@/redux/apis/tagApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import { TAG_SCOPE_LABELS } from "@/constant";
 import type { Tag } from "@/types/domain/tag";
+import { TAG_SCOPES } from "@/types/domain/tag";
 import { TagSchema, type TagFormValues } from "@/validations/tag";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -28,10 +36,16 @@ interface TagFormModalProps {
 
 const DEFAULT_COLOR = "#6366f1";
 
+const SCOPE_OPTIONS = TAG_SCOPES.map((scope) => ({
+  value: scope,
+  label: TAG_SCOPE_LABELS[scope],
+}));
+
 const emptyValues = (): TagFormValues => ({
   name: "",
   color: DEFAULT_COLOR,
   description: "",
+  scopes: [],
   isActive: true,
 });
 
@@ -39,6 +53,7 @@ const toFormValues = (tag: Tag): TagFormValues => ({
   name: tag.name,
   color: tag.color,
   description: tag.description ?? "",
+  scopes: tag.scopes ?? [],
   isActive: tag.isActive,
 });
 
@@ -81,7 +96,8 @@ export function TagFormModal({ open, onOpenChange, tag }: TagFormModalProps) {
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit tag" : "New tag"}</DialogTitle>
           <DialogDescription>
-            Tags label your records with a name and a colour so they are easy to spot in a list.
+            Tags label any record with a name and a colour, and can be used to filter lists across
+            HRMS, SME and CRM.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,6 +116,14 @@ export function TagFormModal({ open, onOpenChange, tag }: TagFormModalProps) {
                 name="description"
                 label="Description"
                 placeholder="What this tag is for (optional)"
+              />
+              <FormMultiSelect
+                control={form.control}
+                name="scopes"
+                label="Applies to"
+                placeholder="Everything"
+                options={SCOPE_OPTIONS}
+                description="Leave empty and this tag can be attached to any record."
               />
               <FormSwitch
                 control={form.control}

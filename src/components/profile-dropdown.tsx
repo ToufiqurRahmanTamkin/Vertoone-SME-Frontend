@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ROLE_LABELS } from "@/constant";
 import { useLogoutMutation } from "@/redux/apis/authApis";
 import { logOut, selectCurrentUser } from "@/redux/authSlice";
 import { ChevronsUpDown, LogOut, Settings, ShieldCheck } from "lucide-react";
@@ -94,7 +95,7 @@ export default function ProfileDropdown() {
           </div>
           <div className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Super Admin</span>
+            <span className="truncate">{ROLE_LABELS[user.role] ?? user.role}</span>
           </div>
         </DropdownMenuLabel>
 

@@ -1,75 +1,60 @@
-import { ColorChip } from "@/components/shared/color-chip";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TAG_SCOPE_LABELS } from "@/constant";
-import { formatDate } from "@/lib/date";
-import type { Tag } from "@/types/domain/tag";
+import type { Department } from "@/types/domain/department";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface TagColumnActions {
-  onEdit: (tag: Tag) => void;
-  onDelete: (tag: Tag) => void;
+interface DepartmentColumnActions {
+  onEdit: (department: Department) => void;
+  onDelete: (department: Department) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const tagColumns = ({
+export const departmentColumns = ({
   onEdit,
   onDelete,
   canEdit,
   canDelete,
-}: TagColumnActions): ColumnDef<Tag>[] => [
+}: DepartmentColumnActions): ColumnDef<Department>[] => [
   {
     accessorKey: "name",
-    header: "Tag",
-    cell: ({ row }) => <ColorChip color={row.original.color} label={row.original.name} />,
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
+    header: "Department",
     cell: ({ row }) => (
-      <span className="text-xs text-muted-foreground">{row.original.description || "—"}</span>
+      <div className="min-w-0">
+        <p className="truncate font-medium">{row.original.name}</p>
+        {row.original.description && (
+          <p className="max-w-xs truncate text-xs text-muted-foreground">
+            {row.original.description}
+          </p>
+        )}
+      </div>
     ),
   },
   {
-    id: "scopes",
-    header: "Applies to",
-    cell: ({ row }) => {
-      const scopes = row.original.scopes ?? [];
-      return scopes.length === 0 ? (
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
-          Everything
-        </Badge>
-      ) : (
-        <div className="flex flex-wrap gap-1">
-          {scopes.slice(0, 3).map((scope) => (
-            <Badge key={scope} variant="secondary" className="text-[10px]">
-              {TAG_SCOPE_LABELS[scope]}
-            </Badge>
-          ))}
-          {scopes.length > 3 && (
-            <span className="text-xs text-muted-foreground">+{scopes.length - 3}</span>
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "color",
-    header: "Colour",
+    accessorKey: "code",
+    header: "Code",
     cell: ({ row }) => (
       <span className="font-mono text-xs uppercase text-muted-foreground">
-        {row.original.color}
+        {row.original.code}
       </span>
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: "Created",
+    id: "head",
+    header: "Head",
     cell: ({ row }) => (
-      <span className="text-xs text-muted-foreground">{formatDate(row.original.createdAt)}</span>
+      <span className="text-sm">{row.original.head?.name ?? "—"}</span>
+    ),
+  },
+  {
+    accessorKey: "employeeCount",
+    header: "Employees",
+    cell: ({ row }) => (
+      <Badge variant="secondary" className="text-[10px]">
+        {row.original.employeeCount}
+      </Badge>
     ),
   },
   {

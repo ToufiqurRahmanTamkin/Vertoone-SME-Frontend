@@ -1,0 +1,50 @@
+import { z } from "zod";
+import {
+  BLOOD_GROUPS,
+  EMPLOYEE_STATUSES,
+  EMPLOYMENT_TYPES,
+  GENDERS,
+  MARITAL_STATUSES,
+} from "@/types/domain/employee";
+import { optionalPhone, requiredPhone } from "./phone";
+
+export const EmployeeSchema = z.object({
+  employeeCode: z.string().trim().max(30),
+  firstName: z.string().trim().min(1, "First name is required").max(60),
+  lastName: z.string().trim().min(1, "Last name is required").max(60),
+  email: z.string().trim().toLowerCase().email("A valid email is required"),
+  phone: requiredPhone,
+  alternatePhone: optionalPhone,
+  dateOfBirth: z.string().trim(),
+  gender: z.union([z.enum(GENDERS), z.literal("")]),
+  maritalStatus: z.union([z.enum(MARITAL_STATUSES), z.literal("")]),
+  bloodGroup: z.union([z.enum(BLOOD_GROUPS), z.literal("")]),
+  nationalId: z.string().trim().max(40),
+  photoUrl: z.string().trim(),
+  photoPublicId: z.string().trim(),
+  presentAddress: z.string().trim().max(300),
+  permanentAddress: z.string().trim().max(300),
+  emergencyContactName: z.string().trim().max(80),
+  emergencyContactRelationship: z.string().trim().max(40),
+  emergencyContactPhone: optionalPhone,
+  departmentIds: z.array(z.string()).min(1, "Pick at least one department"),
+  designationIds: z.array(z.string()).min(1, "Pick at least one designation"),
+  employmentType: z.enum(EMPLOYMENT_TYPES),
+  workLocation: z.string().trim().max(80),
+  joiningDate: z.string().trim().min(1, "A joining date is required"),
+  confirmationDate: z.string().trim(),
+  resignationDate: z.string().trim(),
+  reportsToId: z.string().trim(),
+  status: z.enum(EMPLOYEE_STATUSES),
+  salaryAmount: z.union([z.literal(""), z.number().min(0, "Salary cannot be negative")]),
+  salaryCurrency: z.string().trim().min(1),
+  bankName: z.string().trim().max(80),
+  branchName: z.string().trim().max(80),
+  accountName: z.string().trim().max(80),
+  accountNumber: z.string().trim().max(40),
+  routingNumber: z.string().trim().max(40),
+  tagIds: z.array(z.string()),
+  notes: z.string().trim().max(1000),
+});
+
+export type EmployeeFormValues = z.infer<typeof EmployeeSchema>;

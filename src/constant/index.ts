@@ -26,6 +26,14 @@ import type {
   ActivitySeverity,
 } from "@/types/domain/activity";
 import type { WipeScope } from "@/types/domain/dataWipe";
+import type {
+  BloodGroup,
+  EmployeeStatus,
+  EmploymentType,
+  Gender,
+  MaritalStatus,
+} from "@/types/domain/employee";
+import type { TagScope } from "@/types/domain/tag";
 
 export const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   MONTHLY: "Monthly",
@@ -413,4 +421,71 @@ export const WIPE_SCOPE_COLORS: Record<WipeScope, StatusColor> = {
   SOFT_DELETED: "amber",
   OPERATIONAL: "orange",
   FACTORY_RESET: "red",
+};
+
+
+export const EMPLOYEE_STATUS_LABELS: Record<EmployeeStatus, string> = {
+  ACTIVE: "Active",
+  PROBATION: "On probation",
+  ON_LEAVE: "On leave",
+  SUSPENDED: "Suspended",
+  RESIGNED: "Resigned",
+  TERMINATED: "Terminated",
+};
+
+export const EMPLOYEE_STATUS_COLORS: Record<EmployeeStatus, StatusColor> = {
+  ACTIVE: "green",
+  PROBATION: "amber",
+  ON_LEAVE: "blue",
+  SUSPENDED: "orange",
+  RESIGNED: "zinc",
+  TERMINATED: "red",
+};
+
+export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
+  FULL_TIME: "Full time",
+  PART_TIME: "Part time",
+  CONTRACT: "Contract",
+  INTERN: "Intern",
+  TEMPORARY: "Temporary",
+  CONSULTANT: "Consultant",
+};
+
+export const GENDER_LABELS: Record<Gender, string> = {
+  MALE: "Male",
+  FEMALE: "Female",
+  OTHER: "Other",
+};
+
+export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
+  SINGLE: "Single",
+  MARRIED: "Married",
+  DIVORCED: "Divorced",
+  WIDOWED: "Widowed",
+};
+
+export const BLOOD_GROUP_LABELS: Record<BloodGroup, string> = {
+  "A+": "A+",
+  "A-": "A-",
+  "B+": "B+",
+  "B-": "B-",
+  "AB+": "AB+",
+  "AB-": "AB-",
+  "O+": "O+",
+  "O-": "O-",
+};
+
+export const TAG_SCOPE_LABELS: Record<TagScope, string> = {
+  EMPLOYEE: "Employees",
+  TEAM: "Teams",
+  LEAD: "Leads",
+  CONTACT: "Contacts",
+  ACCOUNT: "Accounts",
+  DEAL: "Deals",
+  TICKET: "Tickets",
+  PRODUCT: "Products",
+  SUPPLIER: "Suppliers",
+  CUSTOMER: "Customers",
+  INVOICE: "Invoices",
+  TASK: "Tasks",
 };
