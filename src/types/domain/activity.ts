@@ -55,6 +55,11 @@ export const ACTIVITY_ACTIONS = [
   "EMAIL_RESENT",
   "SYSTEM_CONFIG_UPDATED",
   "DATA_WIPE_EXECUTED",
+  "CONCERN_CREATED",
+  "CONCERN_UPDATED",
+  "CONCERN_DELETED",
+  "CONCERN_HEAD_CREATED",
+  "CONCERN_HEAD_UPDATED",
 ] as const;
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];
 
@@ -68,6 +73,7 @@ export const ACTIVITY_ENTITY_TYPES = [
   "FINANCE_CATEGORY",
   "USER_GUIDE",
   "USER",
+  "CONCERN",
   "EMAIL",
   "SYSTEM_CONFIG",
   "SYSTEM",

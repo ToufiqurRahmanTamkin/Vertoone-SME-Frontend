@@ -2,6 +2,7 @@ export * from "./activity";
 export * from "./adminUser";
 export * from "./auth";
 export * from "./company";
+export * from "./concern";
 export * from "./dashboard";
 export * from "./dataWipe";
 export * from "./email";

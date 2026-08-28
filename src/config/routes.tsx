@@ -31,7 +31,9 @@ const FinanceReport = lazy(() => import("@/app/reports/FinanceReportPage"));
 const CustomersReport = lazy(() => import("@/app/reports/CustomersReportPage"));
 const SecurityReport = lazy(() => import("@/app/reports/SecurityReportPage"));
 const CompanyProfile = lazy(() => import("@/app/organization/CompanyProfilePage"));
-const SisterConcerns = lazy(() => import("@/app/organization/SisterConcernsPage"));
+const Concerns = lazy(() => import("@/app/concerns/ConcernsPage"));
+const ConcernHeads = lazy(() => import("@/app/concerns/ConcernHeadsPage"));
+const MyConcern = lazy(() => import("@/app/myConcern/MyConcernPage"));
 const TeamMembers = lazy(() => import("@/app/configuration/team/TeamMembersPage"));
 const Tags = lazy(() => import("@/app/crm/tags/TagsPage"));
 const Employees = lazy(() => import("@/app/hrms/people/employees/EmployeesPage"));
@@ -74,7 +76,9 @@ const builtRoutes: RouteConfig[] = [
   { path: "activity", element: <SystemActivity /> },
   { path: "data-wipe", element: <DataWipe /> },
   { path: "organization/profile", element: <CompanyProfile /> },
-  { path: "organization/sister-concerns", element: <SisterConcerns /> },
+  { path: "concerns", element: <Concerns /> },
+  { path: "concerns/heads", element: <ConcernHeads /> },
+  { path: "my-concern", element: <MyConcern /> },
   { path: "configuration/team", element: <TeamMembers /> },
   { path: "hrms/people/employees", element: <Employees /> },
   { path: "hrms/people/teams", element: <Teams /> },

@@ -39,26 +39,3 @@ export const CompanyProfileSchema = z.object({
 });
 
 export type CompanyProfileFormValues = z.infer<typeof CompanyProfileSchema>;
-
-export const SisterConcernSchema = z
-  .object({
-    name: z.string().trim().min(1, "Company name is required").max(120),
-    registrationNo: z.string().trim().max(60),
-    industry: z.string().trim().max(80),
-    email: z.string().trim().email("Enter a valid email address"),
-    phone: optionalPhone,
-    website: optionalUrl,
-    address: z.string().trim().max(200),
-    employeeRange: z.string().trim().min(1, "Pick a company size"),
-    hrmsEnabled: z.boolean(),
-    smeEnabled: z.boolean(),
-    crmEnabled: z.boolean(),
-    isActive: z.boolean(),
-    notes: z.string().trim().max(500),
-  })
-  .refine((value) => value.hrmsEnabled || value.smeEnabled || value.crmEnabled, {
-    message: "Enable at least one module",
-    path: ["hrmsEnabled"],
-  });
-
-export type SisterConcernFormValues = z.infer<typeof SisterConcernSchema>;

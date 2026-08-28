@@ -140,6 +140,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   SUPER_ADMIN: "Super admin",
   COMPANY_OWNER: "Company owner",
   COMPANY_USER: "Team member",
+  CONCERN_HEAD: "Concern head",
 };
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
@@ -385,6 +386,11 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   EMAIL_RESENT: "Email resent",
   SYSTEM_CONFIG_UPDATED: "System config updated",
   DATA_WIPE_EXECUTED: "Data wipe executed",
+  CONCERN_CREATED: "Concern created",
+  CONCERN_UPDATED: "Concern updated",
+  CONCERN_DELETED: "Concern removed",
+  CONCERN_HEAD_CREATED: "Concern head created",
+  CONCERN_HEAD_UPDATED: "Concern head updated",
 };
 
 export const ACTIVITY_ENTITY_TYPE_LABELS: Record<ActivityEntityType, string> = {
@@ -397,6 +403,7 @@ export const ACTIVITY_ENTITY_TYPE_LABELS: Record<ActivityEntityType, string> = {
   FINANCE_CATEGORY: "Finance category",
   USER_GUIDE: "User guide",
   USER: "User",
+  CONCERN: "Concern",
   EMAIL: "Email",
   SYSTEM_CONFIG: "System config",
   SYSTEM: "System",

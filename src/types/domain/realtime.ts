@@ -14,6 +14,7 @@ export const SOCKET_RESOURCES = [
   "FINANCE",
   "PERMISSIONS",
   "TEAM_MEMBERS",
+  "CONCERNS",
   "USERS",
   "TAGS",
   "LEAD_SOURCES",

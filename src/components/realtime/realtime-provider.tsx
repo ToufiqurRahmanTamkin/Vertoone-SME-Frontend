@@ -30,6 +30,7 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
   FINANCE: ["Incomes", "Expenses", "FinanceCategories", "Reports"],
   PERMISSIONS: ["Permissions", "Me", "MyCompany"],
   TEAM_MEMBERS: ["TeamMembers", "TeamSummary"],
+  CONCERNS: ["Concerns", "ConcernSummary", "ConcernHeads"],
   USERS: ["AllUsers"],
   TAGS: ["Tags", "TagSummary", "TagOptions"],
   EMPLOYEES: ["Employees", "EmployeeSummary", "EmployeeOptions"],

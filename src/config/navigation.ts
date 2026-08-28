@@ -149,7 +149,11 @@ export interface MenuItem {
   shownInSidebar?: boolean;
 }
 
-const OWNER = ["COMPANY_OWNER", "COMPANY_USER"];
+const COMPANY = ["COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD"];
+
+const COMPANY_ADMIN = ["COMPANY_OWNER"];
+
+const CONCERN_HEAD = ["CONCERN_HEAD"];
 
 export const MENU_ITEMS: MenuItem[] = [
   {
@@ -165,6 +169,14 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: "Building2",
     section: "Overview",
     roles: ["COMPANY_OWNER"],
+  },
+  {
+    title: "My Concern",
+    path: "/my-concern",
+    icon: "GitBranch",
+    section: "Overview",
+    roles: CONCERN_HEAD,
+    description: "The concern you have been made head of.",
   },
   {
     title: "Companies",
@@ -327,18 +339,36 @@ export const MENU_ITEMS: MenuItem[] = [
   },
 
   {
+    title: "Concerns",
+    path: "/concerns",
+    icon: "GitBranch",
+    section: "Concerns",
+    roles: COMPANY_ADMIN,
+    exact: true,
+    description: "The businesses running under your company, each with its own head.",
+  },
+  {
+    title: "Concern Heads",
+    path: "/concerns/heads",
+    icon: "IdCard",
+    section: null,
+    roles: COMPANY_ADMIN,
+    description: "Every concern head sign-in and the menus they can reach.",
+  },
+
+  {
     title: "People",
     path: "/hrms/people",
     icon: "Users",
     section: "HRMS",
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Employees",
         path: "/hrms/people/employees",
         icon: "Users",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Every employee on the payroll, with their profile and job details.",
       },
       {
@@ -346,7 +376,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/people/teams",
         icon: "Users",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Groups of employees, each with a team lead and a supervisor.",
       },
       {
@@ -354,7 +384,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/people/departments",
         icon: "Network",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "The reporting structure employees are grouped under.",
       },
       {
@@ -362,7 +392,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/people/designations",
         icon: "IdCard",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Job titles available when hiring or promoting.",
       },
       {
@@ -370,7 +400,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/people/employment-types",
         icon: "FileSignature",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Contract, permanent, intern and other engagement types.",
       },
     ],
@@ -380,14 +410,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/attendance",
     icon: "CalendarCheck",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Daily attendance",
         path: "/hrms/attendance/daily",
         icon: "CalendarCheck",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Check-in and check-out records day by day.",
       },
       {
@@ -395,7 +425,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/attendance/shifts",
         icon: "Clock",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Working-hour patterns assigned to employees.",
       },
       {
@@ -403,7 +433,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/attendance/holidays",
         icon: "CalendarDays",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "The company holiday calendar for the year.",
       },
       {
@@ -411,7 +441,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/attendance/overtime",
         icon: "CalendarClock",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Extra hours logged and approved for payout.",
       },
     ],
@@ -421,14 +451,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/leave",
     icon: "Plane",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Leave requests",
         path: "/hrms/leave/requests",
         icon: "Plane",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Pending and decided time-off requests.",
       },
       {
@@ -436,7 +466,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/leave/types",
         icon: "ListChecks",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Annual, sick, unpaid and any custom leave category.",
       },
       {
@@ -444,7 +474,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/leave/balance",
         icon: "ClipboardList",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Remaining entitlement per employee and leave type.",
       },
     ],
@@ -454,14 +484,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/payroll",
     icon: "Banknote",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Salary structures",
         path: "/hrms/payroll/structures",
         icon: "Calculator",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Basic, allowance and deduction templates used to build pay.",
       },
       {
@@ -469,7 +499,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/payroll/payslips",
         icon: "Receipt",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Generated payslips for each pay period.",
       },
       {
@@ -477,7 +507,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/payroll/adjustments",
         icon: "Coins",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "One-off additions and deductions applied to a payroll run.",
       },
       {
@@ -485,7 +515,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/payroll/loans",
         icon: "Wallet",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Money advanced to employees and its repayment schedule.",
       },
     ],
@@ -495,14 +525,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/recruitment",
     icon: "UserPlus",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Job openings",
         path: "/hrms/recruitment/openings",
         icon: "Briefcase",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Roles you are currently hiring for.",
       },
       {
@@ -510,7 +540,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/recruitment/candidates",
         icon: "UserPlus",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Applicants and where they sit in the hiring pipeline.",
       },
       {
@@ -518,7 +548,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/recruitment/interviews",
         icon: "CalendarClock",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Scheduled interviews and their outcomes.",
       },
     ],
@@ -528,14 +558,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/performance",
     icon: "Target",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Goals & KPIs",
         path: "/hrms/performance/goals",
         icon: "Target",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Targets set for individuals and teams.",
       },
       {
@@ -543,7 +573,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/performance/appraisals",
         icon: "Award",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Review cycles, ratings and outcomes.",
       },
       {
@@ -551,7 +581,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/hrms/performance/training",
         icon: "GraduationCap",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Courses assigned to employees and completion status.",
       },
     ],
@@ -561,7 +591,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/announcements",
     icon: "Megaphone",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Company-wide notices published to your employees.",
   },
   {
@@ -569,7 +599,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/hrms/reports",
     icon: "BarChart3",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Headcount, attendance, leave and payroll summaries.",
   },
 
@@ -578,14 +608,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/sme/products",
     icon: "Package",
     section: "SME",
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "All products",
         path: "/sme/products/list",
         icon: "Package",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Everything you buy, stock or sell.",
       },
       {
@@ -593,7 +623,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/products/categories",
         icon: "Tags",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "How the catalogue is grouped for browsing and reporting.",
       },
       {
@@ -601,7 +631,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/products/brands",
         icon: "Store",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Manufacturers and labels attached to your products.",
       },
       {
@@ -609,7 +639,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/products/units",
         icon: "Ruler",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Units of measure used for stock and pricing.",
       },
     ],
@@ -619,14 +649,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/sme/inventory",
     icon: "Boxes",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Stock overview",
         path: "/sme/inventory/stock",
         icon: "Boxes",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Live quantity on hand across every location.",
       },
       {
@@ -634,7 +664,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/inventory/warehouses",
         icon: "Warehouse",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Storage locations stock is counted against.",
       },
       {
@@ -642,7 +672,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/inventory/transfers",
         icon: "Truck",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Movement of stock between warehouses.",
       },
       {
@@ -650,7 +680,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/inventory/adjustments",
         icon: "ClipboardList",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Corrections from stock counts, damage or loss.",
       },
     ],
@@ -660,14 +690,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/sme/purchases",
     icon: "ShoppingCart",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Suppliers",
         path: "/sme/purchases/suppliers",
         icon: "Truck",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Vendors you buy from and their terms.",
       },
       {
@@ -675,7 +705,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/purchases/orders",
         icon: "ShoppingCart",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Orders raised with suppliers and their receipt status.",
       },
       {
@@ -683,7 +713,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/purchases/returns",
         icon: "FileText",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Goods sent back to suppliers and credits due.",
       },
     ],
@@ -693,14 +723,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/sme/sales",
     icon: "Receipt",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Quotations",
         path: "/sme/sales/quotations",
         icon: "FileText",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Prices offered to customers before they commit.",
       },
       {
@@ -708,7 +738,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/sales/orders",
         icon: "ClipboardList",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Confirmed customer orders awaiting fulfilment.",
       },
       {
@@ -716,7 +746,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/sales/invoices",
         icon: "Receipt",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Bills raised to customers and what is still unpaid.",
       },
       {
@@ -724,7 +754,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/sales/returns",
         icon: "FileText",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Goods returned by customers and refunds issued.",
       },
       {
@@ -732,7 +762,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/sales/pos",
         icon: "Store",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Counter-side selling for walk-in customers.",
       },
     ],
@@ -742,14 +772,14 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/sme/accounting",
     icon: "Calculator",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Income",
         path: "/sme/accounting/income",
         icon: "TrendingUp",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Money received, by source and period.",
       },
       {
@@ -757,7 +787,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/accounting/expenses",
         icon: "Wallet",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Money spent running the business.",
       },
       {
@@ -765,7 +795,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/accounting/categories",
         icon: "Tags",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Heads that income and expenses are booked against.",
       },
       {
@@ -773,7 +803,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/sme/accounting/payments",
         icon: "Banknote",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Payments in and out, matched to invoices and bills.",
       },
     ],
@@ -783,7 +813,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/sme/reports",
     icon: "BarChart3",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Sales, purchase, stock and profitability summaries.",
   },
 
@@ -792,62 +822,55 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/crm/leads",
     icon: "Target",
     section: "CRM",
-    roles: OWNER,
+    roles: COMPANY,
     description: "Unqualified interest captured from every channel.",
-  },
-  {
-    title: "Lead Sources",
-    path: "/crm/lead-sources",
-    icon: "Network",
-    section: null,
-    roles: OWNER,
-    description: "Where your enquiries come from, each with its own colour.",
-  },
-  {
-    title: "Tags",
-    path: "/crm/tags",
-    icon: "Tags",
-    section: null,
-    roles: OWNER,
-    description: "Colour-coded labels for grouping records.",
-  },
-  {
-    title: "Contacts",
-    path: "/crm/contacts",
-    icon: "Contact",
-    section: null,
-    roles: OWNER,
-    description: "The people you deal with, across all accounts.",
-  },
-  {
-    title: "Accounts",
-    path: "/crm/accounts",
-    icon: "Building",
-    section: null,
-    roles: OWNER,
-    description: "Customer organisations and their relationship history.",
   },
   {
     title: "Deals",
     path: "/crm/deals",
     icon: "Handshake",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Open opportunities and the stage each one sits at.",
+  },
+  {
+    title: "Customers",
+    path: "/crm/customers",
+    icon: "Contact",
+    section: null,
+    roles: COMPANY,
+    items: [
+      {
+        title: "Contacts",
+        path: "/crm/contacts",
+        icon: "Contact",
+        section: null,
+        roles: COMPANY,
+        description: "The people you deal with, across all accounts.",
+      },
+      {
+        title: "Accounts",
+        path: "/crm/accounts",
+        icon: "Building",
+        section: null,
+        roles: COMPANY,
+        description: "Customer organisations and their relationship history.",
+      },
+    ],
   },
   {
     title: "Activities",
     path: "/crm/activities",
     icon: "ListChecks",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     items: [
       {
         title: "Tasks",
         path: "/crm/activities/tasks",
         icon: "ListChecks",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Follow-ups owed to leads, contacts and deals.",
       },
       {
@@ -855,7 +878,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/crm/activities/meetings",
         icon: "CalendarClock",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Scheduled meetings and the notes taken.",
       },
       {
@@ -863,7 +886,7 @@ export const MENU_ITEMS: MenuItem[] = [
         path: "/crm/activities/calls",
         icon: "PhoneCall",
         section: null,
-        roles: OWNER,
+        roles: COMPANY,
         description: "Logged calls and their outcomes.",
       },
     ],
@@ -873,7 +896,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/crm/campaigns",
     icon: "Send",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Outbound pushes and the pipeline they generated.",
   },
   {
@@ -881,15 +904,40 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/crm/tickets",
     icon: "LifeBuoy",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Customer issues raised and how quickly they are closed.",
+  },
+  {
+    title: "CRM Setup",
+    path: "/crm/setup",
+    icon: "SlidersHorizontal",
+    section: null,
+    roles: COMPANY,
+    items: [
+      {
+        title: "Lead Sources",
+        path: "/crm/lead-sources",
+        icon: "Network",
+        section: null,
+        roles: COMPANY,
+        description: "Where your enquiries come from, each with its own colour.",
+      },
+      {
+        title: "Tags",
+        path: "/crm/tags",
+        icon: "Tags",
+        section: null,
+        roles: COMPANY,
+        description: "Colour-coded labels for grouping records.",
+      },
+    ],
   },
   {
     title: "CRM Reports",
     path: "/crm/reports",
     icon: "BarChart3",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Pipeline, conversion and activity summaries.",
   },
 
@@ -898,48 +946,23 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/organization/profile",
     icon: "Building2",
     section: "Organization",
-    roles: OWNER,
+    roles: COMPANY,
     description: "Your company name, contact details, logo and banner.",
-  },
-  {
-    title: "Sister Concerns",
-    path: "/organization/sister-concerns",
-    icon: "GitBranch",
-    section: null,
-    roles: OWNER,
-    description: "Other companies you own under the same group.",
   },
   {
     title: "Branches",
     path: "/organization/branches",
     icon: "Building",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Physical locations belonging to this company.",
-  },
-
-  {
-    title: "General",
-    path: "/configuration/general",
-    icon: "SlidersHorizontal",
-    section: "Configuration",
-    roles: OWNER,
-    description: "Currency, timezone, date format and other company defaults.",
-  },
-  {
-    title: "Modules",
-    path: "/configuration/modules",
-    icon: "LayoutGrid",
-    section: null,
-    roles: OWNER,
-    description: "Turn HRMS, SME and CRM on or off for this company.",
   },
   {
     title: "Team Members",
     path: "/configuration/team",
     icon: "UserCog",
     section: null,
-    roles: OWNER,
+    roles: COMPANY_ADMIN,
     description: "People who can sign in to this workspace.",
   },
   {
@@ -947,39 +970,65 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/configuration/roles",
     icon: "ShieldCheck",
     section: null,
-    roles: OWNER,
+    roles: COMPANY_ADMIN,
     description: "What each role is allowed to see and do.",
   },
+
   {
-    title: "Numbering & Templates",
-    path: "/configuration/numbering",
-    icon: "Hash",
-    section: null,
-    roles: OWNER,
-    description: "Prefixes and formats for invoices, orders and employee IDs.",
+    title: "Preferences",
+    path: "/configuration/preferences",
+    icon: "SlidersHorizontal",
+    section: "Configuration",
+    roles: COMPANY,
+    items: [
+      {
+        title: "General",
+        path: "/configuration/general",
+        icon: "SlidersHorizontal",
+        section: null,
+        roles: COMPANY,
+        description: "Currency, timezone, date format and other company defaults.",
+      },
+      {
+        title: "Numbering & Templates",
+        path: "/configuration/numbering",
+        icon: "Hash",
+        section: null,
+        roles: COMPANY,
+        description: "Prefixes and formats for invoices, orders and employee IDs.",
+      },
+      {
+        title: "Taxes & Currency",
+        path: "/configuration/taxes",
+        icon: "Percent",
+        section: null,
+        roles: COMPANY,
+        description: "Tax rates and the currencies you trade in.",
+      },
+      {
+        title: "Notifications",
+        path: "/configuration/notifications",
+        icon: "Bell",
+        section: null,
+        roles: COMPANY,
+        description: "Which events send an email or in-app alert.",
+      },
+    ],
   },
   {
-    title: "Taxes & Currency",
-    path: "/configuration/taxes",
-    icon: "Percent",
+    title: "Modules",
+    path: "/configuration/modules",
+    icon: "LayoutGrid",
     section: null,
-    roles: OWNER,
-    description: "Tax rates and the currencies you trade in.",
-  },
-  {
-    title: "Notifications",
-    path: "/configuration/notifications",
-    icon: "Bell",
-    section: null,
-    roles: OWNER,
-    description: "Which events send an email or in-app alert.",
+    roles: COMPANY,
+    description: "Turn HRMS, SME and CRM on or off for this company.",
   },
   {
     title: "Integrations",
     path: "/configuration/integrations",
     icon: "Plug",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Payment gateways, messaging and other connected services.",
   },
   {
@@ -987,7 +1036,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/configuration/audit-log",
     icon: "ScrollText",
     section: null,
-    roles: OWNER,
+    roles: COMPANY,
     description: "Who changed what inside this workspace.",
   },
 
@@ -996,7 +1045,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/settings/account",
     icon: "Settings",
     section: "Settings",
-    roles: ["SUPER_ADMIN", "COMPANY_OWNER"],
+    roles: ["SUPER_ADMIN", "COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD"],
   },
 ];
 
