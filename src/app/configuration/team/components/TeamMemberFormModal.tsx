@@ -19,7 +19,11 @@ import {
   useUpdateTeamMemberMutation,
 } from "@/redux/apis/teamMemberApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import { permissionFor, type ModulePermissionMap } from "@/types/domain/permission";
+import {
+  permissionFor,
+  prunePermissionMap,
+  type ModulePermissionMap,
+} from "@/types/domain/permission";
 import type { TeamMember } from "@/types/domain/teamMember";
 import { TeamMemberSchema, type TeamMemberFormValues } from "@/validations/teamMember";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -97,7 +101,18 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
     [catalogue, entitlement]
   );
 
+  const knownModuleKeys = React.useMemo(
+    () => new Set(catalogue.map((definition) => definition.key)),
+    [catalogue]
+  );
+
   const [grant, setGrant] = React.useState<ModulePermissionMap>({});
+
+  const liveGrant = React.useMemo(
+    () => prunePermissionMap(grant, knownModuleKeys),
+    [grant, knownModuleKeys]
+  );
+
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
 
@@ -151,7 +166,7 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
             name: values.name,
             phone: values.phone,
             status: values.status,
-            modulePermissions: grant,
+            modulePermissions: liveGrant,
             ...(values.password ? { password: values.password } : {}),
           },
         }).unwrap();
@@ -163,7 +178,7 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
           phone: values.phone,
           password: values.password,
           status: values.status,
-          modulePermissions: grant,
+          modulePermissions: liveGrant,
         }).unwrap();
         toast.success("Team member added");
       }
@@ -189,8 +204,8 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
   };
 
   const grantedMenuCount = React.useMemo(
-    () => Object.values(grant).filter((permission) => permission.canView).length,
-    [grant]
+    () => Object.values(liveGrant).filter((permission) => permission.canView).length,
+    [liveGrant]
   );
 
   const summary = useWatch({ control: form.control });
@@ -271,7 +286,7 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
                   </p>
                   <ModulePermissionMatrix
                     modules={assignableModules}
-                    value={grant}
+                    value={liveGrant}
                     onChange={setGrant}
                     ceiling={entitlement}
                     emptyMessage="Your current plan does not include any assignable menus."

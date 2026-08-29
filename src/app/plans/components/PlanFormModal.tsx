@@ -16,7 +16,7 @@ import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
 import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import type { ModulePermissionMap } from "@/types/domain/permission";
+import { prunePermissionMap, type ModulePermissionMap } from "@/types/domain/permission";
 import {
   DEFAULT_CURRENCY,
   SUPPORTED_CURRENCIES,
@@ -110,7 +110,17 @@ export function PlanFormModal({
     [catalogue]
   );
 
+  const knownModuleKeys = React.useMemo(
+    () => new Set(catalogue.map((definition) => definition.key)),
+    [catalogue]
+  );
+
   const [modulePermissions, setModulePermissions] = React.useState<ModulePermissionMap>({});
+
+  const livePermissions = React.useMemo(
+    () => prunePermissionMap(modulePermissions, knownModuleKeys),
+    [modulePermissions, knownModuleKeys]
+  );
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
 
@@ -154,7 +164,7 @@ export function PlanFormModal({
       billingCycle: values.billingCycle,
       features: parseFeatures(values.features),
       limits: { users: toLimit(values.limitUsers) },
-      modulePermissions,
+      modulePermissions: livePermissions,
       trialDays: values.trialDays,
       isActive: values.isActive,
       autoRenewEnabled: values.autoRenewEnabled,
@@ -191,8 +201,8 @@ export function PlanFormModal({
   };
 
   const selectedModuleCount = React.useMemo(
-    () => Object.values(modulePermissions).filter((permission) => permission.canView).length,
-    [modulePermissions]
+    () => Object.values(livePermissions).filter((permission) => permission.canView).length,
+    [livePermissions]
   );
 
   const summary = useWatch({ control: form.control });
@@ -299,7 +309,7 @@ export function PlanFormModal({
                   </p>
                   <ModulePermissionMatrix
                     modules={companyModules}
-                    value={modulePermissions}
+                    value={livePermissions}
                     onChange={setModulePermissions}
                     showLimits
                     emptyMessage="The module catalogue could not be loaded."

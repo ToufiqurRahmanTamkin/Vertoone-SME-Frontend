@@ -61,6 +61,15 @@ export const permissionFor = (
   moduleKey: string
 ): ModulePermission => modules?.[moduleKey] ?? emptyPermission();
 
+export const prunePermissionMap = (
+  map: ModulePermissionMap,
+  knownKeys: ReadonlySet<string>
+): ModulePermissionMap => {
+  if (knownKeys.size === 0) return map;
+  const entries = Object.entries(map).filter(([key]) => knownKeys.has(key));
+  return entries.length === Object.keys(map).length ? map : Object.fromEntries(entries);
+};
+
 export const canDo = (
   modules: ModulePermissionMap | undefined,
   moduleKey: string,
