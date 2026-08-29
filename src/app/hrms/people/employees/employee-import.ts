@@ -16,8 +16,7 @@ export interface ImportColumn {
 }
 
 export const IMPORT_COLUMNS: ImportColumn[] = [
-  { header: "First name", required: true, hint: "Given name", example: "Ayesha" },
-  { header: "Last name", required: true, hint: "Family name", example: "Rahman" },
+  { header: "Full name", required: true, hint: "As it should appear", example: "Ayesha Rahman" },
   {
     header: "Email",
     required: true,
@@ -37,12 +36,17 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
     hint: "Existing designation names, separated by commas",
     example: "Officer",
   },
-  { header: "Joining date", required: true, hint: "YYYY-MM-DD", example: "2024-01-15" },
   {
-    header: "Employee ID",
+    header: "Employment type",
+    required: true,
+    hint: "Full time, Part time, Contract, Intern, Temporary or Consultant",
+    example: "Full time",
+  },
+  {
+    header: "Joining date",
     required: false,
-    hint: "Left blank, one is generated",
-    example: "",
+    hint: "YYYY-MM-DD, today when blank",
+    example: "2024-01-15",
   },
   { header: "Alternate phone", required: false, hint: "", example: "" },
   { header: "Date of birth", required: false, hint: "YYYY-MM-DD", example: "1996-04-02" },
@@ -56,12 +60,6 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
   { header: "Blood group", required: false, hint: "A+, A-, B+, B-, AB+, AB-, O+, O-", example: "" },
   { header: "National ID", required: false, hint: "", example: "" },
   {
-    header: "Employment type",
-    required: false,
-    hint: "Full time, Part time, Contract, Intern, Temporary or Consultant",
-    example: "Full time",
-  },
-  {
     header: "Status",
     required: false,
     hint: "Active, On probation, On leave, Suspended, Resigned or Terminated",
@@ -74,8 +72,6 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
   { header: "Emergency contact name", required: false, hint: "", example: "" },
   { header: "Emergency contact relationship", required: false, hint: "", example: "" },
   { header: "Emergency contact phone", required: false, hint: "", example: "" },
-  { header: "Salary amount", required: false, hint: "Numbers only", example: "45000" },
-  { header: "Salary currency", required: false, hint: "Three-letter code", example: "BDT" },
   { header: "Bank name", required: false, hint: "", example: "" },
   { header: "Branch name", required: false, hint: "", example: "" },
   { header: "Account name", required: false, hint: "", example: "" },
@@ -203,13 +199,11 @@ export const buildImportPreview = (
 
     const errors: string[] = [];
 
-    const firstName = cell("First name");
-    const lastName = cell("Last name");
+    const fullName = cell("Full name");
     const email = cell("Email").toLowerCase();
     const phone = cell("Phone");
 
-    if (!firstName) errors.push("First name is required");
-    if (!lastName) errors.push("Last name is required");
+    if (!fullName) errors.push("Full name is required");
 
     if (!email) {
       errors.push("Email is required");
@@ -235,7 +229,6 @@ export const buildImportPreview = (
     const designationIds = resolveNames(cell("Designations"), designations, "Designations", errors);
 
     const joiningDate = parseSheetDate(cell("Joining date"), "Joining date", errors);
-    if (!cell("Joining date")) errors.push("Joining date is required");
 
     const dateOfBirth = parseSheetDate(cell("Date of birth"), "Date of birth", errors);
     const confirmationDate = parseSheetDate(
@@ -259,31 +252,20 @@ export const buildImportPreview = (
       errors.push(`Blood group "${cell("Blood group")}" is not recognised`);
     }
 
-    const employmentType = cell("Employment type")
-      ? matchEnum(cell("Employment type"), EMPLOYMENT_TYPES)
-      : null;
-    if (cell("Employment type") && !employmentType) {
+    const employmentType = matchEnum(cell("Employment type"), EMPLOYMENT_TYPES);
+    if (!cell("Employment type")) {
+      errors.push("Employment type is required");
+    } else if (!employmentType) {
       errors.push(`Employment type "${cell("Employment type")}" is not recognised`);
     }
 
     const status = cell("Status") ? matchEnum(cell("Status"), EMPLOYEE_STATUSES) : null;
     if (cell("Status") && !status) errors.push(`Status "${cell("Status")}" is not recognised`);
 
-    const salaryAmount = cell("Salary amount");
-    let salary: EmployeePayload["salary"];
-    if (salaryAmount) {
-      const amount = Number(salaryAmount.replace(/[\s,]/g, ""));
-      if (Number.isNaN(amount) || amount < 0) {
-        errors.push("Salary amount must be a positive number");
-      } else {
-        salary = { amount, currency: cell("Salary currency").toUpperCase() || undefined };
-      }
-    }
-
-    const name = `${firstName} ${lastName}`.trim();
+    const name = fullName;
     const line = index + 2;
 
-    if (errors.length > 0 || !joiningDate) {
+    if (errors.length > 0 || !employmentType) {
       return { line, name, email, payload: null, errors };
     }
 
@@ -305,14 +287,13 @@ export const buildImportPreview = (
       Object.values(record).some((value) => value !== "");
 
     const payload: EmployeePayload = {
-      firstName,
-      lastName,
+      fullName,
       email,
       phone,
       departmentIds,
       designationIds,
-      joiningDate,
-      ...(cell("Employee ID") ? { employeeCode: cell("Employee ID") } : {}),
+      employmentType,
+      ...(joiningDate ? { joiningDate } : {}),
       ...(cell("Alternate phone") ? { alternatePhone: cell("Alternate phone") } : {}),
       ...(dateOfBirth ? { dateOfBirth } : {}),
       ...(confirmationDate ? { confirmationDate } : {}),
@@ -320,14 +301,12 @@ export const buildImportPreview = (
       ...(maritalStatus ? { maritalStatus } : {}),
       ...(bloodGroup ? { bloodGroup } : {}),
       ...(cell("National ID") ? { nationalId: cell("National ID") } : {}),
-      ...(employmentType ? { employmentType } : {}),
       ...(status ? { status } : {}),
       ...(cell("Work location") ? { workLocation: cell("Work location") } : {}),
       ...(cell("Present address") ? { presentAddress: cell("Present address") } : {}),
       ...(cell("Permanent address") ? { permanentAddress: cell("Permanent address") } : {}),
       ...(hasValue(emergencyContact) ? { emergencyContact } : {}),
       ...(hasValue(bankAccount) ? { bankAccount } : {}),
-      ...(salary ? { salary } : {}),
       ...(cell("Notes") ? { notes: cell("Notes") } : {}),
     };
 

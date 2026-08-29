@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { APP_NAME } from "@/config/branding";
 import { cn } from "@/lib/utils";
 import { selectCurrentUser } from "@/redux/authSlice";
-import { ArrowUp, Hammer, RotateCcw, Sparkles, Square } from "lucide-react";
+import { ArrowUp, Bot, Hammer, RotateCcw, Square } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
@@ -110,7 +110,7 @@ export function AiAssistant() {
             onClick={() => setOpen(true)}
             aria-label="Ask AI"
           >
-            <Sparkles className="size-[18px]" />
+            <Bot className="size-[18px]" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>Ask AI</TooltipContent>
@@ -121,7 +121,7 @@ export function AiAssistant() {
           <SheetHeader className="border-b px-4 py-3.5">
             <div className="flex items-center gap-2.5 pr-8">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Sparkles className="size-4" />
+                <Bot className="size-4" />
               </span>
               <div className="min-w-0 flex-1">
                 <SheetTitle className="flex items-center gap-2 text-sm">

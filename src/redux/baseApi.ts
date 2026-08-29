@@ -177,6 +177,7 @@ export const ALL_TAG_TYPES = [
   "TagOptions",
   "Employees",
   "EmployeeSummary",
+  "EmployeeSalaries",
   "EmployeeOptions",
   "Teams",
   "TeamsSummary",

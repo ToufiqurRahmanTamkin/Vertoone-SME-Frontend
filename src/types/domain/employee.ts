@@ -147,9 +147,7 @@ export interface EmployeeSummary {
 }
 
 export interface EmployeePayload {
-  employeeCode?: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   alternatePhone?: string;
@@ -165,9 +163,9 @@ export interface EmployeePayload {
   emergencyContact?: Partial<EmergencyContact>;
   departmentIds: string[];
   designationIds: string[];
-  employmentType?: EmploymentType;
+  employmentType: EmploymentType;
   workLocation?: string;
-  joiningDate: string;
+  joiningDate?: string;
   confirmationDate?: string | null;
   resignationDate?: string | null;
   supervisorId?: string | null;
@@ -175,7 +173,6 @@ export interface EmployeePayload {
   concernId?: string | null;
   access?: EmployeeAccessPayload;
   status?: EmployeeStatus;
-  salary?: Partial<EmployeeSalary>;
   bankAccount?: Partial<BankAccount>;
   tagIds?: string[];
   notes?: string;

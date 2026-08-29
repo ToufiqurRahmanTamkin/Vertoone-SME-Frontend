@@ -9,9 +9,7 @@ import {
 import { optionalPhone, requiredPhone } from "./phone";
 
 export const EmployeeSchema = z.object({
-  employeeCode: z.string().trim().max(30),
-  firstName: z.string().trim().min(1, "First name is required").max(60),
-  lastName: z.string().trim().min(1, "Last name is required").max(60),
+  fullName: z.string().trim().min(1, "Full name is required").max(120),
   email: z.string().trim().toLowerCase().email("A valid email is required"),
   phone: requiredPhone,
   alternatePhone: optionalPhone,
@@ -31,7 +29,7 @@ export const EmployeeSchema = z.object({
   designationIds: z.array(z.string()).min(1, "Pick at least one designation"),
   employmentType: z.enum(EMPLOYMENT_TYPES),
   workLocation: z.string().trim().max(80),
-  joiningDate: z.string().trim().min(1, "A joining date is required"),
+  joiningDate: z.string().trim(),
   confirmationDate: z.string().trim(),
   resignationDate: z.string().trim(),
   supervisorId: z.string().trim(),
@@ -40,8 +38,6 @@ export const EmployeeSchema = z.object({
   canSignIn: z.boolean(),
   accessPassword: z.union([z.literal(""), z.string().min(8, "Use at least 8 characters").max(128)]),
   status: z.enum(EMPLOYEE_STATUSES),
-  salaryAmount: z.union([z.literal(""), z.number().min(0, "Salary cannot be negative")]),
-  salaryCurrency: z.string().trim().min(1),
   bankName: z.string().trim().max(80),
   branchName: z.string().trim().max(80),
   accountName: z.string().trim().max(80),
