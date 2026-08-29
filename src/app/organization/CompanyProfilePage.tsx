@@ -33,6 +33,9 @@ import { toast } from "sonner";
 
 const EMPLOYEE_RANGE_OPTIONS = toOptions(EMPLOYEE_RANGE_LABELS);
 
+const BANNER_ASPECT = 4;
+const LOGO_ASPECT = 1;
+
 const emptyValues: CompanyProfileFormValues = {
   name: "",
   legalName: "",
@@ -119,15 +122,22 @@ export default function CompanyProfilePage() {
             contentClassName="gap-5"
           >
             <div className="overflow-hidden rounded-xl border">
-              <div className="relative h-32 bg-gradient-to-r from-primary/25 via-primary/10 to-transparent sm:h-40">
+              <div
+                className="relative w-full bg-gradient-to-r from-primary/25 via-primary/10 to-transparent"
+                style={{ aspectRatio: String(BANNER_ASPECT) }}
+              >
                 {bannerUrl && (
-                  <img src={bannerUrl} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={bannerUrl}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
                 )}
               </div>
               <div className="flex items-end gap-4 px-4 pb-4 sm:px-6">
                 <span className="-mt-8 flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-background shadow-sm sm:size-20">
                   {logoUrl ? (
-                    <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+                    <img src={logoUrl} alt="" className="size-full object-cover" />
                   ) : (
                     <Building2 className="size-7 text-muted-foreground" />
                   )}
@@ -150,6 +160,10 @@ export default function CompanyProfilePage() {
                 folder="general"
                 label="Company logo"
                 description="Square image, at least 256×256. PNG or SVG works best."
+                cropAspect={LOGO_ASPECT}
+                cropMaxWidth={512}
+                cropTitle="Position your logo"
+                cropDescription="Drag to reposition and zoom until the logo sits the way you want it."
                 onChange={(asset) => {
                   form.setValue("logoUrl", asset?.url ?? "", { shouldDirty: true });
                   form.setValue("logoPublicId", asset?.publicId ?? "", { shouldDirty: true });
@@ -161,6 +175,10 @@ export default function CompanyProfilePage() {
                 folder="general"
                 label="Company banner"
                 description="Wide image, around 1600×400."
+                cropAspect={BANNER_ASPECT}
+                cropMaxWidth={1600}
+                cropTitle="Position your banner"
+                cropDescription="Drag to reposition and zoom until the banner is framed the way you want it."
                 onChange={(asset) => {
                   form.setValue("bannerUrl", asset?.url ?? "", { shouldDirty: true });
                   form.setValue("bannerPublicId", asset?.publicId ?? "", { shouldDirty: true });

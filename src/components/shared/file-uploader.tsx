@@ -1,14 +1,23 @@
+import { ImageCropperDialog } from "@/components/shared/image-cropper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { useDeleteUploadMutation, useUploadImageMutation } from "@/redux/apis/uploadApis";
 import type { UploadFolder, UploadedAsset } from "@/types/domain/upload";
-import { ImageUp, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { Crop, ImageUp, Loader2, Trash2, UploadCloud } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 
 const DEFAULT_ACCEPT = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml";
 const DEFAULT_MAX_MB = 5;
+const NON_CROPPABLE_TYPES = new Set(["image/svg+xml", "image/gif"]);
+
+interface CropSource {
+  url: string;
+  name: string;
+  type: string;
+  isObjectUrl: boolean;
+}
 
 export interface FileUploaderProps {
   value?: string;
@@ -22,6 +31,10 @@ export interface FileUploaderProps {
   disabled?: boolean;
   className?: string;
   previewClassName?: string;
+  cropAspect?: number;
+  cropTitle?: string;
+  cropDescription?: string;
+  cropMaxWidth?: number;
 }
 
 export function FileUploader({
@@ -36,9 +49,14 @@ export function FileUploader({
   disabled = false,
   className,
   previewClassName,
+  cropAspect,
+  cropTitle,
+  cropDescription,
+  cropMaxWidth,
 }: FileUploaderProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [cropSource, setCropSource] = React.useState<CropSource | null>(null);
   const [uploadImage, { isLoading: isUploading }] = useUploadImageMutation();
   const [deleteUpload, { isLoading: isDeleting }] = useDeleteUploadMutation();
   const busy = isUploading || isDeleting || disabled;
@@ -47,6 +65,23 @@ export function FileUploader({
     () => accept.split(",").map((entry) => entry.trim()).filter(Boolean),
     [accept]
   );
+
+  React.useEffect(() => {
+    if (!cropSource?.isObjectUrl) return;
+    const url = cropSource.url;
+    return () => URL.revokeObjectURL(url);
+  }, [cropSource]);
+
+  const upload = async (file: File) => {
+    try {
+      const asset: UploadedAsset = await uploadImage({ file, folder }).unwrap();
+      onChange({ url: asset.url, publicId: asset.publicId });
+      toast.success("File uploaded");
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not upload that file");
+    }
+  };
 
   const handleFile = async (file: File) => {
     if (acceptedTypes.length > 0 && !acceptedTypes.includes(file.type)) {
@@ -58,14 +93,17 @@ export function FileUploader({
       return;
     }
 
-    try {
-      const asset: UploadedAsset = await uploadImage({ file, folder }).unwrap();
-      onChange({ url: asset.url, publicId: asset.publicId });
-      toast.success("File uploaded");
-    } catch (error: unknown) {
-      const err = error as ApiErrorResponse;
-      toast.error(err?.data?.message || "Could not upload that file");
+    if (cropAspect && !NON_CROPPABLE_TYPES.has(file.type)) {
+      setCropSource({
+        url: URL.createObjectURL(file),
+        name: file.name,
+        type: file.type,
+        isObjectUrl: true,
+      });
+      return;
     }
+
+    await upload(file);
   };
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +120,16 @@ export function FileUploader({
     if (file) void handleFile(file);
   };
 
+  const onAdjust = () => {
+    if (!value) return;
+    setCropSource({ url: value, name: label || "image", type: "image/png", isObjectUrl: false });
+  };
+
+  const onCropped = (file: File) => {
+    setCropSource(null);
+    void upload(file);
+  };
+
   const onRemove = async () => {
     if (publicId) {
       await deleteUpload(publicId)
@@ -90,6 +138,8 @@ export function FileUploader({
     }
     onChange(null);
   };
+
+  const isWidePreview = Boolean(cropAspect && cropAspect > 1.5);
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -119,25 +169,47 @@ export function FileUploader({
           <img
             src={value}
             alt={typeof label === "string" ? label : "Uploaded image"}
-            className={cn("h-24 w-24 rounded-md border bg-background object-contain", previewClassName)}
+            className={cn(
+              "shrink-0 rounded-md border bg-background",
+              cropAspect
+                ? cn("h-auto object-cover", isWidePreview ? "w-40" : "w-24")
+                : "h-24 w-24 object-contain",
+              previewClassName
+            )}
+            style={cropAspect ? { aspectRatio: String(cropAspect) } : undefined}
           />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs text-muted-foreground">{value}</p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2 cursor-pointer"
-              onClick={() => inputRef.current?.click()}
-              disabled={busy}
-            >
-              {isUploading ? (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <ImageUp className="mr-1.5 h-3.5 w-3.5" />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                onClick={() => inputRef.current?.click()}
+                disabled={busy}
+              >
+                {isUploading ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <ImageUp className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                Replace
+              </Button>
+              {cropAspect && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="cursor-pointer"
+                  onClick={onAdjust}
+                  disabled={busy}
+                >
+                  <Crop className="mr-1.5 h-3.5 w-3.5" />
+                  Reposition
+                </Button>
               )}
-              Replace
-            </Button>
+            </div>
           </div>
         </div>
       ) : (
@@ -184,6 +256,22 @@ export function FileUploader({
         className="hidden"
         onChange={onInputChange}
       />
+
+      {cropAspect && (
+        <ImageCropperDialog
+          open={Boolean(cropSource)}
+          src={cropSource?.url ?? null}
+          aspect={cropAspect}
+          fileName={cropSource?.name}
+          mimeType={cropSource?.type}
+          title={cropTitle ?? `Adjust ${label.toLowerCase()}`}
+          description={cropDescription}
+          maxOutputWidth={cropMaxWidth}
+          maxOutputBytes={maxSizeMb * 1024 * 1024}
+          onCancel={() => setCropSource(null)}
+          onConfirm={onCropped}
+        />
+      )}
     </div>
   );
 }
