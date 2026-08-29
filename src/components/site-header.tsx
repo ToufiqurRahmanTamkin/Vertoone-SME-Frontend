@@ -1,4 +1,5 @@
 import { ModeToggle } from "@/components/mode-toggle";
+import { AiAssistant } from "@/components/navbar/ai-assistant";
 import { CompanyDetails } from "@/components/navbar/company-details";
 import { ConnectionStatus } from "@/components/navbar/connection-status";
 import { GlobalSearch } from "@/components/navbar/global-search";
@@ -41,6 +42,7 @@ export function SiteHeader() {
 
           <GlobalSearch />
 
+          <AiAssistant />
           <InstallAppButton />
           <CompanyDetails />
           <NotificationBell />

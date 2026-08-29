@@ -49,7 +49,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="gap-0 py-2">
         {navGroups.map((group) => (
-          <NavMain key={group.label} label={group.label} items={group.items} />
+          <NavMain
+            key={group.label}
+            label={group.label}
+            items={group.items}
+            collapsible={props.collapsible}
+          />
         ))}
       </SidebarContent>
     </Sidebar>

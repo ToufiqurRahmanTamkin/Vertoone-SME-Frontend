@@ -1,5 +1,6 @@
 import type { Pagination } from "@/types";
 import type {
+  BulkEmployeeResult,
   Employee,
   EmployeeAccessPayload,
   EmployeeListQuery,
@@ -46,6 +47,14 @@ const employeeApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/hrms/employees", method: "POST", body }),
       invalidatesTags: [...EMPLOYEE_TAGS],
     }),
+    bulkCreateEmployees: builder.mutation<BulkEmployeeResult, EmployeePayload[]>({
+      query: (employees) => ({
+        url: "/hrms/employees/bulk",
+        method: "POST",
+        body: { employees },
+      }),
+      invalidatesTags: [...EMPLOYEE_TAGS],
+    }),
     updateEmployee: builder.mutation<Employee, { id: string; body: Partial<EmployeePayload> }>({
       query: ({ id, body }) => ({ url: `/hrms/employees/${id}`, method: "PATCH", body }),
       invalidatesTags: [...EMPLOYEE_TAGS],
@@ -82,6 +91,7 @@ export const {
   useGetEmployeeSummaryQuery,
   useGetEmployeeQuery,
   useCreateEmployeeMutation,
+  useBulkCreateEmployeesMutation,
   useUpdateEmployeeMutation,
   useGetMyEmployeeQuery,
   useGetMyReportsQuery,

@@ -187,3 +187,17 @@ export interface EmployeeAccessPayload {
   status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
   modulePermissions?: ModulePermissionMap;
 }
+
+export interface BulkEmployeeRowResult {
+  row: number;
+  name: string;
+  email: string;
+  employeeCode: string | null;
+  error: string | null;
+}
+
+export interface BulkEmployeeResult {
+  created: number;
+  failed: number;
+  rows: BulkEmployeeRowResult[];
+}

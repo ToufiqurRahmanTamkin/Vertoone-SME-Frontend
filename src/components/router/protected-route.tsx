@@ -10,7 +10,7 @@ export function ProtectedRoute() {
   const location = useLocation();
 
   if (!token || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   const home = HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard";
@@ -29,12 +29,9 @@ export function ProtectedRoute() {
 export function PublicRoute() {
   const token = useSelector(selectCurrentToken);
   const user = useSelector(selectCurrentUser);
-  const location = useLocation();
 
   if (token && user) {
-    const home = HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard";
-    const from = location.state?.from?.pathname || home;
-    return <Navigate to={from} replace />;
+    return <Navigate to={HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard"} replace />;
   }
 
   return <Outlet />;

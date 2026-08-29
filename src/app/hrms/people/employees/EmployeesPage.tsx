@@ -17,10 +17,11 @@ import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import type { Employee, EmployeeStatus, EmploymentType } from "@/types/domain/employee";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { EmployeeFormModal } from "./components/EmployeeFormModal";
+import { EmployeeImportModal } from "./components/EmployeeImportModal";
 import { EmployeeMobileCard } from "./components/EmployeeMobileCard";
 import { employeeColumns } from "./employees.columns";
 
@@ -46,6 +47,7 @@ export default function EmployeesPage() {
   const { data: summary } = useGetEmployeeSummaryQuery();
 
   const [formOpen, setFormOpen] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Employee | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<Employee | null>(null);
   const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation();
@@ -170,17 +172,31 @@ export default function EmployeesPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="Add employee"
-              onClick={openCreate}
-              disabled={isLimitReached}
-              title={
-                isLimitReached
-                  ? `Your plan allows ${limit} employees. Remove one or upgrade to add more.`
-                  : undefined
-              }
-            />
+            <>
+              <ActionButton
+                icon={Upload}
+                label="Import"
+                variant="outline"
+                onClick={() => setImportOpen(true)}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} employees. Remove one or upgrade to add more.`
+                    : "Create many employees from a spreadsheet"
+                }
+              />
+              <ActionButton
+                icon={Plus}
+                label="Add employee"
+                onClick={openCreate}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} employees. Remove one or upgrade to add more.`
+                    : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -216,6 +232,13 @@ export default function EmployeesPage() {
       />
 
       <EmployeeFormModal open={formOpen} onOpenChange={setFormOpen} employee={editing} />
+
+      <EmployeeImportModal
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        departments={departmentOptions}
+        designations={designationOptions}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

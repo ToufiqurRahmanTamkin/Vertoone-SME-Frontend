@@ -13,7 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Building2, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -22,7 +22,6 @@ type LoginValues = z.infer<typeof LoginSchema>;
 export default function LoginPage() {
   const [login, { isLoading }] = useLoginMutation();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(LoginSchema),
@@ -33,8 +32,7 @@ export default function LoginPage() {
     try {
       const session = await login(data).unwrap();
       const home = HOME_ROUTE_BY_ROLE[session.user.role] ?? "/dashboard";
-      const from = location.state?.from?.pathname || home;
-      navigate(from, { replace: true });
+      navigate(home, { replace: true });
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "An error occurred during login");

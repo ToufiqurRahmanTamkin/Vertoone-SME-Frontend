@@ -6,6 +6,14 @@ import { Link, useLocation } from "react-router-dom";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
@@ -14,7 +22,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebarActions,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { NavItem } from "@/config/navigation";
 import { useEffect, useState } from "react";
@@ -40,14 +48,17 @@ export function NavMain({
   label,
   items,
   activePath,
+  collapsible = "offcanvas",
 }: {
   label: string;
   items: NavItem[];
   activePath?: string;
+  collapsible?: "offcanvas" | "icon" | "none";
 }) {
   const location = useLocation();
-  const { setOpenMobile, isMobile } = useSidebarActions();
+  const { setOpenMobile, isMobile, state } = useSidebar();
   const currentPath = activePath ?? location.pathname;
+  const isIconCollapsed = collapsible === "icon" && state === "collapsed" && !isMobile;
 
   const isSubItemActive = (subItem: NavItem) => currentPath === subItem.url;
   const isParentActive = (item: NavItem) => item.items?.some(isSubItemActive) || false;
@@ -100,6 +111,44 @@ export function NavMain({
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          }
+
+          if (isIconCollapsed) {
+            return (
+              <SidebarMenuItem key={item.title}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      className={MENU_BUTTON_CLASS}
+                      isActive={isParentActive(item)}
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" align="start" className="min-w-48">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                      {item.title}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {item.items?.map((subItem) => (
+                      <DropdownMenuItem key={subItem.title} asChild>
+                        <Link
+                          to={subItem.url}
+                          onClick={handleItemClick}
+                          className={cn(
+                            "cursor-pointer",
+                            isSubItemActive(subItem) && "bg-primary/15 font-semibold text-primary"
+                          )}
+                        >
+                          {subItem.title}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </SidebarMenuItem>
             );
           }
