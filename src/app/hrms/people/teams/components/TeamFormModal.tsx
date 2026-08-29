@@ -81,7 +81,7 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
   const isEdit = Boolean(team);
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
-  const { data: tagOptions = [] } = useGetTagOptionsQuery({ scope: "TEAM" });
+  const { data: tagOptions = [] } = useGetTagOptionsQuery();
 
   const [createTeam, { isLoading: isCreating }] = useCreateTeamMutation();
   const [updateTeam, { isLoading: isUpdating }] = useUpdateTeamMutation();

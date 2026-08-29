@@ -1,8 +1,6 @@
 import { ColorChip } from "@/components/shared/color-chip";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TAG_SCOPE_LABELS } from "@/constant";
 import { formatDate } from "@/lib/date";
 import type { Tag } from "@/types/domain/tag";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -32,29 +30,6 @@ export const tagColumns = ({
     cell: ({ row }) => (
       <span className="text-xs text-muted-foreground">{row.original.description || "—"}</span>
     ),
-  },
-  {
-    id: "scopes",
-    header: "Applies to",
-    cell: ({ row }) => {
-      const scopes = row.original.scopes ?? [];
-      return scopes.length === 0 ? (
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
-          Everything
-        </Badge>
-      ) : (
-        <div className="flex flex-wrap gap-1">
-          {scopes.slice(0, 3).map((scope) => (
-            <Badge key={scope} variant="secondary" className="text-[10px]">
-              {TAG_SCOPE_LABELS[scope]}
-            </Badge>
-          ))}
-          {scopes.length > 3 && (
-            <span className="text-xs text-muted-foreground">+{scopes.length - 3}</span>
-          )}
-        </div>
-      );
-    },
   },
   {
     accessorKey: "color",

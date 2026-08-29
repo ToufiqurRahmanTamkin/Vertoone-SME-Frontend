@@ -1,4 +1,5 @@
 import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ColorLabelFormModal } from "@/components/shared/color-label-form-modal";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -14,7 +15,6 @@ import type { Tag } from "@/types/domain/tag";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { TagFormModal } from "./components/TagFormModal";
 import { tagColumns } from "./tags.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -193,7 +193,12 @@ export default function TagsPage() {
         )}
       />
 
-      <TagFormModal open={formOpen} onOpenChange={setFormOpen} tag={editing} />
+      <ColorLabelFormModal
+        kind="tag"
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        record={editing}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

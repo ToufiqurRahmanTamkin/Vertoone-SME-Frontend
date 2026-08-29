@@ -1,4 +1,5 @@
 import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ColorLabelFormModal } from "@/components/shared/color-label-form-modal";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -18,7 +19,6 @@ import type { LeadSource } from "@/types/domain/leadSource";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { LeadSourceFormModal } from "./components/LeadSourceFormModal";
 import { leadSourceColumns } from "./lead-sources.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -197,7 +197,12 @@ export default function LeadSourcesPage() {
         )}
       />
 
-      <LeadSourceFormModal open={formOpen} onOpenChange={setFormOpen} source={editing} />
+      <ColorLabelFormModal
+        kind="leadSource"
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        record={editing}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

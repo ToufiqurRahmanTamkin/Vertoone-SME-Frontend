@@ -29,7 +29,7 @@ export default function EmployeesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/hrms/people/employees");
 
-  const { data: tagOptions = [] } = useGetTagOptionsQuery({ scope: "EMPLOYEE" });
+  const { data: tagOptions = [] } = useGetTagOptionsQuery();
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();
   const { data: designationOptions = [] } = useGetDesignationOptionsQuery();
 

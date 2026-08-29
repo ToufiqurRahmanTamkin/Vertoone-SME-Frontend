@@ -34,7 +34,6 @@ import type {
   Gender,
   MaritalStatus,
 } from "@/types/domain/employee";
-import type { TagScope } from "@/types/domain/tag";
 
 export const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   MONTHLY: "Monthly",
@@ -489,19 +488,4 @@ export const BLOOD_GROUP_LABELS: Record<BloodGroup, string> = {
   "AB-": "AB-",
   "O+": "O+",
   "O-": "O-",
-};
-
-export const TAG_SCOPE_LABELS: Record<TagScope, string> = {
-  EMPLOYEE: "Employees",
-  TEAM: "Teams",
-  LEAD: "Leads",
-  CONTACT: "Contacts",
-  ACCOUNT: "Accounts",
-  DEAL: "Deals",
-  TICKET: "Tickets",
-  PRODUCT: "Products",
-  SUPPLIER: "Suppliers",
-  CUSTOMER: "Customers",
-  INVOICE: "Invoices",
-  TASK: "Tasks",
 };

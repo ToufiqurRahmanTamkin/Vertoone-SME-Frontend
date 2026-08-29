@@ -203,7 +203,7 @@ const toPayload = (
 export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeFormModalProps) {
   const isEdit = Boolean(employee);
 
-  const { data: tagOptions = [] } = useGetTagOptionsQuery({ scope: "EMPLOYEE" });
+  const { data: tagOptions = [] } = useGetTagOptionsQuery();
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();
   const { data: designationOptions = [] } = useGetDesignationOptionsQuery();
