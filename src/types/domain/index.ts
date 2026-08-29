@@ -11,6 +11,7 @@ export * from "./guide";
 export * from "./invoice";
 export * from "./leadSource";
 export * from "./loginHistory";
+export * from "./meetingRoom";
 export * from "./notification";
 export * from "./permission";
 export * from "./plan";

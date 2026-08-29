@@ -189,6 +189,10 @@ export const ALL_TAG_TYPES = [
   "DesignationOptions",
   "LeadSources",
   "LeadSourceSummary",
+  "MeetingRooms",
+  "MeetingRoomSummary",
+  "MeetingRoomOptions",
+  "MeetingRoomFloors",
 ] as const;
 
 export type TagType = (typeof ALL_TAG_TYPES)[number];

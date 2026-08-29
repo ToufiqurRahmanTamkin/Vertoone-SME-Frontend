@@ -1,4 +1,5 @@
 import type { StatusColor } from "@/components/shared/status-badge";
+import type { SalaryChangeType } from "@/types/domain/employeeSalary";
 import type { BillingCycle } from "@/types/domain/plan";
 import type { FinanceCategoryType, IncomeSourceType } from "@/types/domain/finance";
 import type { GuideAudience, GuideCategory } from "@/types/domain/guide";
@@ -457,6 +458,13 @@ export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
   INTERN: "Intern",
   TEMPORARY: "Temporary",
   CONSULTANT: "Consultant",
+};
+
+export const SALARY_CHANGE_LABELS: Record<SalaryChangeType, string> = {
+  INITIAL: "Opening",
+  INCREMENT: "Increment",
+  DECREMENT: "Decrement",
+  REVISION: "Revision",
 };
 
 export const GENDER_LABELS: Record<Gender, string> = {

@@ -41,6 +41,8 @@ const Departments = lazy(() => import("@/app/hrms/people/departments/Departments
 const Designations = lazy(() => import("@/app/hrms/people/designations/DesignationsPage"));
 const Teams = lazy(() => import("@/app/hrms/people/teams/TeamsPage"));
 const LeadSources = lazy(() => import("@/app/crm/leadSources/LeadSourcesPage"));
+const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
+const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -85,8 +87,10 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/people/teams", element: <Teams /> },
   { path: "hrms/people/departments", element: <Departments /> },
   { path: "hrms/people/designations", element: <Designations /> },
+  { path: "hrms/payroll/salaries", element: <Salaries /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
+  { path: "calendar/settings", element: <CalendarSettings /> },
   { path: "settings/account", element: <AccountSettings /> },
 ];
 
