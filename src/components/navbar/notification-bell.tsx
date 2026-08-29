@@ -193,7 +193,7 @@ export function NotificationBell() {
           {isFetching && <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />}
         </div>
 
-        <ScrollArea className="max-h-[min(24rem,60vh)]">
+        <ScrollArea viewportClassName="max-h-[min(24rem,60vh)]">
           {isLoading ? (
             <div className="space-y-3 p-4">
               {Array.from({ length: 4 }).map((_, index) => (

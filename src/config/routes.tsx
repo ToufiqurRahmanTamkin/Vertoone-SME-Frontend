@@ -1,4 +1,5 @@
 import { PrivateLayout } from "@/components/router/private-layout";
+import { RoleDashboard } from "@/components/router/role-dashboard";
 import { RootRedirect } from "@/components/router/root-redirect";
 import { ProtectedRoute, PublicRoute } from "@/components/router/protected-route";
 import { getMenuLeafPaths } from "@/config/navigation";
@@ -10,7 +11,6 @@ const ForgotPassword = lazy(() => import("@/app/auth/forgot-password/ForgotPassw
 const Companies = lazy(() => import("@/app/companies/CompaniesPage"));
 const AllUsers = lazy(() => import("@/app/allUsers/AllUsersPage"));
 const MyCompany = lazy(() => import("@/app/myCompany/MyCompanyPage"));
-const Dashboard = lazy(() => import("@/app/dashboard/page"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
 const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscriptionsPage"));
@@ -55,7 +55,7 @@ export interface RouteConfig {
 }
 
 const builtRoutes: RouteConfig[] = [
-  { path: "dashboard", element: <Dashboard /> },
+  { path: "dashboard", element: <RoleDashboard /> },
   { path: "companies", element: <Companies /> },
   { path: "all-users", element: <AllUsers /> },
   { path: "my-company", element: <MyCompany /> },

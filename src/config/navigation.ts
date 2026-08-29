@@ -178,10 +178,11 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     title: "Dashboard",
-    path: "/my-company",
+    path: "/dashboard",
     icon: "LayoutDashboard",
     section: "Overview",
     roles: ["COMPANY_OWNER"],
+    moduleKey: "MY_COMPANY",
   },
   {
     title: "My Profile",
@@ -687,7 +688,48 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: "SlidersHorizontal",
     section: null,
     roles: COMPANY,
-    description: "Rules and defaults that the HRMS module runs on.",
+    items: [
+      {
+        title: "Holiday calendar",
+        path: "/hrms/configuration/holiday-calendar",
+        icon: "CalendarDays",
+        section: null,
+        roles: COMPANY,
+        description: "Public holidays and weekly off days for the year.",
+      },
+      {
+        title: "Leave policy",
+        path: "/hrms/configuration/leave-policy",
+        icon: "ScrollText",
+        section: null,
+        roles: COMPANY,
+        description: "Entitlement, accrual and carry-forward rules per leave type.",
+      },
+      {
+        title: "Attendance rules",
+        path: "/hrms/configuration/attendance-rules",
+        icon: "Clock",
+        section: null,
+        roles: COMPANY,
+        description: "Grace period, half-day threshold and auto-absent behaviour.",
+      },
+      {
+        title: "Late fine rules",
+        path: "/hrms/configuration/late-fine-rules",
+        icon: "Percent",
+        section: null,
+        roles: COMPANY,
+        description: "Deductions applied when an employee arrives late or leaves early.",
+      },
+      {
+        title: "Payroll settings",
+        path: "/hrms/configuration/payroll-settings",
+        icon: "Coins",
+        section: null,
+        roles: COMPANY,
+        description: "Pay cycle, salary components and statutory defaults.",
+      },
+    ],
   },
 
   {
@@ -861,47 +903,6 @@ export const MENU_ITEMS: MenuItem[] = [
     section: null,
     roles: COMPANY,
     description: "Counter-side selling for walk-in customers.",
-  },
-  {
-    title: "Accounting",
-    path: "/sme/accounting",
-    icon: "Calculator",
-    section: null,
-    roles: COMPANY,
-    items: [
-      {
-        title: "Income",
-        path: "/sme/accounting/income",
-        icon: "TrendingUp",
-        section: null,
-        roles: COMPANY,
-        description: "Money received, by source and period.",
-      },
-      {
-        title: "Expenses",
-        path: "/sme/accounting/expenses",
-        icon: "Wallet",
-        section: null,
-        roles: COMPANY,
-        description: "Money spent running the business.",
-      },
-      {
-        title: "Categories",
-        path: "/sme/accounting/categories",
-        icon: "Tags",
-        section: null,
-        roles: COMPANY,
-        description: "Heads that income and expenses are booked against.",
-      },
-      {
-        title: "Payments",
-        path: "/sme/accounting/payments",
-        icon: "Banknote",
-        section: null,
-        roles: COMPANY,
-        description: "Payments in and out, matched to invoices and bills.",
-      },
-    ],
   },
   {
     title: "Business Reports",
@@ -1426,20 +1427,26 @@ export interface MenuLookup {
   parentTitle?: string;
 }
 
-export const findMenuItemByPath = (pathname: string): MenuLookup | null => {
+export const findMenuItemByPath = (pathname: string, role?: string): MenuLookup | null => {
   let section = "Navigation";
-  let found: MenuLookup | null = null;
+  const matches: MenuLookup[] = [];
 
   const visit = (items: MenuItem[], parentTitle?: string) => {
     items.forEach((item) => {
       if (item.section) section = item.section;
-      if (!found && item.path === pathname && !item.items?.length) {
-        found = { item, section, parentTitle };
+      if (item.path === pathname && !item.items?.length) {
+        matches.push({ item, section, parentTitle });
       }
       if (item.items?.length) visit(item.items, item.title);
     });
   };
 
   visit(MENU_ITEMS);
-  return found;
+
+  if (role) {
+    const forRole = matches.find((match) => match.item.roles.includes(role));
+    if (forRole) return forRole;
+  }
+
+  return matches[0] ?? null;
 };

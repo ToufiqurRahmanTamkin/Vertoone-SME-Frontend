@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 
 export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
-  const { modules, isLoading } = usePermissions();
+  const { modules, role, isLoading } = usePermissions();
 
   if (isLoading) {
     return (
@@ -18,7 +18,7 @@ export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const lookup = findMenuItemByPath(pathname);
+  const lookup = findMenuItemByPath(pathname, role);
   const moduleKey = lookup ? menuModuleKey(lookup.item) : moduleKeyFromPath(pathname);
 
   if (!canDo(modules, moduleKey, "canView")) {
