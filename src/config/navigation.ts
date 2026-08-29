@@ -3,11 +3,9 @@ import {
   Award,
   Banknote,
   BarChart3,
-  Bell,
   BookOpen,
   Boxes,
   Briefcase,
-  Building,
   Building2,
   Calculator,
   CalendarCheck,
@@ -41,7 +39,6 @@ import {
   Percent,
   PhoneCall,
   Plane,
-  Plug,
   Receipt,
   Ruler,
   ScrollText,
@@ -69,11 +66,9 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Award,
   Banknote,
   BarChart3,
-  Bell,
   BookOpen,
   Boxes,
   Briefcase,
-  Building,
   Building2,
   Calculator,
   CalendarCheck,
@@ -107,7 +102,6 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Percent,
   PhoneCall,
   Plane,
-  Plug,
   Receipt,
   Ruler,
   ScrollText,
@@ -139,6 +133,7 @@ export interface NavItem {
   title: string;
   url: string;
   icon?: LucideIcon;
+  exact?: boolean;
   items?: NavItem[];
 }
 
@@ -272,7 +267,7 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         title: "Income",
         path: "/finance/income",
-        icon: "Wallet",
+        icon: "TrendingUp",
         section: null,
         roles: ["SUPER_ADMIN"],
       },
@@ -291,9 +286,9 @@ export const MENU_ITEMS: MenuItem[] = [
         roles: ["SUPER_ADMIN"],
       },
       {
-        title: "Category",
+        title: "Categories",
         path: "/finance/categories",
-        icon: "Wallet",
+        icon: "Tags",
         section: null,
         roles: ["SUPER_ADMIN"],
       },
@@ -1299,12 +1294,14 @@ export const getNavigation = (
   modules: ModulePermissionMap | undefined
 ): NavGroup[] => {
   const groups: NavGroup[] = [];
+  const groupsByLabel = new Map<string, NavGroup>();
   let currentSection: string | null = null;
 
   const buildNavItem = (item: MenuItem): NavItem => ({
     title: item.title,
     url: item.path,
     icon: ICON_MAP[item.icon],
+    exact: item.exact,
     items: item.items
       ? item.items
           .filter((child) => isMenuItemVisible(child, role, modules))
@@ -1313,10 +1310,11 @@ export const getNavigation = (
   });
 
   const groupFor = (label: string): NavGroup => {
-    const existing = groups.find((group) => group.label === label);
+    const existing = groupsByLabel.get(label);
     if (existing) return existing;
 
     const created: NavGroup = { label, items: [] };
+    groupsByLabel.set(label, created);
     groups.push(created);
     return created;
   };
@@ -1343,25 +1341,67 @@ export interface BreadcrumbEntry {
   isLinkable: boolean;
 }
 
-const flattenMenu = (items: MenuItem[], trail: MenuItem[] = []): MenuItem[][] =>
-  items.flatMap((item) => {
-    const next = [...trail, item];
-    return item.items?.length ? [next, ...flattenMenu(item.items, next)] : [next];
-  });
+export interface MenuLookup {
+  item: MenuItem;
+  section: string;
+  parentTitle?: string;
+}
 
-const matchesPath = (item: MenuItem, pathname: string): boolean =>
-  item.exact ? pathname === item.path : pathname === item.path || pathname.startsWith(`${item.path}/`);
+interface MenuNode extends MenuLookup {
+  trail: MenuItem[];
+}
+
+const buildMenuIndex = (): MenuNode[] => {
+  const nodes: MenuNode[] = [];
+  let section = "Navigation";
+
+  const visit = (items: MenuItem[], trail: MenuItem[], parentTitle?: string) => {
+    items.forEach((item) => {
+      if (item.section) section = item.section;
+
+      const next = [...trail, item];
+      nodes.push({ item, section, parentTitle, trail: next });
+
+      if (item.items?.length) visit(item.items, next, item.title);
+    });
+  };
+
+  visit(MENU_ITEMS, []);
+  return nodes;
+};
+
+const MENU_INDEX = buildMenuIndex();
+
+const MENU_LEAVES = MENU_INDEX.filter((node) => !node.item.items?.length);
+
+const LEAVES_BY_PATH = MENU_LEAVES.reduce((map, node) => {
+  const existing = map.get(node.item.path);
+  if (existing) existing.push(node);
+  else map.set(node.item.path, [node]);
+  return map;
+}, new Map<string, MenuNode[]>());
+
+const MENU_LEAF_PATHS = [...LEAVES_BY_PATH.keys()];
+
+const toLookup = (node: MenuNode): MenuLookup => ({
+  item: node.item,
+  section: node.section,
+  parentTitle: node.parentTitle,
+});
+
+export const isMenuPathActive = (path: string, pathname: string, exact?: boolean): boolean =>
+  exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
 
 export const getBreadcrumbTrail = (pathname: string): BreadcrumbEntry[] => {
-  const candidates = flattenMenu(MENU_ITEMS).filter((trail) =>
-    matchesPath(trail[trail.length - 1], pathname)
+  const candidates = MENU_INDEX.filter((node) =>
+    isMenuPathActive(node.item.path, pathname, node.item.exact)
   );
 
   if (candidates.length === 0) return [];
 
-  const best = candidates.reduce((longest, trail) =>
-    trail[trail.length - 1].path.length > longest[longest.length - 1].path.length ? trail : longest
-  );
+  const best = candidates.reduce((longest, node) =>
+    node.item.path.length > longest.item.path.length ? node : longest
+  ).trail;
 
   const unique = best.filter(
     (item, index) => index === 0 || item.path !== best[index - 1].path
@@ -1378,66 +1418,26 @@ export const getBreadcrumbTrail = (pathname: string): BreadcrumbEntry[] => {
 export const getSearchableMenuItems = (
   role: string,
   modules: ModulePermissionMap | undefined
-): { title: string; path: string; group: string; icon?: LucideIcon }[] => {
-  const groups: { title: string; path: string; group: string; icon?: LucideIcon }[] = [];
-  let currentSection = "Navigation";
+): { title: string; path: string; group: string; icon?: LucideIcon }[] =>
+  MENU_LEAVES.filter((node) =>
+    node.trail.every((item) => isMenuItemVisible(item, role, modules))
+  ).map((node) => ({
+    title: node.parentTitle ? `${node.parentTitle} · ${node.item.title}` : node.item.title,
+    path: node.item.path,
+    group: node.section,
+    icon: ICON_MAP[node.item.icon],
+  }));
 
-  const visit = (items: MenuItem[], parentTitle?: string) => {
-    items.forEach((item) => {
-      if (item.section) currentSection = item.section;
-      if (!isMenuItemVisible(item, role, modules)) return;
-      if (item.items?.length) {
-        visit(item.items, item.title);
-        return;
-      }
-      groups.push({
-        title: parentTitle ? `${parentTitle} · ${item.title}` : item.title,
-        path: item.path,
-        group: currentSection,
-        icon: ICON_MAP[item.icon],
-      });
-    });
-  };
-
-  visit(MENU_ITEMS);
-  return groups;
-};
-
-export const getMenuLeafPaths = (): string[] => [
-  ...new Set(
-    flattenMenu(MENU_ITEMS)
-      .map((trail) => trail[trail.length - 1])
-      .filter((item) => !item.items?.length)
-      .map((item) => item.path)
-  ),
-];
-
-export interface MenuLookup {
-  item: MenuItem;
-  section: string;
-  parentTitle?: string;
-}
+export const getMenuLeafPaths = (): string[] => [...MENU_LEAF_PATHS];
 
 export const findMenuItemByPath = (pathname: string, role?: string): MenuLookup | null => {
-  let section = "Navigation";
-  const matches: MenuLookup[] = [];
-
-  const visit = (items: MenuItem[], parentTitle?: string) => {
-    items.forEach((item) => {
-      if (item.section) section = item.section;
-      if (item.path === pathname && !item.items?.length) {
-        matches.push({ item, section, parentTitle });
-      }
-      if (item.items?.length) visit(item.items, item.title);
-    });
-  };
-
-  visit(MENU_ITEMS);
+  const matches = LEAVES_BY_PATH.get(pathname);
+  if (!matches?.length) return null;
 
   if (role) {
     const forRole = matches.find((match) => match.item.roles.includes(role));
-    if (forRole) return forRole;
+    if (forRole) return toLookup(forRole);
   }
 
-  return matches[0] ?? null;
+  return toLookup(matches[0]);
 };

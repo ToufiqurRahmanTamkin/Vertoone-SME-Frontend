@@ -3,12 +3,17 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { findMenuItemByPath, menuModuleKey } from "@/config/navigation";
 import { usePermissions } from "@/hooks/use-permission";
 import { canDo, moduleKeyFromPath } from "@/types/domain/permission";
-import type * as React from "react";
+import * as React from "react";
 import { useLocation } from "react-router-dom";
 
 export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { modules, role, isLoading } = usePermissions();
+
+  const moduleKey = React.useMemo(() => {
+    const lookup = findMenuItemByPath(pathname, role);
+    return lookup ? menuModuleKey(lookup.item) : moduleKeyFromPath(pathname);
+  }, [pathname, role]);
 
   if (isLoading) {
     return (
@@ -17,9 +22,6 @@ export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  const lookup = findMenuItemByPath(pathname, role);
-  const moduleKey = lookup ? menuModuleKey(lookup.item) : moduleKeyFromPath(pathname);
 
   if (!canDo(modules, moduleKey, "canView")) {
     return <PermissionDeniedError />;

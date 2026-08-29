@@ -24,8 +24,8 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { NavItem } from "@/config/navigation";
-import { useEffect, useState } from "react";
+import { isMenuPathActive, type NavItem } from "@/config/navigation";
+import { useState } from "react";
 
 const MENU_BUTTON_CLASS = cn(
   "group/btn relative h-9 gap-3 cursor-pointer rounded-lg font-medium transition-all duration-150",
@@ -60,27 +60,29 @@ export function NavMain({
   const currentPath = activePath ?? location.pathname;
   const isIconCollapsed = collapsible === "icon" && state === "collapsed" && !isMobile;
 
-  const isSubItemActive = (subItem: NavItem) => currentPath === subItem.url;
-  const isParentActive = (item: NavItem) => item.items?.some(isSubItemActive) || false;
+  const isItemActive = (item: NavItem) => isMenuPathActive(item.url, currentPath, item.exact);
+  const isParentActive = (item: NavItem) => item.items?.some(isItemActive) || false;
 
-  const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
+  const openActiveParents = (previous: Record<string, boolean>) => {
+    let next = previous;
     items.forEach((item) => {
-      if (item.items?.length) {
-        initial[item.title] = isParentActive(item);
+      if (item.items?.length && isParentActive(item) && !previous[item.url]) {
+        if (next === previous) next = { ...previous };
+        next[item.url] = true;
       }
     });
-    return initial;
-  });
+    return next;
+  };
 
-  useEffect(() => {
-    items.forEach((item) => {
-      if (item.items?.length && isParentActive(item)) {
-        setOpenState((prev) => ({ ...prev, [item.title]: true }));
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPath]);
+  const [openState, setOpenState] = useState<Record<string, boolean>>(() =>
+    openActiveParents({})
+  );
+  const [syncedPath, setSyncedPath] = useState(currentPath);
+
+  if (syncedPath !== currentPath) {
+    setSyncedPath(currentPath);
+    setOpenState(openActiveParents);
+  }
 
   const handleItemClick = () => {
     if (isMobile) {
@@ -99,12 +101,12 @@ export function NavMain({
         {items.map((item) => {
           if (!item.items?.length) {
             return (
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
                   className={MENU_BUTTON_CLASS}
-                  isActive={currentPath === item.url}
+                  isActive={isItemActive(item)}
                 >
                   <Link to={item.url} onClick={handleItemClick}>
                     {item.icon && <item.icon />}
@@ -117,7 +119,7 @@ export function NavMain({
 
           if (isIconCollapsed) {
             return (
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={item.url}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
@@ -134,13 +136,13 @@ export function NavMain({
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {item.items?.map((subItem) => (
-                      <DropdownMenuItem key={subItem.title} asChild>
+                      <DropdownMenuItem key={subItem.url} asChild>
                         <Link
                           to={subItem.url}
                           onClick={handleItemClick}
                           className={cn(
                             "cursor-pointer",
-                            isSubItemActive(subItem) && "bg-primary/15 font-semibold text-primary"
+                            isItemActive(subItem) && "bg-primary/15 font-semibold text-primary"
                           )}
                         >
                           {subItem.title}
@@ -155,10 +157,10 @@ export function NavMain({
 
           return (
             <Collapsible
-              key={item.title}
+              key={item.url}
               asChild
-              open={openState[item.title] ?? false}
-              onOpenChange={(open) => setOpenState((prev) => ({ ...prev, [item.title]: open }))}
+              open={openState[item.url] ?? false}
+              onOpenChange={(open) => setOpenState((prev) => ({ ...prev, [item.url]: open }))}
               className="group/collapsible"
             >
               <SidebarMenuItem>
@@ -182,11 +184,11 @@ export function NavMain({
                 >
                   <SidebarMenuSub className="mx-3.5 my-1 gap-1 border-sidebar-border">
                     {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubItem key={subItem.url}>
                         <SidebarMenuSubButton
                           asChild
                           className={SUB_BUTTON_CLASS}
-                          isActive={isSubItemActive(subItem)}
+                          isActive={isItemActive(subItem)}
                         >
                           <Link to={subItem.url} onClick={handleItemClick}>
                             <span>{subItem.title}</span>

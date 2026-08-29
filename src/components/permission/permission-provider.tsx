@@ -1,8 +1,11 @@
 import { PermissionContext, type PermissionContextValue } from "@/contexts/permission-context";
 import { useGetMyPermissionsQuery } from "@/redux/apis/permissionApis";
 import { selectCurrentToken, selectCurrentUser } from "@/redux/authSlice";
+import type { ModulePermissionMap } from "@/types/domain/permission";
 import * as React from "react";
 import { useSelector } from "react-redux";
+
+const EMPTY_MODULES: ModulePermissionMap = {};
 
 export function PermissionProvider({ children }: { children: React.ReactNode }) {
   const token = useSelector(selectCurrentToken);
@@ -14,7 +17,7 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
 
   const value = React.useMemo<PermissionContextValue>(
     () => ({
-      modules: data?.modules ?? {},
+      modules: data?.modules ?? EMPTY_MODULES,
       role: data?.role ?? user?.role ?? "",
       companyId: data?.companyId ?? user?.companyId ?? null,
       isLoading: Boolean(token && user) && !data && (isLoading || isFetching),
