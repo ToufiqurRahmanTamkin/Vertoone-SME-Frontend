@@ -8,10 +8,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tweakcnThemes } from "@/config/theme-data";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { radiusOptions } from "@/config/theme-customizer-constants";
+import { colorThemes, tweakcnThemes } from "@/config/theme-data";
 import { useSidebarConfig } from "@/contexts/sidebar-context";
 import { useThemeManager } from "@/hooks/use-theme-manager";
+import { cn } from "@/lib/utils";
 import {
   resetSettings,
   setSelectedRadius as setReduxSelectedRadius,
@@ -19,33 +21,43 @@ import {
   setSelectedTweakcnTheme as setReduxSelectedTweakcnTheme,
 } from "@/redux/settingsSlice";
 import type { RootState } from "@/redux/store";
-import { Layout, Palette, RotateCcw, Settings, X } from "lucide-react";
+import { Layout, Palette, RotateCcw, Sparkles, Type, X } from "lucide-react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { LayoutTab } from "./layout-tab";
+import type { PresetEntry } from "./preset-grid";
+import { PreviewCanvas } from "./preview-canvas";
 import { ThemeTab } from "./theme-tab";
+import { TypographyTab } from "./typography-tab";
 
 interface ThemeCustomizerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const TABS = [
+  { id: "theme", label: "Theme", icon: Palette },
+  { id: "layout", label: "Layout", icon: Layout },
+  { id: "type", label: "Type", icon: Type },
+] as const;
+
 export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
   const dispatch = useDispatch();
   const { applyTheme, applyTweakcnTheme, applyRadius, resetTheme, isDarkMode } = useThemeManager();
   const { config: sidebarConfig, updateConfig: updateSidebarConfig } = useSidebarConfig();
 
-  const { selectedTheme, selectedTweakcnTheme, selectedRadius } = useSelector(
-    (state: RootState) => state.settings
-  );
+  const { selectedTheme, selectedTweakcnTheme, selectedRadius, fontSize, headerTransparency } =
+    useSelector((state: RootState) => state.settings);
 
-  const [activeTab, setActiveTab] = React.useState("theme");
+  const [activeTab, setActiveTab] = React.useState<(typeof TABS)[number]["id"]>("theme");
+  const [preview, setPreview] = React.useState<PresetEntry | null>(null);
 
   const setSelectedTheme = (theme: string) => dispatch(setReduxSelectedTheme(theme));
   const setSelectedTweakcnTheme = (theme: string) => dispatch(setReduxSelectedTweakcnTheme(theme));
   const setSelectedRadius = (radius: string) => dispatch(setReduxSelectedRadius(radius));
 
   const handleReset = () => {
+    setPreview(null);
     dispatch(resetSettings());
 
     resetTheme();
@@ -71,81 +83,146 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
     }
   }, [isDarkMode, selectedTheme, selectedTweakcnTheme, applyTheme, applyTweakcnTheme]);
 
+  const activePreset = React.useMemo(() => {
+    if (selectedTheme) return colorThemes.find((theme) => theme.value === selectedTheme) ?? null;
+    return tweakcnThemes.find((theme) => theme.value === selectedTweakcnTheme) ?? null;
+  }, [selectedTheme, selectedTweakcnTheme]);
+
+  const shown = preview ?? activePreset;
+  const previewStyles = shown?.preset.styles[isDarkMode ? "dark" : "light"] ?? null;
+  const radiusLabel =
+    radiusOptions.find((option) => option.value === selectedRadius)?.name ?? selectedRadius;
+
+  const closePanel = () => {
+    setPreview(null);
+    onOpenChange(false);
+  };
+
   return (
-    <>
-      <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
-        <SheetContent
-          side={sidebarConfig.side === "left" ? "right" : "left"}
-          className="max-w-xl w-full p-0 gap-0 pointer-events-auto [&>button]:hidden overflow-hidden flex flex-col"
-        >
-          <SheetHeader className="space-y-0 p-4 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Settings className="h-4 w-4" />
-              </div>
-              <SheetTitle className="text-lg font-semibold">Customizer</SheetTitle>
-              <div className="ml-auto flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleReset}
-                  className="cursor-pointer h-8 w-8"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onOpenChange(false)}
-                  className="cursor-pointer h-8 w-8"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setPreview(null);
+        onOpenChange(next);
+      }}
+      modal={false}
+    >
+      <SheetContent
+        side={sidebarConfig.side === "left" ? "right" : "left"}
+        className="pointer-events-auto flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg [&>button]:hidden"
+      >
+        <SheetHeader className="shrink-0 space-y-0 border-b p-4 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <SheetTitle className="text-base leading-tight font-semibold">Appearance</SheetTitle>
+              <p className="truncate text-xs text-muted-foreground">
+                {shown?.name ?? "Custom"} · {isDarkMode ? "Dark" : "Light"} · Corners {radiusLabel}
+              </p>
             </div>
-            <SheetDescription className="text-sm text-muted-foreground sr-only">
-              Customize the them and layout of your dashboard.
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="flex-1 overflow-y-auto">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <div className="py-2">
-                <TabsList className="grid w-full grid-cols-2 rounded-none h-12 p-1.5">
-                  <TabsTrigger
-                    value="theme"
-                    className="cursor-pointer data-[state=active]:bg-background"
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleReset}
+                    className="size-8 cursor-pointer"
+                    aria-label="Reset appearance"
                   >
-                    <Palette className="h-4 w-4 mr-1" /> Theme
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="layout"
-                    className="cursor-pointer data-[state=active]:bg-background"
-                  >
-                    <Layout className="h-4 w-4 mr-1" /> Layout
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="theme" className="flex-1 mt-0">
-                <ThemeTab
-                  selectedTheme={selectedTheme}
-                  setSelectedTheme={setSelectedTheme}
-                  selectedTweakcnTheme={selectedTweakcnTheme}
-                  setSelectedTweakcnTheme={setSelectedTweakcnTheme}
-                  selectedRadius={selectedRadius}
-                  setSelectedRadius={setSelectedRadius}
-                />
-              </TabsContent>
-
-              <TabsContent value="layout" className="flex-1 mt-0">
-                <LayoutTab />
-              </TabsContent>
-            </Tabs>
+                    <RotateCcw className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reset to defaults</TooltipContent>
+              </Tooltip>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={closePanel}
+                className="size-8 cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
           </div>
-        </SheetContent>
-      </Sheet>
-    </>
+          <SheetDescription className="sr-only">
+            Customize the theme and layout of your dashboard.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="shrink-0 border-b bg-muted/30 p-4">
+          <PreviewCanvas
+            styles={previewStyles}
+            radius={selectedRadius}
+            fontSize={fontSize}
+            isDarkMode={isDarkMode}
+            glassHeader={headerTransparency}
+            sidebar={sidebarConfig}
+            presetName={shown?.name}
+            isPreviewing={Boolean(preview)}
+          />
+        </div>
+
+        <div className="shrink-0 px-4 pt-3">
+          <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setPreview(null);
+                  setActiveTab(tab.id);
+                }}
+                aria-pressed={activeTab === tab.id}
+                className={cn(
+                  "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
+                  activeTab === tab.id
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <tab.icon className="size-3.5" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {activeTab === "theme" && (
+            <ThemeTab
+              selectedTheme={selectedTheme}
+              setSelectedTheme={setSelectedTheme}
+              selectedTweakcnTheme={selectedTweakcnTheme}
+              setSelectedTweakcnTheme={setSelectedTweakcnTheme}
+              selectedRadius={selectedRadius}
+              setSelectedRadius={setSelectedRadius}
+              onPreview={setPreview}
+            />
+          )}
+          {activeTab === "layout" && <LayoutTab />}
+          {activeTab === "type" && <TypographyTab />}
+        </div>
+
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t bg-background px-4 py-3">
+          <p className="min-w-0 truncate text-[11px] text-muted-foreground">
+            Saved to this browser as you change it.
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="h-7 shrink-0 cursor-pointer text-xs"
+          >
+            <RotateCcw className="mr-1.5 size-3.5" />
+            Reset all
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -166,7 +243,7 @@ export function ThemeCustomizerTrigger({
       className={className}
       aria-label="Customize theme"
     >
-      <Settings className="size-[1.05rem]" />
+      <Sparkles className="size-[1.05rem]" />
     </Button>
   );
 }

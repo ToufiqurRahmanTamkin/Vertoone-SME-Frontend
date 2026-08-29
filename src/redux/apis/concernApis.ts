@@ -1,8 +1,6 @@
 import type { Pagination } from "@/types";
 import type {
   Concern,
-  ConcernHeadListItem,
-  ConcernHeadListQuery,
   ConcernListQuery,
   ConcernSummary,
   CreateConcernPayload,
@@ -17,12 +15,7 @@ interface ConcernListResult {
   meta: Pagination;
 }
 
-interface ConcernHeadListResult {
-  data: ConcernHeadListItem[];
-  meta: Pagination;
-}
-
-const CONCERN_TAGS = ["Concerns", "ConcernSummary", "ConcernHeads"] as const;
+const CONCERN_TAGS = ["Concerns", "ConcernSummary"] as const;
 
 const concernApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -36,13 +29,6 @@ const concernApi = baseApi.injectEndpoints({
     getConcernSummary: builder.query<ConcernSummary, void>({
       query: () => ({ url: "/concerns/summary", method: "GET" }),
       providesTags: ["ConcernSummary"],
-    }),
-    getConcernHeads: builder.query<ConcernHeadListResult, ConcernHeadListQuery | void>({
-      query: (params) => ({
-        url: `/concerns/heads${buildQuery((params ?? {}) as Record<string, unknown>)}`,
-        method: "GET",
-      }),
-      providesTags: ["ConcernHeads"],
     }),
     getMyConcern: builder.query<Concern, void>({
       query: () => ({ url: "/concerns/my", method: "GET" }),
@@ -74,7 +60,6 @@ const concernApi = baseApi.injectEndpoints({
 export const {
   useGetConcernsQuery,
   useGetConcernSummaryQuery,
-  useGetConcernHeadsQuery,
   useGetMyConcernQuery,
   useGetConcernQuery,
   useCreateConcernMutation,

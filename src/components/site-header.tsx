@@ -1,4 +1,5 @@
 import { ModeToggle } from "@/components/mode-toggle";
+import { CompanyDetails } from "@/components/navbar/company-details";
 import { ConnectionStatus } from "@/components/navbar/connection-status";
 import { GlobalSearch } from "@/components/navbar/global-search";
 import { InstallAppButton } from "@/components/navbar/install-app-button";
@@ -41,6 +42,7 @@ export function SiteHeader() {
           <GlobalSearch />
 
           <InstallAppButton />
+          <CompanyDetails />
           <NotificationBell />
           <ThemeCustomizerTrigger
             variant="ghost"

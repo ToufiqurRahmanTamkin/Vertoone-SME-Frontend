@@ -1,14 +1,40 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { useSidebarConfig } from "@/contexts/sidebar-context";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
-  sidebarVariants,
   sidebarCollapsibleOptions,
   sidebarSideOptions,
+  sidebarVariants,
 } from "@/config/theme-customizer-constants";
+import { useSidebarConfig } from "@/contexts/sidebar-context";
+import { cn } from "@/lib/utils";
+import { OptionCard, PanelSection } from "./panel-section";
+
+const RAIL_LINES = (
+  <span className="flex flex-col gap-1 p-1">
+    <span className="block h-0.5 w-full rounded-full bg-foreground/50" />
+    <span className="block h-0.5 w-3/4 rounded-full bg-foreground/40" />
+    <span className="block h-0.5 w-2/3 rounded-full bg-foreground/30" />
+    <span className="block h-0.5 w-3/4 rounded-full bg-foreground/20" />
+  </span>
+);
+
+const ICON_RAIL = (
+  <span className="flex flex-col items-center gap-1 p-1">
+    <span className="block size-1.5 rounded-[2px] bg-foreground/50" />
+    <span className="block size-1.5 rounded-[2px] bg-foreground/40" />
+    <span className="block size-1.5 rounded-[2px] bg-foreground/30" />
+  </span>
+);
+
+const Canvas = ({ className }: { className?: string }) => (
+  <span
+    className={cn(
+      "m-1 block flex-1 rounded-sm border border-dashed border-muted-foreground/25 bg-background/60",
+      className
+    )}
+  />
+);
 
 export function LayoutTab() {
   const { config: sidebarConfig, updateConfig: updateSidebarConfig } = useSidebarConfig();
@@ -30,178 +56,121 @@ export function LayoutTab() {
     updateSidebarConfig({ side });
   };
 
+  const activeVariant = sidebarVariants.find((item) => item.value === sidebarConfig.variant);
+  const activeCollapsible = sidebarCollapsibleOptions.find(
+    (item) => item.value === sidebarConfig.collapsible
+  );
+
   return (
-    <div className="p-4 space-y-6">
-      <div className="space-y-3">
-        <div>
-          <Label className="text-sm font-medium">Sidebar Variant</Label>
-          {sidebarConfig.variant && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {sidebarConfig.variant === "sidebar" && "Default: Standard sidebar layout"}
-              {sidebarConfig.variant === "floating" && "Floating: Floating sidebar with border"}
-              {sidebarConfig.variant === "inset" && "Inset: Inset sidebar with rounded corners"}
-            </p>
-          )}
-        </div>
-        <div className="grid grid-cols-3 gap-3">
+    <div className="space-y-6">
+      <PanelSection title="Sidebar style" hint={activeVariant?.description}>
+        <div className="grid grid-cols-3 gap-2">
           {sidebarVariants.map((variant) => (
-            <div
+            <OptionCard
               key={variant.value}
-              className={`relative p-4 border rounded-md cursor-pointer transition-colors ${
-                sidebarConfig.variant === variant.value
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-border/60"
-              }`}
-              onClick={() =>
-                handleSidebarVariantSelect(variant.value as "sidebar" | "floating" | "inset")
-              }
+              label={variant.name}
+              isSelected={sidebarConfig.variant === variant.value}
+              onSelect={() => handleSidebarVariantSelect(variant.value)}
             >
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-center">{variant.name}</div>
-                <div
-                  className={`flex h-12 rounded border ${variant.value === "inset" ? "bg-muted" : "bg-background"}`}
+              <span
+                className={cn(
+                  "flex h-full w-full",
+                  variant.value === "inset" ? "bg-muted" : "bg-background"
+                )}
+              >
+                <span
+                  className={cn(
+                    "block w-5 shrink-0 bg-muted",
+                    variant.value === "floating" && "m-1 rounded-sm border border-border",
+                    variant.value === "inset" && "my-1 ml-1 rounded-sm bg-muted/80",
+                    variant.value === "sidebar" && "border-r border-border"
+                  )}
                 >
-                  <div
-                    className={`w-3 flex-shrink-0 bg-muted flex flex-col gap-0.5 p-1 ${
-                      variant.value === "floating"
-                        ? "border-r m-1 rounded"
-                        : variant.value === "inset"
-                          ? "m-1 ms-0 rounded bg-muted/80"
-                          : "border-r"
-                    }`}
-                  >
-                    <div className="h-0.5 w-full bg-foreground/60 rounded"></div>
-                    <div className="h-0.5 w-3/4 bg-foreground/50 rounded"></div>
-                    <div className="h-0.5 w-2/3 bg-foreground/40 rounded"></div>
-                    <div className="h-0.5 w-3/4 bg-foreground/30 rounded"></div>
-                  </div>
-                  <div
-                    className={`flex-1 ${variant.value === "inset" ? "bg-background ms-0" : "bg-background/50"} m-1 rounded-sm border-dashed border border-muted-foreground/20`}
-                  ></div>
-                </div>
-              </div>
-            </div>
+                  {RAIL_LINES}
+                </span>
+                <Canvas className={variant.value === "inset" ? "bg-background" : undefined} />
+              </span>
+            </OptionCard>
           ))}
         </div>
-      </div>
+      </PanelSection>
 
-      <Separator />
-
-      <div className="space-y-3">
-        <div>
-          <Label className="text-sm font-medium">Sidebar Collapsible Mode</Label>
-          {sidebarConfig.collapsible && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {sidebarConfig.collapsible === "offcanvas" && "Off Canvas: Slides out of view"}
-              {sidebarConfig.collapsible === "icon" && "Icon: Collapses to icon only"}
-              {sidebarConfig.collapsible === "none" && "None: Always visible"}
-            </p>
-          )}
-        </div>
-        <div className="grid grid-cols-3 gap-3">
+      <PanelSection title="Collapse behaviour" hint={activeCollapsible?.description}>
+        <div className="grid grid-cols-3 gap-2">
           {sidebarCollapsibleOptions.map((option) => (
-            <div
+            <OptionCard
               key={option.value}
-              className={`relative p-4 border rounded-md cursor-pointer transition-colors ${
-                sidebarConfig.collapsible === option.value
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-border/60"
-              }`}
-              onClick={() =>
-                handleSidebarCollapsibleSelect(option.value as "offcanvas" | "icon" | "none")
-              }
+              label={option.name}
+              isSelected={sidebarConfig.collapsible === option.value}
+              onSelect={() => handleSidebarCollapsibleSelect(option.value)}
             >
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-center">{option.name}</div>
-                <div className="flex h-12 rounded border bg-background">
-                  {option.value === "offcanvas" ? (
-                    <div className="flex-1 bg-background/50 m-1 rounded-sm border-dashed border border-muted-foreground/20 flex items-center justify-start pl-2">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="w-3 h-0.5 bg-foreground/60 rounded"></div>
-                        <div className="w-3 h-0.5 bg-foreground/60 rounded"></div>
-                        <div className="w-3 h-0.5 bg-foreground/60 rounded"></div>
-                      </div>
-                    </div>
-                  ) : option.value === "icon" ? (
-                    <>
-                      <div className="w-4 flex-shrink-0 bg-muted flex flex-col gap-1 p-1 border-r items-center">
-                        <div className="w-2 h-2 bg-foreground/60 rounded-sm"></div>
-                        <div className="w-2 h-2 bg-foreground/40 rounded-sm"></div>
-                        <div className="w-2 h-2 bg-foreground/30 rounded-sm"></div>
-                      </div>
-                      <div className="flex-1 bg-background/50 m-1 rounded-sm border-dashed border border-muted-foreground/20"></div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-6 flex-shrink-0 bg-muted flex flex-col gap-0.5 p-1 border-r">
-                        <div className="h-0.5 w-full bg-foreground/60 rounded"></div>
-                        <div className="h-0.5 w-3/4 bg-foreground/50 rounded"></div>
-                        <div className="h-0.5 w-2/3 bg-foreground/40 rounded"></div>
-                        <div className="h-0.5 w-3/4 bg-foreground/30 rounded"></div>
-                      </div>
-                      <div className="flex-1 bg-background/50 m-1 rounded-sm border-dashed border border-muted-foreground/20"></div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+              <span className="flex h-full w-full bg-background">
+                {option.value === "offcanvas" ? (
+                  <span className="flex flex-1 items-center gap-1 pl-1.5">
+                    <span className="flex flex-col gap-0.5">
+                      <span className="block h-0.5 w-2.5 rounded-full bg-foreground/50" />
+                      <span className="block h-0.5 w-2.5 rounded-full bg-foreground/50" />
+                      <span className="block h-0.5 w-2.5 rounded-full bg-foreground/50" />
+                    </span>
+                    <Canvas />
+                  </span>
+                ) : option.value === "icon" ? (
+                  <>
+                    <span className="block w-4 shrink-0 border-r border-border bg-muted">
+                      {ICON_RAIL}
+                    </span>
+                    <Canvas />
+                  </>
+                ) : (
+                  <>
+                    <span className="block w-5 shrink-0 border-r border-border bg-muted">
+                      {RAIL_LINES}
+                    </span>
+                    <Canvas />
+                  </>
+                )}
+              </span>
+            </OptionCard>
           ))}
         </div>
-      </div>
+      </PanelSection>
 
-      <Separator />
-
-      <div className="space-y-3">
-        <div>
-          <Label className="text-sm font-medium">Sidebar Position</Label>
-          {sidebarConfig.side && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {sidebarConfig.side === "left" && "Left: Sidebar positioned on the left side"}
-              {sidebarConfig.side === "right" && "Right: Sidebar positioned on the right side"}
-            </p>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+      <PanelSection
+        title="Sidebar position"
+        hint={
+          sidebarConfig.side === "left"
+            ? "Navigation sits on the left, the customizer opens on the right."
+            : "Navigation sits on the right, the customizer opens on the left."
+        }
+      >
+        <div className="grid grid-cols-2 gap-2">
           {sidebarSideOptions.map((side) => (
-            <div
+            <OptionCard
               key={side.value}
-              className={`relative p-4 border rounded-md cursor-pointer transition-colors ${
-                sidebarConfig.side === side.value
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-border/60"
-              }`}
-              onClick={() => handleSidebarSideSelect(side.value as "left" | "right")}
+              label={side.name}
+              isSelected={sidebarConfig.side === side.value}
+              onSelect={() => handleSidebarSideSelect(side.value)}
             >
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-center">{side.name}</div>
-                <div className="flex h-12 rounded border bg-background">
-                  {side.value === "left" ? (
-                    <>
-                      <div className="w-6 flex-shrink-0 bg-muted flex flex-col gap-0.5 p-1 border-r">
-                        <div className="h-0.5 w-full bg-foreground/60 rounded"></div>
-                        <div className="h-0.5 w-3/4 bg-foreground/50 rounded"></div>
-                        <div className="h-0.5 w-2/3 bg-foreground/40 rounded"></div>
-                        <div className="h-0.5 w-3/4 bg-foreground/30 rounded"></div>
-                      </div>
-                      <div className="flex-1 bg-background/50 m-1 rounded-sm border-dashed border border-muted-foreground/20"></div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex-1 bg-background/50 m-1 rounded-sm border-dashed border border-muted-foreground/20"></div>
-                      <div className="w-6 flex-shrink-0 bg-muted flex flex-col gap-0.5 p-1 border-l">
-                        <div className="h-0.5 w-full bg-foreground/60 rounded"></div>
-                        <div className="h-0.5 w-3/4 bg-foreground/50 rounded"></div>
-                        <div className="h-0.5 w-2/3 bg-foreground/40 rounded"></div>
-                        <div className="h-0.5 w-3/4 bg-foreground/30 rounded"></div>
-                      </div>
-                    </>
+              <span
+                className={cn(
+                  "flex h-full w-full bg-background",
+                  side.value === "right" && "flex-row-reverse"
+                )}
+              >
+                <span
+                  className={cn(
+                    "block w-5 shrink-0 bg-muted",
+                    side.value === "left" ? "border-r border-border" : "border-l border-border"
                   )}
-                </div>
-              </div>
-            </div>
+                >
+                  {RAIL_LINES}
+                </span>
+                <Canvas />
+              </span>
+            </OptionCard>
           ))}
         </div>
-      </div>
+      </PanelSection>
     </div>
   );
 }

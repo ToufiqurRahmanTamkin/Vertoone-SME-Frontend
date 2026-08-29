@@ -101,7 +101,7 @@ export default function TeamMembersPage() {
   return (
     <>
       <PageHeader
-        title="Team Members"
+        title="Members"
         description="People who can sign in to this workspace, and the menus each of them can reach."
       />
 

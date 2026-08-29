@@ -1,27 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { radiusOptions } from "@/config/theme-customizer-constants";
 import { colorThemes, tweakcnThemes } from "@/config/theme-data";
 import { useCircularTransition } from "@/hooks/use-circular-transition";
 import { useThemeManager } from "@/hooks/use-theme-manager";
-import { setAnimationSpeed, setFontSize, setHeaderTransparency } from "@/redux/settingsSlice";
-import type { RootState } from "@/redux/store";
-import { Dices, Moon, Sun, Type, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Dices, Moon, Sun } from "lucide-react";
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { PanelSection } from "./panel-section";
+import { PresetGrid, type PresetEntry } from "./preset-grid";
 import "./circular-transition.css";
 
 interface ThemeTabProps {
@@ -31,6 +19,7 @@ interface ThemeTabProps {
   setSelectedTweakcnTheme: (theme: string) => void;
   selectedRadius: string;
   setSelectedRadius: (radius: string) => void;
+  onPreview?: (entry: PresetEntry | null) => void;
 }
 
 export function ThemeTab({
@@ -40,28 +29,47 @@ export function ThemeTab({
   setSelectedTweakcnTheme,
   selectedRadius,
   setSelectedRadius,
+  onPreview,
 }: ThemeTabProps) {
-  const dispatch = useDispatch();
-  const { fontSize, animationSpeed, headerTransparency } = useSelector(
-    (state: RootState) => state.settings
-  );
-
   const { isDarkMode, applyTheme, applyTweakcnTheme, applyRadius } = useThemeManager();
-
   const { toggleTheme } = useCircularTransition();
 
-  const handleRandomShadcn = () => {
-    const randomTheme = colorThemes[Math.floor(Math.random() * colorThemes.length)];
-    setSelectedTheme(randomTheme.value);
-    setSelectedTweakcnTheme("");
-    applyTheme(randomTheme.value, isDarkMode);
+  const presets = React.useMemo<PresetEntry[]>(
+    () => [
+      ...colorThemes.map((theme) => ({
+        value: theme.value,
+        name: theme.name,
+        kind: "standard" as const,
+        preset: theme.preset,
+      })),
+      ...tweakcnThemes.map((theme) => ({
+        value: theme.value,
+        name: theme.name,
+        kind: "advanced" as const,
+        preset: theme.preset,
+      })),
+    ],
+    []
+  );
+
+  const handleSelect = (entry: PresetEntry) => {
+    onPreview?.(null);
+
+    if (entry.kind === "standard") {
+      setSelectedTheme(entry.value);
+      setSelectedTweakcnTheme("");
+      applyTheme(entry.value, isDarkMode);
+      return;
+    }
+
+    setSelectedTweakcnTheme(entry.value);
+    setSelectedTheme("");
+    applyTweakcnTheme(entry.preset, isDarkMode);
   };
 
-  const handleRandomTweakcn = () => {
-    const randomTheme = tweakcnThemes[Math.floor(Math.random() * tweakcnThemes.length)];
-    setSelectedTweakcnTheme(randomTheme.value);
-    setSelectedTheme("");
-    applyTweakcnTheme(randomTheme.preset, isDarkMode);
+  const handleRandom = () => {
+    const entry = presets[Math.floor(Math.random() * presets.length)];
+    if (entry) handleSelect(entry);
   };
 
   const handleRadiusSelect = (radius: string) => {
@@ -80,231 +88,95 @@ export function ThemeTab({
   };
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Standard Presets</Label>
+    <div className="space-y-6">
+      <PanelSection title="Mode" hint="Switches every surface between light and dark.">
+        <div className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/40 p-1">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRandomShadcn}
-            className="cursor-pointer"
-          >
-            <Dices className="h-3.5 w-3.5 mr-1.5" />
-            Random
-          </Button>
-        </div>
-
-        <Select
-          value={selectedTheme}
-          onValueChange={(value) => {
-            setSelectedTheme(value);
-            setSelectedTweakcnTheme("");
-            applyTheme(value, isDarkMode);
-          }}
-        >
-          <SelectTrigger className="w-full cursor-pointer">
-            <SelectValue placeholder="Choose Standard Theme" />
-          </SelectTrigger>
-          <SelectContent className="max-h-60">
-            <div className="p-2">
-              {colorThemes.map((theme) => (
-                <SelectItem key={theme.value} value={theme.value} className="cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.primary }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.secondary }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.accent }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.muted }}
-                      />
-                    </div>
-                    <span>{theme.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </div>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Advanced Presets</Label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRandomTweakcn}
-            className="cursor-pointer"
-          >
-            <Dices className="h-3.5 w-3.5 mr-1.5" />
-            Random
-          </Button>
-        </div>
-
-        <Select
-          value={selectedTweakcnTheme}
-          onValueChange={(value) => {
-            setSelectedTweakcnTheme(value);
-            setSelectedTheme("");
-            const selectedPreset = tweakcnThemes.find((t) => t.value === value)?.preset;
-            if (selectedPreset) {
-              applyTweakcnTheme(selectedPreset, isDarkMode);
-            }
-          }}
-        >
-          <SelectTrigger className="w-full cursor-pointer">
-            <SelectValue placeholder="Choose Advanced Theme" />
-          </SelectTrigger>
-          <SelectContent className="max-h-60">
-            <div className="p-2">
-              {tweakcnThemes.map((theme) => (
-                <SelectItem key={theme.value} value={theme.value} className="cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.primary }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.secondary }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.accent }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border border-border/20"
-                        style={{ backgroundColor: theme.preset.styles.light.muted }}
-                      />
-                    </div>
-                    <span>{theme.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </div>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Corner Style</Label>
-        <div className="grid grid-cols-5 gap-2">
-          {radiusOptions.map((option) => (
-            <div
-              key={option.value}
-              className={`relative cursor-pointer rounded-md p-3 border transition-colors ${
-                selectedRadius === option.value
-                  ? "border-primary"
-                  : "border-border hover:border-border/60"
-              }`}
-              onClick={() => handleRadiusSelect(option.value)}
-            >
-              <div className="text-center">
-                <div className="text-xs font-medium">{option.name}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Appearance</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant={!isDarkMode ? "secondary" : "outline"}
+            variant="ghost"
             size="sm"
             onClick={handleLightMode}
-            className="cursor-pointer mode-toggle-button relative overflow-hidden"
+            className={cn(
+              "mode-toggle-button relative h-8 cursor-pointer overflow-hidden",
+              !isDarkMode && "bg-background text-foreground shadow-sm hover:bg-background"
+            )}
           >
-            <Sun className="h-4 w-4 mr-1 transition-transform duration-300" />
+            <Sun className="mr-1.5 size-4 transition-transform duration-300" />
             Light
           </Button>
           <Button
-            variant={isDarkMode ? "secondary" : "outline"}
+            variant="ghost"
             size="sm"
             onClick={handleDarkMode}
-            className="cursor-pointer mode-toggle-button relative overflow-hidden"
+            className={cn(
+              "mode-toggle-button relative h-8 cursor-pointer overflow-hidden",
+              isDarkMode && "bg-background text-foreground shadow-sm hover:bg-background"
+            )}
           >
-            <Moon className="h-4 w-4 mr-1 transition-transform duration-300" />
+            <Moon className="mr-1.5 size-4 transition-transform duration-300" />
             Dark
           </Button>
         </div>
-      </div>
+      </PanelSection>
 
-      <Separator />
-
-      <div className="space-y-4">
-        <Label className="text-sm font-semibold flex items-center gap-2">
-          <Type className="h-4 w-4" /> Typography & Interactivity
-        </Label>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">Default Font Size</Label>
-            <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">{fontSize}px</span>
-          </div>
-          <Slider
-            value={[fontSize]}
-            min={14}
-            max={20}
-            step={1}
-            onValueChange={(val) => dispatch(setFontSize(val[0]))}
-            className="cursor-pointer"
-          />
-        </div>
-
-        <div className="space-y-3">
-          <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <Zap className="h-3 w-3" /> Smoothness
-          </Label>
-          <Tabs
-            value={animationSpeed}
-            onValueChange={(v) => dispatch(setAnimationSpeed(v as "fast" | "normal" | "slow"))}
-            className="w-full"
+      <PanelSection
+        title="Palette"
+        hint="Hover a theme to try it in the preview above."
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRandom}
+            className="h-7 shrink-0 cursor-pointer text-xs"
           >
-            <TabsList className="grid grid-cols-3 w-full h-8 p-1">
-              <TabsTrigger value="slow" className="text-[10px] py-0">
-                Slow
-              </TabsTrigger>
-              <TabsTrigger value="normal" className="text-[10px] py-0">
-                Default
-              </TabsTrigger>
-              <TabsTrigger value="fast" className="text-[10px] py-0">
-                Fast
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+            <Dices className="mr-1.5 size-3.5" />
+            Surprise me
+          </Button>
+        }
+      >
+        <PresetGrid
+          presets={presets}
+          selected={selectedTheme || selectedTweakcnTheme}
+          isDarkMode={isDarkMode}
+          onSelect={handleSelect}
+          onPreview={onPreview}
+        />
+      </PanelSection>
 
-        <div className="flex items-center justify-between py-1">
-          <div className="space-y-0.5">
-            <Label className="text-xs text-muted-foreground">Glassmorphism Header</Label>
-            <p className="text-[10px] text-muted-foreground/60">Translucent top navigation bar</p>
-          </div>
-          <Switch
-            checked={headerTransparency}
-            onCheckedChange={(checked) => dispatch(setHeaderTransparency(checked))}
-          />
+      <PanelSection title="Corners" hint="How round every card, button and input is.">
+        <div className="grid grid-cols-5 gap-2">
+          {radiusOptions.map((option) => {
+            const isSelected = selectedRadius === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleRadiusSelect(option.value)}
+                aria-pressed={isSelected}
+                className={cn(
+                  "flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border p-2 transition-all",
+                  isSelected
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border hover:border-primary/40 hover:bg-muted/40"
+                )}
+              >
+                <span
+                  className="block size-6 border-2 border-b-0 border-l-0 border-foreground/40"
+                  style={{ borderTopRightRadius: option.value }}
+                />
+                <span
+                  className={cn(
+                    "text-[10px] font-medium",
+                    isSelected ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  {option.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </PanelSection>
     </div>
   );
 }

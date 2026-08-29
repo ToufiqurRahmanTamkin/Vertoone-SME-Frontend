@@ -32,22 +32,11 @@ export interface Concern extends ConcernRef {
   updatedAt: string;
 }
 
-export interface ConcernHeadListItem extends ConcernHead {
-  concern: ConcernRef | null;
-}
-
 export interface ConcernListQuery {
   page?: number;
   limit?: number;
   search?: string;
   isActive?: boolean;
-}
-
-export interface ConcernHeadListQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: UserStatus;
 }
 
 export interface ConcernSummary {

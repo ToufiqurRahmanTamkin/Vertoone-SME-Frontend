@@ -147,6 +147,7 @@ export interface MenuItem {
   exact?: boolean;
   items?: MenuItem[];
   shownInSidebar?: boolean;
+  moduleKey?: string;
 }
 
 const COMPANY = ["COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD"];
@@ -344,16 +345,25 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: "GitBranch",
     section: "Concerns",
     roles: COMPANY_ADMIN,
-    exact: true,
-    description: "The businesses running under your company, each with its own head.",
-  },
-  {
-    title: "Concern Heads",
-    path: "/concerns/heads",
-    icon: "IdCard",
-    section: null,
-    roles: COMPANY_ADMIN,
-    description: "Every concern head sign-in and the menus they can reach.",
+    items: [
+      {
+        title: "Dashboard",
+        path: "/concerns/dashboard",
+        icon: "LayoutDashboard",
+        section: null,
+        roles: COMPANY_ADMIN,
+        description: "How every concern under your company is performing at a glance.",
+      },
+      {
+        title: "Concerns List",
+        path: "/concerns",
+        icon: "GitBranch",
+        section: null,
+        roles: COMPANY_ADMIN,
+        exact: true,
+        description: "The businesses running under your company, each with its own head.",
+      },
+    ],
   },
 
   {
@@ -394,14 +404,6 @@ export const MENU_ITEMS: MenuItem[] = [
         section: null,
         roles: COMPANY,
         description: "Job titles available when hiring or promoting.",
-      },
-      {
-        title: "Employment types",
-        path: "/hrms/people/employment-types",
-        icon: "FileSignature",
-        section: null,
-        roles: COMPANY,
-        description: "Contract, permanent, intern and other engagement types.",
       },
     ],
   },
@@ -942,6 +944,65 @@ export const MENU_ITEMS: MenuItem[] = [
   },
 
   {
+    title: "Tasks",
+    path: "/tasks-goals/tasks",
+    icon: "ListChecks",
+    section: "Tasks & Goals",
+    roles: COMPANY,
+    description: "Work items assigned to people in your company.",
+  },
+  {
+    title: "Goals",
+    path: "/tasks-goals/goals",
+    icon: "Target",
+    section: null,
+    roles: COMPANY,
+    description: "Targets your teams are working towards.",
+  },
+
+  {
+    title: "Dashboard",
+    path: "/calendar/dashboard",
+    icon: "LayoutDashboard",
+    section: "Calendar",
+    roles: COMPANY,
+    description: "Today's schedule and what is coming up next.",
+  },
+  {
+    title: "Calendar",
+    path: "/calendar",
+    icon: "CalendarDays",
+    section: null,
+    roles: COMPANY,
+    exact: true,
+    description: "Everything scheduled, in month, week and day views.",
+  },
+  {
+    title: "Events",
+    path: "/calendar/events",
+    icon: "CalendarClock",
+    section: null,
+    roles: COMPANY,
+    description: "One-off and recurring events your company organises.",
+  },
+  {
+    title: "Bookings",
+    path: "/calendar/bookings",
+    icon: "CalendarCheck",
+    section: null,
+    roles: COMPANY,
+    description: "Slots people book with you and the requests waiting on you.",
+  },
+  {
+    title: "Settings",
+    path: "/calendar/settings",
+    icon: "SlidersHorizontal",
+    section: null,
+    roles: COMPANY,
+    description: "Working hours, availability and booking rules.",
+  },
+
+  {
     title: "Company Profile",
     path: "/organization/profile",
     icon: "Building2",
@@ -950,20 +1011,31 @@ export const MENU_ITEMS: MenuItem[] = [
     description: "Your company name, contact details, logo and banner.",
   },
   {
-    title: "Branches",
-    path: "/organization/branches",
-    icon: "Building",
-    section: null,
-    roles: COMPANY,
-    description: "Physical locations belonging to this company.",
-  },
-  {
-    title: "Team Members",
+    title: "Teams",
     path: "/configuration/team",
     icon: "UserCog",
     section: null,
-    roles: COMPANY_ADMIN,
-    description: "People who can sign in to this workspace.",
+    roles: COMPANY,
+    items: [
+      {
+        title: "Members",
+        path: "/configuration/team",
+        icon: "UserCog",
+        section: null,
+        roles: COMPANY_ADMIN,
+        exact: true,
+        description: "People who can sign in to this workspace.",
+      },
+      {
+        title: "Teams",
+        path: "/configuration/teams",
+        icon: "Users",
+        section: null,
+        roles: COMPANY,
+        moduleKey: "HRMS_PEOPLE_TEAMS",
+        description: "Groups of employees, each with a team lead and a supervisor.",
+      },
+    ],
   },
   {
     title: "Roles & Permissions",
@@ -975,72 +1047,6 @@ export const MENU_ITEMS: MenuItem[] = [
   },
 
   {
-    title: "Preferences",
-    path: "/configuration/preferences",
-    icon: "SlidersHorizontal",
-    section: "Configuration",
-    roles: COMPANY,
-    items: [
-      {
-        title: "General",
-        path: "/configuration/general",
-        icon: "SlidersHorizontal",
-        section: null,
-        roles: COMPANY,
-        description: "Currency, timezone, date format and other company defaults.",
-      },
-      {
-        title: "Numbering & Templates",
-        path: "/configuration/numbering",
-        icon: "Hash",
-        section: null,
-        roles: COMPANY,
-        description: "Prefixes and formats for invoices, orders and employee IDs.",
-      },
-      {
-        title: "Taxes & Currency",
-        path: "/configuration/taxes",
-        icon: "Percent",
-        section: null,
-        roles: COMPANY,
-        description: "Tax rates and the currencies you trade in.",
-      },
-      {
-        title: "Notifications",
-        path: "/configuration/notifications",
-        icon: "Bell",
-        section: null,
-        roles: COMPANY,
-        description: "Which events send an email or in-app alert.",
-      },
-    ],
-  },
-  {
-    title: "Modules",
-    path: "/configuration/modules",
-    icon: "LayoutGrid",
-    section: null,
-    roles: COMPANY,
-    description: "Turn HRMS, SME and CRM on or off for this company.",
-  },
-  {
-    title: "Integrations",
-    path: "/configuration/integrations",
-    icon: "Plug",
-    section: null,
-    roles: COMPANY,
-    description: "Payment gateways, messaging and other connected services.",
-  },
-  {
-    title: "Audit Log",
-    path: "/configuration/audit-log",
-    icon: "ScrollText",
-    section: null,
-    roles: COMPANY,
-    description: "Who changed what inside this workspace.",
-  },
-
-  {
     title: "Account",
     path: "/settings/account",
     icon: "Settings",
@@ -1049,7 +1055,8 @@ export const MENU_ITEMS: MenuItem[] = [
   },
 ];
 
-export const menuModuleKey = (item: MenuItem): string => moduleKeyFromPath(item.path);
+export const menuModuleKey = (item: MenuItem): string =>
+  item.moduleKey ?? moduleKeyFromPath(item.path);
 
 export const isMenuItemVisible = (
   item: MenuItem,

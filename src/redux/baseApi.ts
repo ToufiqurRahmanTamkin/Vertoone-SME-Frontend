@@ -171,7 +171,6 @@ export const ALL_TAG_TYPES = [
   "TeamSummary",
   "Concerns",
   "ConcernSummary",
-  "ConcernHeads",
   "AllUsers",
   "Tags",
   "TagSummary",
