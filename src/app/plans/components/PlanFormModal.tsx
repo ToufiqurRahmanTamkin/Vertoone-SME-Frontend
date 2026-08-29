@@ -304,8 +304,8 @@ export function PlanFormModal({
                   />
                   <p className="text-xs text-muted-foreground">
                     Tick the menus this plan unlocks and set an optional record cap for each. Leave
-                    a cap blank for unlimited. A company that already bought this plan keeps its
-                    current terms until the next renewal invoice is paid.
+                    a cap blank for unlimited. Saving applies these menus straight away to every
+                    company on this plan — their sidebar updates without a sign-out.
                   </p>
                   <ModulePermissionMatrix
                     modules={companyModules}

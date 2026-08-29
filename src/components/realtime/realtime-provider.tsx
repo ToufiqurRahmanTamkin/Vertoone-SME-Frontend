@@ -91,6 +91,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    const onConnect = () => {
+      dispatch(baseApi.util.invalidateTags(TAGS_BY_RESOURCE.PERMISSIONS));
+    };
+
     const onSessionRevoked = (payload: SessionRevokedPayload) => {
       toast.error("You have been signed out", { description: payload.reason });
       disconnectSocket();
@@ -98,11 +102,15 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       navigate("/login", { replace: true });
     };
 
+    socket.on("connect", onConnect);
     socket.on("notification:created", onNotification);
     socket.on("resource:changed", onResourceChanged);
     socket.on("session:revoked", onSessionRevoked);
 
+    if (socket.connected) onConnect();
+
     return () => {
+      socket.off("connect", onConnect);
       socket.off("notification:created", onNotification);
       socket.off("resource:changed", onResourceChanged);
       socket.off("session:revoked", onSessionRevoked);
