@@ -150,7 +150,9 @@ export interface MenuItem {
   moduleKey?: string;
 }
 
-const COMPANY = ["COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD"];
+const COMPANY = ["COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD", "EMPLOYEE"];
+
+const EMPLOYEE = ["EMPLOYEE"];
 
 const COMPANY_ADMIN = ["COMPANY_OWNER"];
 
@@ -170,6 +172,14 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: "Building2",
     section: "Overview",
     roles: ["COMPANY_OWNER"],
+  },
+  {
+    title: "My Profile",
+    path: "/my-profile",
+    icon: "IdCard",
+    section: "Overview",
+    roles: EMPLOYEE,
+    description: "Your employee record, reporting line and the menus you can reach.",
   },
   {
     title: "My Concern",
@@ -1051,7 +1061,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: "/settings/account",
     icon: "Settings",
     section: "Settings",
-    roles: ["SUPER_ADMIN", "COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD"],
+    roles: ["SUPER_ADMIN", "COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD", "EMPLOYEE"],
   },
 ];
 

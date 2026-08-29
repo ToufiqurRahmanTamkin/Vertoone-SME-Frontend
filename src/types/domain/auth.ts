@@ -1,6 +1,12 @@
 import type { ModulePermissionMap } from "./permission";
 
-export const ROLES = ["SUPER_ADMIN", "COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD"] as const;
+export const ROLES = [
+  "SUPER_ADMIN",
+  "COMPANY_OWNER",
+  "COMPANY_USER",
+  "CONCERN_HEAD",
+  "EMPLOYEE",
+] as const;
 export type Role = (typeof ROLES)[number];
 
 export const USER_STATUSES = ["ACTIVE", "INACTIVE", "PENDING_APPROVAL", "REJECTED"] as const;
@@ -83,4 +89,5 @@ export const HOME_ROUTE_BY_ROLE: Record<Role, string> = {
   COMPANY_OWNER: "/my-company",
   COMPANY_USER: "/my-company",
   CONCERN_HEAD: "/my-concern",
+  EMPLOYEE: "/my-profile",
 };

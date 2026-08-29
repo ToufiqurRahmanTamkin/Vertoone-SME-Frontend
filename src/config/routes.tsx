@@ -33,6 +33,7 @@ const SecurityReport = lazy(() => import("@/app/reports/SecurityReportPage"));
 const CompanyProfile = lazy(() => import("@/app/organization/CompanyProfilePage"));
 const Concerns = lazy(() => import("@/app/concerns/ConcernsPage"));
 const MyConcern = lazy(() => import("@/app/myConcern/MyConcernPage"));
+const MyProfile = lazy(() => import("@/app/myProfile/MyProfilePage"));
 const TeamMembers = lazy(() => import("@/app/configuration/team/TeamMembersPage"));
 const Tags = lazy(() => import("@/app/crm/tags/TagsPage"));
 const Employees = lazy(() => import("@/app/hrms/people/employees/EmployeesPage"));
@@ -77,6 +78,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "organization/profile", element: <CompanyProfile /> },
   { path: "concerns", element: <Concerns /> },
   { path: "my-concern", element: <MyConcern /> },
+  { path: "my-profile", element: <MyProfile /> },
   { path: "configuration/team", element: <TeamMembers /> },
   { path: "configuration/teams", element: <Teams /> },
   { path: "hrms/people/employees", element: <Employees /> },

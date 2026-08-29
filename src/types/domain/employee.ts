@@ -1,5 +1,8 @@
+import type { UserStatus } from "./auth";
+import type { ConcernRef } from "./concern";
 import type { DepartmentRef } from "./department";
 import type { DesignationRef } from "./designation";
+import type { ModulePermissionMap } from "./permission";
 import type { TagRef } from "./tag";
 
 export const EMPLOYEE_STATUSES = [
@@ -57,8 +60,20 @@ export interface EmployeeRef {
   designation: string;
 }
 
+export interface EmployeeAccess {
+  canSignIn: boolean;
+  userId: string | null;
+  status: UserStatus | null;
+  lastLoginAt: string | null;
+  modulePermissions: ModulePermissionMap;
+  effectivePermissions: ModulePermissionMap;
+}
+
 export interface Employee {
   _id: string;
+  organizationId: string;
+  concernId: string | null;
+  concern: ConcernRef | null;
   employeeCode: string;
   firstName: string;
   lastName: string;
@@ -85,7 +100,11 @@ export interface Employee {
   joiningDate: string;
   confirmationDate: string | null;
   resignationDate: string | null;
-  reportsTo: EmployeeRef | null;
+  supervisor: EmployeeRef | null;
+  supervisorId: string | null;
+  lineManager: EmployeeRef | null;
+  lineManagerId: string | null;
+  access: EmployeeAccess;
   status: EmployeeStatus;
   salary: EmployeeSalary;
   bankAccount: BankAccount;
@@ -107,6 +126,10 @@ export interface EmployeeListQuery {
   departmentIds?: string;
   designationIds?: string;
   tagIds?: string;
+  concernId?: string;
+  supervisorId?: string;
+  lineManagerId?: string;
+  canSignIn?: boolean;
 }
 
 export interface EmployeeOptionQuery {
@@ -147,10 +170,20 @@ export interface EmployeePayload {
   joiningDate: string;
   confirmationDate?: string | null;
   resignationDate?: string | null;
-  reportsToId?: string | null;
+  supervisorId?: string | null;
+  lineManagerId?: string | null;
+  concernId?: string | null;
+  access?: EmployeeAccessPayload;
   status?: EmployeeStatus;
   salary?: Partial<EmployeeSalary>;
   bankAccount?: Partial<BankAccount>;
   tagIds?: string[];
   notes?: string;
+}
+
+export interface EmployeeAccessPayload {
+  canSignIn: boolean;
+  password?: string;
+  status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
+  modulePermissions?: ModulePermissionMap;
 }

@@ -2,11 +2,14 @@ import {
   FormDate,
   FormInput,
   FormMultiSelect,
+  FormPassword,
   FormPhone,
   FormSelect,
+  FormSwitch,
   FormTextarea,
   type MultiSelectOption,
 } from "@/components/shared/form-fields";
+import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
 import { FileUploader } from "@/components/shared/file-uploader";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +38,15 @@ import {
 } from "@/redux/apis/employeeApis";
 import { useGetDepartmentOptionsQuery } from "@/redux/apis/departmentApis";
 import { useGetDesignationOptionsQuery } from "@/redux/apis/designationApis";
+import { useGetConcernsQuery } from "@/redux/apis/concernApis";
+import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
+import { usePermissions } from "@/hooks/use-permission";
+import {
+  permissionFor,
+  prunePermissionMap,
+  type ModulePermissionMap,
+} from "@/types/domain/permission";
 import { useGetSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Employee, EmployeePayload } from "@/types/domain/employee";
@@ -84,7 +95,11 @@ const emptyValues = (currency: string): EmployeeFormValues => ({
   joiningDate: "",
   confirmationDate: "",
   resignationDate: "",
-  reportsToId: "",
+  supervisorId: "",
+  lineManagerId: "",
+  concernId: "",
+  canSignIn: false,
+  accessPassword: "",
   status: "ACTIVE",
   salaryAmount: 0,
   salaryCurrency: currency,
@@ -123,7 +138,11 @@ const toFormValues = (employee: Employee): EmployeeFormValues => ({
   joiningDate: employee.joiningDate,
   confirmationDate: employee.confirmationDate ?? "",
   resignationDate: employee.resignationDate ?? "",
-  reportsToId: employee.reportsTo?._id ?? "",
+  supervisorId: employee.supervisorId ?? "",
+  lineManagerId: employee.lineManagerId ?? "",
+  concernId: employee.concernId ?? "",
+  canSignIn: employee.access?.canSignIn ?? false,
+  accessPassword: "",
   status: employee.status,
   salaryAmount: employee.salary?.amount ?? 0,
   salaryCurrency: employee.salary?.currency ?? "",
@@ -136,7 +155,10 @@ const toFormValues = (employee: Employee): EmployeeFormValues => ({
   notes: employee.notes ?? "",
 });
 
-const toPayload = (values: EmployeeFormValues): EmployeePayload => ({
+const toPayload = (
+  values: EmployeeFormValues,
+  modulePermissions: ModulePermissionMap
+): EmployeePayload => ({
   employeeCode: values.employeeCode || undefined,
   firstName: values.firstName,
   lastName: values.lastName,
@@ -164,7 +186,14 @@ const toPayload = (values: EmployeeFormValues): EmployeePayload => ({
   joiningDate: values.joiningDate,
   confirmationDate: values.confirmationDate || null,
   resignationDate: values.resignationDate || null,
-  reportsToId: values.reportsToId || null,
+  supervisorId: values.supervisorId || null,
+  lineManagerId: values.lineManagerId || null,
+  concernId: values.concernId || null,
+  access: {
+    canSignIn: values.canSignIn,
+    ...(values.accessPassword ? { password: values.accessPassword } : {}),
+    modulePermissions,
+  },
   status: values.status,
   salary: {
     amount: values.salaryAmount === "" ? 0 : values.salaryAmount,
@@ -200,6 +229,9 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();
   const { data: designationOptions = [] } = useGetDesignationOptionsQuery();
+  const { data: concernList } = useGetConcernsQuery({ limit: 100 });
+  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
+  const { modules: entitlement } = usePermissions();
 
   const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
@@ -216,6 +248,48 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
     if (!open) return;
     form.reset(employee ? toFormValues(employee) : emptyValues(defaultCurrency));
   }, [open, employee, defaultCurrency, form]);
+
+  const assignableModules = React.useMemo(
+    () =>
+      catalogue.filter(
+        (definition) =>
+          definition.scope === "COMPANY" &&
+          !definition.ownerOnly &&
+          permissionFor(entitlement, definition.key).canView
+      ),
+    [catalogue, entitlement]
+  );
+
+  const knownModuleKeys = React.useMemo(
+    () => new Set(catalogue.map((definition) => definition.key)),
+    [catalogue]
+  );
+
+  const [grant, setGrant] = React.useState<ModulePermissionMap>({});
+
+  const liveGrant = React.useMemo(
+    () => prunePermissionMap(grant, knownModuleKeys),
+    [grant, knownModuleKeys]
+  );
+
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
+  const seedKey = open ? (employee?._id ?? "new") : null;
+
+  if (seedKey !== seededFor) {
+    setSeededFor(seedKey);
+    setGrant(seedKey === null ? {} : (employee?.access?.modulePermissions ?? {}));
+  }
+
+  const concernOptions = React.useMemo(
+    () => (concernList?.data ?? []).map((concern) => ({
+      value: concern._id,
+      label: concern.code ? `${concern.name} (${concern.code})` : concern.name,
+    })),
+    [concernList]
+  );
+
+  const canSignIn = form.watch("canSignIn");
+  const hasLogin = Boolean(employee?.access?.userId);
 
   const managerOptions = React.useMemo(
     () =>
@@ -263,10 +337,10 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
   const onSubmit = async (values: EmployeeFormValues) => {
     try {
       if (employee) {
-        await updateEmployee({ id: employee._id, body: toPayload(values) }).unwrap();
+        await updateEmployee({ id: employee._id, body: toPayload(values, liveGrant) }).unwrap();
         toast.success("Employee updated");
       } else {
-        await createEmployee(toPayload(values)).unwrap();
+        await createEmployee(toPayload(values, liveGrant)).unwrap();
         toast.success("Employee added");
       }
       onOpenChange(false);
@@ -476,13 +550,67 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
                 />
                 <FormSelect
                   control={form.control}
-                  name="reportsToId"
-                  label="Reports to"
-                  placeholder="Nobody"
+                  name="supervisorId"
+                  label="Supervisor"
+                  placeholder="Pick an employee"
                   options={managerOptions}
                   searchable
                 />
+                <FormSelect
+                  control={form.control}
+                  name="lineManagerId"
+                  label="Line manager"
+                  placeholder="Pick an employee"
+                  description="May be the same person as the supervisor."
+                  options={managerOptions}
+                  searchable
+                />
+                <FormSelect
+                  control={form.control}
+                  name="concernId"
+                  label="Belongs to"
+                  placeholder="The organization"
+                  description="Leave blank when the employee sits with the organization itself."
+                  options={concernOptions}
+                  searchable
+                />
               </div>
+
+              <SectionTitle>Workspace access</SectionTitle>
+
+              <FormSwitch
+                control={form.control}
+                name="canSignIn"
+                label="Can sign in"
+                description="Creates a sign-in for this employee using their work email."
+              />
+
+              {canSignIn && (
+                <div className="space-y-4">
+                  <FormPassword
+                    control={form.control}
+                    name="accessPassword"
+                    label={hasLogin ? "New password" : "Password"}
+                    description={
+                      hasLogin
+                        ? "Leave blank to keep the current password. Changing it signs them out everywhere."
+                        : "At least 8 characters. They sign in with their work email."
+                    }
+                    className="sm:max-w-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Tick the menus this employee can reach. Anything your plan does not include
+                    stays out of reach even when ticked.
+                  </p>
+                  <ModulePermissionMatrix
+                    modules={assignableModules}
+                    value={liveGrant}
+                    onChange={setGrant}
+                    ceiling={entitlement}
+                    emptyMessage="Your current plan does not include any assignable menus."
+                  />
+                </div>
+              )}
 
               <SectionTitle>Payroll</SectionTitle>
 

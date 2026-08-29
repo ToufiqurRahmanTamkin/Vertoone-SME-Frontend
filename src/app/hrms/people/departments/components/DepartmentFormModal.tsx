@@ -50,7 +50,7 @@ const toPayload = (values: DepartmentFormValues): DepartmentPayload => ({
   name: values.name,
   code: values.code || undefined,
   description: values.description,
-  headId: values.headId || null,
+  headId: values.headId,
   isActive: values.isActive,
 });
 
@@ -134,10 +134,10 @@ export function DepartmentFormModal({
                 control={form.control}
                 name="headId"
                 label="Department head"
-                placeholder="Nobody yet"
+                placeholder="Pick an employee"
                 options={headChoices}
                 searchable
-                description="Optional. Pick the employee who runs this department."
+                description="Every department needs a head. Pick the employee who runs it."
               />
 
               <FormTextarea

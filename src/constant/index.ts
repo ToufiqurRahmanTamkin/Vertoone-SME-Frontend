@@ -141,6 +141,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   COMPANY_OWNER: "Company owner",
   COMPANY_USER: "Team member",
   CONCERN_HEAD: "Concern head",
+  EMPLOYEE: "Employee",
 };
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {

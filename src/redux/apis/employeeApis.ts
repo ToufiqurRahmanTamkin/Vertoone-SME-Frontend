@@ -1,6 +1,7 @@
 import type { Pagination } from "@/types";
 import type {
   Employee,
+  EmployeeAccessPayload,
   EmployeeListQuery,
   EmployeeOptionQuery,
   EmployeePayload,
@@ -49,6 +50,25 @@ const employeeApi = baseApi.injectEndpoints({
       query: ({ id, body }) => ({ url: `/hrms/employees/${id}`, method: "PATCH", body }),
       invalidatesTags: [...EMPLOYEE_TAGS],
     }),
+    getMyEmployee: builder.query<Employee, void>({
+      query: () => ({ url: "/hrms/employees/me", method: "GET" }),
+      providesTags: ["Employees"],
+    }),
+    getMyReports: builder.query<Employee[], void>({
+      query: () => ({ url: "/hrms/employees/my-reports", method: "GET" }),
+      providesTags: ["Employees"],
+    }),
+    updateEmployeeAccess: builder.mutation<
+      Employee,
+      { id: string; body: EmployeeAccessPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/hrms/employees/${id}/access`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: [...EMPLOYEE_TAGS],
+    }),
     deleteEmployee: builder.mutation<null, string>({
       query: (id) => ({ url: `/hrms/employees/${id}`, method: "DELETE" }),
       invalidatesTags: [...EMPLOYEE_TAGS],
@@ -63,5 +83,8 @@ export const {
   useGetEmployeeQuery,
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
+  useGetMyEmployeeQuery,
+  useGetMyReportsQuery,
+  useUpdateEmployeeAccessMutation,
   useDeleteEmployeeMutation,
 } = employeeApi;
