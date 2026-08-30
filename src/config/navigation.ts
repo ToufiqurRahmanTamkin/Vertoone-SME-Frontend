@@ -129,11 +129,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Zap,
 };
 
-import {
-  canDo,
-  moduleKeyFromPath,
-  type ModulePermissionMap,
-} from "@/types/domain/permission";
+import { canDo, moduleKeyFromPath, type ModulePermissionMap } from "@/types/domain/permission";
 
 export interface NavItem {
   title: string;
@@ -668,14 +664,6 @@ export const MENU_ITEMS: MenuItem[] = [
     description: "Company-wide notices published to your employees.",
   },
   {
-    title: "HR Reports",
-    path: "/hrms/reports",
-    icon: "BarChart3",
-    section: null,
-    roles: COMPANY,
-    description: "Headcount, attendance, leave and payroll summaries.",
-  },
-  {
     title: "Settings",
     path: "/hrms/settings",
     icon: "SlidersHorizontal",
@@ -755,7 +743,8 @@ export const MENU_ITEMS: MenuItem[] = [
         icon: "KeyRound",
         section: null,
         roles: COMPANY_ADMIN,
-        description: "Reusable permission sets you assign to people, departments, designations and teams.",
+        description:
+          "Reusable permission sets you assign to people, departments, designations and teams.",
       },
     ],
   },
@@ -931,14 +920,6 @@ export const MENU_ITEMS: MenuItem[] = [
     section: null,
     roles: COMPANY,
     description: "Counter-side selling for walk-in customers.",
-  },
-  {
-    title: "Business Reports",
-    path: "/sme/reports",
-    icon: "BarChart3",
-    section: null,
-    roles: COMPANY,
-    description: "Sales, purchase, stock and profitability summaries.",
   },
   {
     title: "Configuration",
@@ -1155,12 +1136,173 @@ export const MENU_ITEMS: MenuItem[] = [
     ],
   },
   {
-    title: "CRM Reports",
-    path: "/crm/reports",
+    title: "Reports",
+    path: "/reports",
     icon: "BarChart3",
-    section: null,
+    section: "Reports",
     roles: COMPANY,
-    description: "Pipeline, conversion and activity summaries.",
+    items: [
+      {
+        title: "Overview",
+        path: "/reports/overview",
+        icon: "LayoutGrid",
+        section: null,
+        roles: COMPANY,
+        description: "Every report you can reach, with the headline numbers on top.",
+      },
+      {
+        title: "Headcount",
+        path: "/reports/hr/headcount",
+        icon: "Users",
+        section: null,
+        roles: COMPANY,
+        description: "Employees by department, designation, type and status over time.",
+      },
+      {
+        title: "Attendance",
+        path: "/reports/hr/attendance",
+        icon: "Clock",
+        section: null,
+        roles: COMPANY,
+        description: "Presence, late arrivals, absences and overtime per employee.",
+      },
+      {
+        title: "Leave",
+        path: "/reports/hr/leave",
+        icon: "Plane",
+        section: null,
+        roles: COMPANY,
+        description: "Leave taken, approved and still owed against each entitlement.",
+      },
+      {
+        title: "Payroll",
+        path: "/reports/hr/payroll",
+        icon: "Banknote",
+        section: null,
+        roles: COMPANY,
+        description: "Salary, bonus, deduction and loan totals per pay period.",
+      },
+      {
+        title: "Recruitment",
+        path: "/reports/hr/recruitment",
+        icon: "UserPlus",
+        section: null,
+        roles: COMPANY,
+        description: "Openings, candidate flow and time to hire.",
+      },
+      {
+        title: "Performance",
+        path: "/reports/hr/performance",
+        icon: "Award",
+        section: null,
+        roles: COMPANY,
+        description: "Goal completion, appraisal scores and training coverage.",
+      },
+      {
+        title: "Sales",
+        path: "/reports/sales/summary",
+        icon: "ShoppingCart",
+        section: null,
+        roles: COMPANY,
+        description: "Orders, invoices, returns and revenue across every channel.",
+      },
+      {
+        title: "Sales by product",
+        path: "/reports/sales/products",
+        icon: "Package",
+        section: null,
+        roles: COMPANY,
+        description: "What sells, at what margin, and what sits still.",
+      },
+      {
+        title: "Purchases",
+        path: "/reports/purchases/summary",
+        icon: "Truck",
+        section: null,
+        roles: COMPANY,
+        description: "Purchase orders, returns and spend per supplier.",
+      },
+      {
+        title: "Stock",
+        path: "/reports/inventory/stock",
+        icon: "Boxes",
+        section: null,
+        roles: COMPANY,
+        description: "Stock on hand and its value, warehouse by warehouse.",
+      },
+      {
+        title: "Stock movement",
+        path: "/reports/inventory/movement",
+        icon: "Warehouse",
+        section: null,
+        roles: COMPANY,
+        description: "Transfers, adjustments and the trail behind every change.",
+      },
+      {
+        title: "Profit and loss",
+        path: "/reports/finance/profit-loss",
+        icon: "TrendingUp",
+        section: null,
+        roles: COMPANY,
+        description: "Income against expense for any period you pick.",
+      },
+      {
+        title: "Cash flow",
+        path: "/reports/finance/cash-flow",
+        icon: "Coins",
+        section: null,
+        roles: COMPANY,
+        description: "Money in and money out, by account and by month.",
+      },
+      {
+        title: "Receivables",
+        path: "/reports/finance/receivables",
+        icon: "Receipt",
+        section: null,
+        roles: COMPANY,
+        description: "Who owes you, how much, and for how long.",
+      },
+      {
+        title: "Pipeline",
+        path: "/reports/crm/pipeline",
+        icon: "FolderKanban",
+        section: null,
+        roles: COMPANY,
+        description: "Deal value and count at every stage of each pipeline.",
+      },
+      {
+        title: "Leads",
+        path: "/reports/crm/leads",
+        icon: "Target",
+        section: null,
+        roles: COMPANY,
+        description: "Lead volume, source quality and conversion rate.",
+      },
+      {
+        title: "Deals",
+        path: "/reports/crm/deals",
+        icon: "Handshake",
+        section: null,
+        roles: COMPANY,
+        description: "Won, lost and open deals with the reasons behind them.",
+      },
+      {
+        title: "Campaigns",
+        path: "/reports/crm/campaigns",
+        icon: "Megaphone",
+        section: null,
+        roles: COMPANY,
+        description: "Reach, replies and cost per campaign across every channel.",
+      },
+      {
+        title: "Tasks and goals",
+        path: "/reports/tasks/summary",
+        icon: "ListChecks",
+        section: null,
+        roles: COMPANY,
+        description: "Workload, completion rate and goal progress per person.",
+      },
+    ],
   },
 
   {
@@ -1412,9 +1554,7 @@ export const getNavigation = (
     icon: ICON_MAP[item.icon],
     exact: item.exact,
     items: item.items
-      ? item.items
-          .filter((child) => isMenuItemVisible(child, role, modules))
-          .map(buildNavItem)
+      ? item.items.filter((child) => isMenuItemVisible(child, role, modules)).map(buildNavItem)
       : undefined,
   });
 
@@ -1512,9 +1652,7 @@ export const getBreadcrumbTrail = (pathname: string): BreadcrumbEntry[] => {
     node.item.path.length > longest.item.path.length ? node : longest
   ).trail;
 
-  const unique = best.filter(
-    (item, index) => index === 0 || item.path !== best[index - 1].path
-  );
+  const unique = best.filter((item, index) => index === 0 || item.path !== best[index - 1].path);
 
   return unique.map((item, index) => ({
     title: item.title,

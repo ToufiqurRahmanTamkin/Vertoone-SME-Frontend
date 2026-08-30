@@ -25,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { isMenuPathActive, type NavItem } from "@/config/navigation";
-import { useState } from "react";
+import * as React from "react";
 
 const MENU_BUTTON_CLASS = cn(
   "group/btn relative h-9 gap-3 cursor-pointer rounded-lg font-medium transition-all duration-150",
@@ -44,7 +44,185 @@ const SUB_BUTTON_CLASS = cn(
   "data-[active=true]:before:absolute data-[active=true]:before:-left-[11px] data-[active=true]:before:top-1/2 data-[active=true]:before:h-4 data-[active=true]:before:w-0.5 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary"
 );
 
-export function NavMain({
+interface NavRow {
+  item: NavItem;
+  hasChildren: boolean;
+  isActive: boolean;
+  activeChildUrl: string | null;
+}
+
+const buildRows = (items: NavItem[], currentPath: string): NavRow[] =>
+  items.map((item) => {
+    const children = item.items;
+
+    if (!children?.length) {
+      return {
+        item,
+        hasChildren: false,
+        isActive: isMenuPathActive(item.url, currentPath, item.exact),
+        activeChildUrl: null,
+      };
+    }
+
+    const activeChild = children.reduce<NavItem | null>((best, child) => {
+      if (!isMenuPathActive(child.url, currentPath, child.exact)) return best;
+      return !best || child.url.length > best.url.length ? child : best;
+    }, null);
+
+    return {
+      item,
+      hasChildren: true,
+      isActive: Boolean(activeChild),
+      activeChildUrl: activeChild?.url ?? null,
+    };
+  });
+
+const withActiveParentsOpen = (
+  rows: NavRow[],
+  previous: Record<string, boolean>
+): Record<string, boolean> => {
+  let next = previous;
+
+  rows.forEach((row) => {
+    if (!row.activeChildUrl || previous[row.item.url]) return;
+    if (next === previous) next = { ...previous };
+    next[row.item.url] = true;
+  });
+
+  return next;
+};
+
+const NavLeafRow = React.memo(function NavLeafRow({
+  item,
+  isActive,
+  onNavigate,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  onNavigate: () => void;
+}) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        tooltip={item.title}
+        className={MENU_BUTTON_CLASS}
+        isActive={isActive}
+      >
+        <Link to={item.url} onClick={onNavigate}>
+          {item.icon && <item.icon />}
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+});
+
+const NavDropdownRow = React.memo(function NavDropdownRow({
+  item,
+  isActive,
+  activeChildUrl,
+  onNavigate,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  activeChildUrl: string | null;
+  onNavigate: () => void;
+}) {
+  return (
+    <SidebarMenuItem>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuButton className={MENU_BUTTON_CLASS} isActive={isActive}>
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+          </SidebarMenuButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start" className="min-w-48">
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            {item.title}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {item.items?.map((subItem) => (
+            <DropdownMenuItem key={subItem.url} asChild>
+              <Link
+                to={subItem.url}
+                onClick={onNavigate}
+                className={cn(
+                  "cursor-pointer",
+                  subItem.url === activeChildUrl && "bg-primary/15 font-semibold text-primary"
+                )}
+              >
+                {subItem.title}
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+});
+
+const NavBranchRow = React.memo(function NavBranchRow({
+  item,
+  isActive,
+  activeChildUrl,
+  isOpen,
+  onToggle,
+  onNavigate,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  activeChildUrl: string | null;
+  isOpen: boolean;
+  onToggle: (url: string, open: boolean) => void;
+  onNavigate: () => void;
+}) {
+  const handleOpenChange = React.useCallback(
+    (open: boolean) => onToggle(item.url, open),
+    [item.url, onToggle]
+  );
+
+  return (
+    <Collapsible
+      asChild
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      className="group/collapsible"
+    >
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton tooltip={item.title} className={MENU_BUTTON_CLASS} isActive={isActive}>
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+            <div className="ml-auto flex items-center gap-2">
+              <ChevronRight className="h-4 w-4 text-sidebar-foreground/40 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </div>
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+          <SidebarMenuSub className="mx-3.5 my-1 gap-1 border-sidebar-border">
+            {item.items?.map((subItem) => (
+              <SidebarMenuSubItem key={subItem.url}>
+                <SidebarMenuSubButton
+                  asChild
+                  className={SUB_BUTTON_CLASS}
+                  isActive={subItem.url === activeChildUrl}
+                >
+                  <Link to={subItem.url} onClick={onNavigate}>
+                    <span>{subItem.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  );
+});
+
+export const NavMain = React.memo(function NavMain({
   label,
   items,
   activePath,
@@ -60,35 +238,25 @@ export function NavMain({
   const currentPath = activePath ?? location.pathname;
   const isIconCollapsed = collapsible === "icon" && state === "collapsed" && !isMobile;
 
-  const isItemActive = (item: NavItem) => isMenuPathActive(item.url, currentPath, item.exact);
-  const isParentActive = (item: NavItem) => item.items?.some(isItemActive) || false;
+  const rows = React.useMemo(() => buildRows(items, currentPath), [items, currentPath]);
 
-  const openActiveParents = (previous: Record<string, boolean>) => {
-    let next = previous;
-    items.forEach((item) => {
-      if (item.items?.length && isParentActive(item) && !previous[item.url]) {
-        if (next === previous) next = { ...previous };
-        next[item.url] = true;
-      }
-    });
-    return next;
-  };
-
-  const [openState, setOpenState] = useState<Record<string, boolean>>(() =>
-    openActiveParents({})
+  const [openState, setOpenState] = React.useState<Record<string, boolean>>(() =>
+    withActiveParentsOpen(rows, {})
   );
-  const [syncedPath, setSyncedPath] = useState(currentPath);
+  const [syncedPath, setSyncedPath] = React.useState(currentPath);
 
   if (syncedPath !== currentPath) {
     setSyncedPath(currentPath);
-    setOpenState(openActiveParents);
+    setOpenState((previous) => withActiveParentsOpen(rows, previous));
   }
 
-  const handleItemClick = () => {
-    if (isMobile) {
-      setOpenMobile(false);
-    }
-  };
+  const handleNavigate = React.useCallback(() => {
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
+
+  const handleToggle = React.useCallback((url: string, open: boolean) => {
+    setOpenState((previous) => (previous[url] === open ? previous : { ...previous, [url]: open }));
+  }, []);
 
   return (
     <SidebarGroup className="px-2.5 py-1">
@@ -98,111 +266,43 @@ export function NavMain({
         </SidebarGroupLabel>
       )}
       <SidebarMenu className="gap-1">
-        {items.map((item) => {
-          if (!item.items?.length) {
+        {rows.map((row) => {
+          if (!row.hasChildren) {
             return (
-              <SidebarMenuItem key={item.url}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.title}
-                  className={MENU_BUTTON_CLASS}
-                  isActive={isItemActive(item)}
-                >
-                  <Link to={item.url} onClick={handleItemClick}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <NavLeafRow
+                key={row.item.url}
+                item={row.item}
+                isActive={row.isActive}
+                onNavigate={handleNavigate}
+              />
             );
           }
 
           if (isIconCollapsed) {
             return (
-              <SidebarMenuItem key={item.url}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton
-                      className={MENU_BUTTON_CLASS}
-                      isActive={isParentActive(item)}
-                    >
-                      {item.icon && <item.icon />}
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="right" align="start" className="min-w-48">
-                    <DropdownMenuLabel className="text-xs text-muted-foreground">
-                      {item.title}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {item.items?.map((subItem) => (
-                      <DropdownMenuItem key={subItem.url} asChild>
-                        <Link
-                          to={subItem.url}
-                          onClick={handleItemClick}
-                          className={cn(
-                            "cursor-pointer",
-                            isItemActive(subItem) && "bg-primary/15 font-semibold text-primary"
-                          )}
-                        >
-                          {subItem.title}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
+              <NavDropdownRow
+                key={row.item.url}
+                item={row.item}
+                isActive={row.isActive}
+                activeChildUrl={row.activeChildUrl}
+                onNavigate={handleNavigate}
+              />
             );
           }
 
           return (
-            <Collapsible
-              key={item.url}
-              asChild
-              open={openState[item.url] ?? false}
-              onOpenChange={(open) => setOpenState((prev) => ({ ...prev, [item.url]: open }))}
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    tooltip={item.title}
-                    className={MENU_BUTTON_CLASS}
-                    isActive={isParentActive(item)}
-                  >
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                    <div className="ml-auto flex items-center gap-2">
-                      <ChevronRight className="h-4 w-4 text-sidebar-foreground/40 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </div>
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent
-                  className={cn(
-                    "overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up"
-                  )}
-                >
-                  <SidebarMenuSub className="mx-3.5 my-1 gap-1 border-sidebar-border">
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.url}>
-                        <SidebarMenuSubButton
-                          asChild
-                          className={SUB_BUTTON_CLASS}
-                          isActive={isItemActive(subItem)}
-                        >
-                          <Link to={subItem.url} onClick={handleItemClick}>
-                            <span>{subItem.title}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
+            <NavBranchRow
+              key={row.item.url}
+              item={row.item}
+              isActive={row.isActive}
+              activeChildUrl={row.activeChildUrl}
+              isOpen={openState[row.item.url] ?? false}
+              onToggle={handleToggle}
+              onNavigate={handleNavigate}
+            />
           );
         })}
       </SidebarMenu>
     </SidebarGroup>
   );
-}
+});
