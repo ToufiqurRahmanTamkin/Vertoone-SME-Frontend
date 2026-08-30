@@ -47,6 +47,14 @@ const Contacts = lazy(() => import("@/app/crm/contacts/ContactsPage"));
 const Leads = lazy(() => import("@/app/crm/leads/LeadsPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
 const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
+const Products = lazy(() => import("@/app/sme/products/list/ProductsPage"));
+const ProductCategories = lazy(
+  () => import("@/app/sme/products/categories/ProductCategoriesPage")
+);
+const ProductSubCategories = lazy(
+  () => import("@/app/sme/products/subCategories/ProductSubCategoriesPage")
+);
+const Brands = lazy(() => import("@/app/sme/products/brands/BrandsPage"));
 const Suppliers = lazy(() => import("@/app/sme/purchases/suppliers/SuppliersPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
@@ -93,6 +101,10 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/people/departments", element: <Departments /> },
   { path: "hrms/people/designations", element: <Designations /> },
   { path: "hrms/payroll/salaries", element: <Salaries /> },
+  { path: "sme/products/list", element: <Products /> },
+  { path: "sme/products/categories", element: <ProductCategories /> },
+  { path: "sme/products/sub-categories", element: <ProductSubCategories /> },
+  { path: "sme/products/brands", element: <Brands /> },
   { path: "sme/purchases/suppliers", element: <Suppliers /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
