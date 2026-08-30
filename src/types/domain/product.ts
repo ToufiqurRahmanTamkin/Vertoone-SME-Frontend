@@ -57,6 +57,15 @@ export interface Product extends ProductRef {
   updatedAt: string;
 }
 
+export interface ProductPricingOption extends ProductRef {
+  barcode: string;
+  purchasePrice: number;
+  sellingPrice: number;
+  taxRate: number;
+  lowStockAlert: number;
+  type: ProductType;
+}
+
 export interface ProductListQuery {
   page?: number;
   limit?: number;

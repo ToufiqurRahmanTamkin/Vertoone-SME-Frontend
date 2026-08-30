@@ -4,6 +4,7 @@ import type {
   ProductListQuery,
   ProductOptionQuery,
   ProductPayload,
+  ProductPricingOption,
   ProductRef,
   ProductSummary,
 } from "@/types/domain/product";
@@ -40,6 +41,13 @@ const productApi = baseApi.injectEndpoints({
       }),
       providesTags: ["ProductOptions"],
     }),
+    getProductPricingOptions: builder.query<ProductPricingOption[], ProductOptionQuery | void>({
+      query: (params) => ({
+        url: `/sme/products/options/pricing${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["ProductOptions"],
+    }),
     getProductSummary: builder.query<ProductSummary, void>({
       query: () => ({ url: "/sme/products/summary", method: "GET" }),
       providesTags: ["ProductSummary"],
@@ -66,6 +74,7 @@ const productApi = baseApi.injectEndpoints({
 export const {
   useGetProductsQuery,
   useGetProductOptionsQuery,
+  useGetProductPricingOptionsQuery,
   useGetProductSummaryQuery,
   useGetProductQuery,
   useCreateProductMutation,

@@ -55,7 +55,19 @@ const ProductSubCategories = lazy(
   () => import("@/app/sme/products/subCategories/ProductSubCategoriesPage")
 );
 const Brands = lazy(() => import("@/app/sme/products/brands/BrandsPage"));
+const Stock = lazy(() => import("@/app/sme/inventory/stock/StockPage"));
+const Warehouses = lazy(() => import("@/app/sme/inventory/warehouses/WarehousesPage"));
+const StockTransfers = lazy(() => import("@/app/sme/inventory/transfers/StockTransfersPage"));
+const StockAdjustments = lazy(
+  () => import("@/app/sme/inventory/adjustments/StockAdjustmentsPage")
+);
 const Suppliers = lazy(() => import("@/app/sme/purchases/suppliers/SuppliersPage"));
+const PurchaseOrders = lazy(() => import("@/app/sme/purchases/orders/PurchaseOrdersPage"));
+const PurchaseReturns = lazy(() => import("@/app/sme/purchases/returns/PurchaseReturnsPage"));
+const Quotations = lazy(() => import("@/app/sme/sales/quotations/QuotationsPage"));
+const SalesOrders = lazy(() => import("@/app/sme/sales/orders/SalesOrdersPage"));
+const SalesInvoices = lazy(() => import("@/app/sme/sales/invoices/SalesInvoicesPage"));
+const SalesReturns = lazy(() => import("@/app/sme/sales/returns/SalesReturnsPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -105,7 +117,17 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/products/categories", element: <ProductCategories /> },
   { path: "sme/products/sub-categories", element: <ProductSubCategories /> },
   { path: "sme/products/brands", element: <Brands /> },
+  { path: "sme/inventory/stock", element: <Stock /> },
+  { path: "sme/inventory/warehouses", element: <Warehouses /> },
+  { path: "sme/inventory/transfers", element: <StockTransfers /> },
+  { path: "sme/inventory/adjustments", element: <StockAdjustments /> },
   { path: "sme/purchases/suppliers", element: <Suppliers /> },
+  { path: "sme/purchases/orders", element: <PurchaseOrders /> },
+  { path: "sme/purchases/returns", element: <PurchaseReturns /> },
+  { path: "sme/sales/quotations", element: <Quotations /> },
+  { path: "sme/sales/orders", element: <SalesOrders /> },
+  { path: "sme/sales/invoices", element: <SalesInvoices /> },
+  { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
   { path: "crm/contact-types", element: <ContactTypes /> },
