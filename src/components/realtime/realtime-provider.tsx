@@ -70,6 +70,18 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "MeetingRoomFloors",
   ],
   ROLES: ["Roles", "RoleSummary", "RoleOptions", "Permissions"],
+  WAREHOUSES: ["Warehouses", "WarehouseSummary", "WarehouseOptions", "Stock", "StockSummary"],
+  STOCK: ["Stock", "StockSummary", "StockMovements", "PosCatalog"],
+  STOCK_TRANSFERS: ["StockTransfers", "StockTransferSummary", "Stock", "StockSummary"],
+  STOCK_ADJUSTMENTS: ["StockAdjustments", "StockAdjustmentSummary", "Stock", "StockSummary"],
+  PURCHASE_ORDERS: ["PurchaseOrders", "PurchaseOrderSummary", "Stock", "StockSummary"],
+  PURCHASE_RETURNS: ["PurchaseReturns", "PurchaseReturnSummary", "PurchaseOrders", "Stock"],
+  QUOTATIONS: ["Quotations", "QuotationSummary"],
+  SALES_ORDERS: ["SalesOrders", "SalesOrderSummary", "Quotations", "Stock", "StockSummary"],
+  SALES_INVOICES: ["SalesInvoices", "SalesInvoiceSummary", "SalesOrders", "Stock", "StockSummary"],
+  SALES_RETURNS: ["SalesReturns", "SalesReturnSummary", "SalesInvoices", "Stock"],
+  SHOP: ["Shop", "ShopSummary"],
+  POS: ["PosSummary", "PosRecent", "PosCatalog", "SalesInvoices", "Stock", "StockSummary"],
 };
 
 const TOAST_BY_LEVEL: Record<string, (title: string, description: string) => void> = {

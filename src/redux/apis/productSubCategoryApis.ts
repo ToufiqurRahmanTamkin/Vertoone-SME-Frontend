@@ -1,5 +1,6 @@
 import type { Pagination } from "@/types";
 import type {
+  BulkProductSubCategoryResult,
   ProductSubCategory,
   ProductSubCategoryListQuery,
   ProductSubCategoryOptionQuery,
@@ -71,6 +72,17 @@ const productSubCategoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [...PRODUCT_SUB_CATEGORY_TAGS],
     }),
+    bulkCreateProductSubCategories: builder.mutation<
+      BulkProductSubCategoryResult,
+      ProductSubCategoryPayload[]
+    >({
+      query: (subCategories) => ({
+        url: "/sme/product-sub-categories/bulk",
+        method: "POST",
+        body: { subCategories },
+      }),
+      invalidatesTags: [...PRODUCT_SUB_CATEGORY_TAGS],
+    }),
     deleteProductSubCategory: builder.mutation<null, string>({
       query: (id) => ({ url: `/sme/product-sub-categories/${id}`, method: "DELETE" }),
       invalidatesTags: [...PRODUCT_SUB_CATEGORY_TAGS],
@@ -84,6 +96,7 @@ export const {
   useGetProductSubCategorySummaryQuery,
   useGetProductSubCategoryQuery,
   useCreateProductSubCategoryMutation,
+  useBulkCreateProductSubCategoriesMutation,
   useUpdateProductSubCategoryMutation,
   useDeleteProductSubCategoryMutation,
 } = productSubCategoryApi;

@@ -68,6 +68,9 @@ const Quotations = lazy(() => import("@/app/sme/sales/quotations/QuotationsPage"
 const SalesOrders = lazy(() => import("@/app/sme/sales/orders/SalesOrdersPage"));
 const SalesInvoices = lazy(() => import("@/app/sme/sales/invoices/SalesInvoicesPage"));
 const SalesReturns = lazy(() => import("@/app/sme/sales/returns/SalesReturnsPage"));
+const Pos = lazy(() => import("@/app/sme/pos/PosPage"));
+const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
+const PublicShop = lazy(() => import("@/app/publicShop/PublicShopPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -128,6 +131,8 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/orders", element: <SalesOrders /> },
   { path: "sme/sales/invoices", element: <SalesInvoices /> },
   { path: "sme/sales/returns", element: <SalesReturns /> },
+  { path: "sme/pos", element: <Pos /> },
+  { path: "sme/shop", element: <Shop /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
   { path: "crm/contact-types", element: <ContactTypes /> },
@@ -147,6 +152,8 @@ export const routes: RouteConfig[] = [
     path: "/",
     element: <RootRedirect />,
   },
+
+  { path: "shop/:slug", element: <PublicShop /> },
 
   {
     path: "/",

@@ -56,6 +56,7 @@ const PUBLIC_ENDPOINT_PATHS = [
   "/companies/check-availability",
   "/subscription-plans/public",
   "/system-config/public",
+  "/public/shop",
 ];
 
 const requestPath = (args: string | FetchArgs): string => {
@@ -242,6 +243,11 @@ export const ALL_TAG_TYPES = [
   "SalesInvoiceSummary",
   "SalesReturns",
   "SalesReturnSummary",
+  "Shop",
+  "ShopSummary",
+  "PosCatalog",
+  "PosSummary",
+  "PosRecent",
 ] as const;
 
 export type TagType = (typeof ALL_TAG_TYPES)[number];

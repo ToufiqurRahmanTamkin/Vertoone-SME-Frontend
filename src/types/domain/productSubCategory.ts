@@ -51,3 +51,17 @@ export interface ProductSubCategoryPayload {
   description?: string;
   isActive?: boolean;
 }
+
+export interface BulkProductSubCategoryRow {
+  row: number;
+  name: string;
+  categoryName: string;
+  code: string | null;
+  error: string | null;
+}
+
+export interface BulkProductSubCategoryResult {
+  created: number;
+  failed: number;
+  rows: BulkProductSubCategoryRow[];
+}
