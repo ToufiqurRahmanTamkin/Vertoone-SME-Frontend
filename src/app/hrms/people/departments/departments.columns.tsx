@@ -36,17 +36,18 @@ export const departmentColumns = ({
     accessorKey: "code",
     header: "Code",
     cell: ({ row }) => (
-      <span className="font-mono text-xs uppercase text-muted-foreground">
-        {row.original.code}
-      </span>
+      <span className="font-mono text-xs uppercase text-muted-foreground">{row.original.code}</span>
     ),
   },
   {
     id: "head",
     header: "Head",
-    cell: ({ row }) => (
-      <span className="text-sm">{row.original.head?.name ?? "—"}</span>
-    ),
+    cell: ({ row }) =>
+      row.original.head ? (
+        <span className="text-sm">{row.original.head.name}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">Unassigned</span>
+      ),
   },
   {
     accessorKey: "employeeCount",

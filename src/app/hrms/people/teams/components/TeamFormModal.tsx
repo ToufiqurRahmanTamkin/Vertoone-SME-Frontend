@@ -1,5 +1,4 @@
 import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAccessGrant } from "@/hooks/use-access-grant";
 import { useModulePermission } from "@/hooks/use-permission";
 import {
@@ -22,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
 import { useCreateTeamMutation, useUpdateTeamMutation } from "@/redux/apis/teamApis";
@@ -29,9 +29,9 @@ import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Team, TeamPayload } from "@/types/domain/team";
 import { TeamSchema, type TeamFormValues } from "@/validations/team";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 interface TeamFormModalProps {
@@ -41,6 +41,23 @@ interface TeamFormModalProps {
 }
 
 const DEFAULT_COLOR = "#0ea5e9";
+
+const DETAILS_STEP: StepperStep = { id: "details", label: "Details" };
+const ACCESS_STEP: StepperStep = { id: "access", label: "Menu access" };
+const REVIEW_STEP: StepperStep = { id: "review", label: "Review" };
+
+const DETAIL_FIELDS: readonly (keyof TeamFormValues)[] = [
+  "name",
+  "code",
+  "description",
+  "color",
+  "department",
+  "teamLeadId",
+  "supervisorId",
+  "memberIds",
+  "tagIds",
+  "isActive",
+];
 
 const emptyValues = (): TeamFormValues => ({
   name: "",
@@ -105,8 +122,29 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
     form.reset(team ? toFormValues(team) : emptyValues());
   }, [open, team, form]);
 
-  const grant = useAccessGrant(open ? (team?._id ?? "new") : null, team);
+  const seedKey = open ? (team?._id ?? "new") : null;
+  const grant = useAccessGrant(seedKey, team);
   const canManageAccess = useModulePermission("/configuration/roles").canEdit;
+
+  const steps = React.useMemo<StepperStep[]>(
+    () =>
+      canManageAccess ? [DETAILS_STEP, ACCESS_STEP, REVIEW_STEP] : [DETAILS_STEP, REVIEW_STEP],
+    [canManageAccess]
+  );
+
+  const lastStep = steps.length - 1;
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
+  const activeStep = Math.min(step, lastStep);
+  const currentStep = steps[activeStep].id;
+
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
+
+  if (seedKey !== seededFor) {
+    setSeededFor(seedKey);
+    setStep(0);
+    setFurthestStep(seedKey !== null && team ? lastStep : 0);
+  }
 
   const employeeChoices = React.useMemo(
     () =>
@@ -127,6 +165,31 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
     () => tagOptions.map((tag) => ({ value: tag._id, label: tag.name, color: tag.color })),
     [tagOptions]
   );
+
+  const summary = useWatch({ control: form.control });
+
+  const nameOf = React.useCallback(
+    (id?: string) => employeeChoices.find((choice) => choice.value === id)?.label,
+    [employeeChoices]
+  );
+
+  const memberCount = React.useMemo(() => {
+    const ids = new Set<string>();
+    (summary.memberIds ?? []).forEach((id) => id && ids.add(id));
+    if (summary.teamLeadId) ids.add(summary.teamLeadId);
+    if (summary.supervisorId) ids.add(summary.supervisorId);
+    return ids.size;
+  }, [summary.memberIds, summary.teamLeadId, summary.supervisorId]);
+
+  const goNext = async () => {
+    if (currentStep === "details") {
+      const isValid = await form.trigger(DETAIL_FIELDS, { shouldFocus: true });
+      if (!isValid) return;
+    }
+    const next = Math.min(activeStep + 1, lastStep);
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
 
   const onSubmit = async (values: TeamFormValues) => {
     const teamBody = toPayload(values, {
@@ -149,6 +212,17 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
     }
   };
 
+  const onInvalid = () => setStep(0);
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (activeStep < lastStep) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
   const noEmployees = employeeOptions.length === 0;
 
   return (
@@ -163,21 +237,17 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleFormSubmit}>
             <DialogBody className="flex flex-col gap-4">
-              <Tabs defaultValue="details" className="gap-4">
-                <TabsList>
-                  <TabsTrigger value="details" className="cursor-pointer">
-                    Details
-                  </TabsTrigger>
-                  {canManageAccess && (
-                    <TabsTrigger value="access" className="cursor-pointer">
-                      Access ({grant.roleIds.length + grant.grantedMenuCount})
-                    </TabsTrigger>
-                  )}
-                </TabsList>
+              <Stepper
+                steps={steps}
+                current={activeStep}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
 
-                <TabsContent value="details" className="flex flex-col gap-4">
+              {currentStep === "details" && (
+                <div className="flex flex-col gap-4">
                   {noEmployees && (
                     <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
                       Add employees under HRMS · Employees first. A team cannot be created without a
@@ -261,36 +331,127 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
                     label="Active"
                     description="Inactive teams stay on record but are filtered out by default."
                   />
-                </TabsContent>
+                </div>
+              )}
 
-                {canManageAccess && (
-                  <TabsContent value="access">
-                    <AccessGrantEditor
-                      roleIds={grant.roleIds}
-                      onRoleIdsChange={grant.setRoleIds}
-                      permissions={grant.permissions}
-                      onPermissionsChange={grant.setPermissions}
-                      rolesHint="Members, the lead and the supervisor all inherit these roles."
-                      permissionsHint="Extra menus everyone on this team can reach."
-                    />
-                  </TabsContent>
-                )}
-              </Tabs>
+              {currentStep === "access" && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{grant.roleIds.length}</span>{" "}
+                    roles and{" "}
+                    <span className="font-medium text-foreground">{grant.grantedMenuCount}</span>{" "}
+                    menus granted to this team.
+                  </p>
+                  <AccessGrantEditor
+                    roleIds={grant.roleIds}
+                    onRoleIdsChange={grant.setRoleIds}
+                    permissions={grant.permissions}
+                    onPermissionsChange={grant.setPermissions}
+                    rolesHint="Members, the lead and the supervisor all inherit these roles."
+                    permissionsHint="Extra menus everyone on this team can reach."
+                  />
+                </div>
+              )}
+
+              {currentStep === "review" && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Check the team before you save it. The lead and the supervisor are counted as
+                    members.
+                  </p>
+                  <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Team name</dt>
+                      <dd className="flex min-w-0 items-center gap-2 font-medium">
+                        <span
+                          className="size-3 shrink-0 rounded-full border"
+                          style={{ backgroundColor: summary.color || DEFAULT_COLOR }}
+                        />
+                        <span className="truncate">{summary.name || "—"}</span>
+                      </dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Code</dt>
+                      <dd className="truncate font-medium">{summary.code || "—"}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Department</dt>
+                      <dd className="truncate font-medium">{summary.department || "—"}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Status</dt>
+                      <dd className="font-medium">{summary.isActive ? "Active" : "Inactive"}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Team lead</dt>
+                      <dd className="truncate font-medium">{nameOf(summary.teamLeadId) || "—"}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Supervisor</dt>
+                      <dd className="truncate font-medium">
+                        {nameOf(summary.supervisorId) || "—"}
+                      </dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Members</dt>
+                      <dd className="font-medium">
+                        {memberCount} · {summary.tagIds?.length ?? 0} tags
+                      </dd>
+                    </div>
+                    {canManageAccess && (
+                      <div className="min-w-0">
+                        <dt className="text-xs text-muted-foreground">Access</dt>
+                        <dd className="font-medium">
+                          {grant.roleIds.length} roles · {grant.grantedMenuCount} menus
+                        </dd>
+                      </div>
+                    )}
+                    <div className="col-span-2 min-w-0 sm:col-span-4">
+                      <dt className="text-xs text-muted-foreground">Description</dt>
+                      <dd className="font-medium">{summary.description || "—"}</dd>
+                    </div>
+                  </dl>
+                </div>
+              )}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving || noEmployees}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Create team"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {activeStep + 1} of {steps.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => (activeStep === 0 ? onOpenChange(false) : setStep(activeStep - 1))}
+                  disabled={isSaving}
+                >
+                  {activeStep === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {activeStep < lastStep ? (
+                  <Button
+                    key="wizard-next"
+                    type="button"
+                    onClick={() => void goNext()}
+                    disabled={noEmployees}
+                  >
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button key="wizard-submit" type="submit" disabled={isSaving || noEmployees}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? "Save changes" : "Create team"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>

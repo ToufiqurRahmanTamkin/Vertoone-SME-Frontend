@@ -179,7 +179,7 @@ export default function DepartmentsPage() {
             <dl className="mt-3 grid gap-1 text-xs">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Head</dt>
-                <dd className="font-medium">{department.head?.name ?? "—"}</dd>
+                <dd className="font-medium">{department.head?.name ?? "Unassigned"}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Employees</dt>

@@ -1,5 +1,4 @@
 import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAccessGrant } from "@/hooks/use-access-grant";
 import { useModulePermission } from "@/hooks/use-permission";
 import { FormInput, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
@@ -14,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import {
   useCreateDesignationMutation,
   useUpdateDesignationMutation,
@@ -22,9 +22,9 @@ import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Designation, DesignationPayload } from "@/types/domain/designation";
 import { DesignationSchema, type DesignationFormValues } from "@/validations/designation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 interface DesignationFormModalProps {
@@ -32,6 +32,18 @@ interface DesignationFormModalProps {
   onOpenChange: (open: boolean) => void;
   designation?: Designation | null;
 }
+
+const DETAILS_STEP: StepperStep = { id: "details", label: "Details" };
+const ACCESS_STEP: StepperStep = { id: "access", label: "Menu access" };
+const REVIEW_STEP: StepperStep = { id: "review", label: "Review" };
+
+const DETAIL_FIELDS: readonly (keyof DesignationFormValues)[] = [
+  "name",
+  "code",
+  "description",
+  "level",
+  "isActive",
+];
 
 const emptyValues = (): DesignationFormValues => ({
   name: "",
@@ -82,8 +94,41 @@ export function DesignationFormModal({
     form.reset(designation ? toFormValues(designation) : emptyValues());
   }, [open, designation, form]);
 
-  const grant = useAccessGrant(open ? (designation?._id ?? "new") : null, designation);
+  const seedKey = open ? (designation?._id ?? "new") : null;
+  const grant = useAccessGrant(seedKey, designation);
   const canManageAccess = useModulePermission("/configuration/roles").canEdit;
+
+  const steps = React.useMemo<StepperStep[]>(
+    () =>
+      canManageAccess ? [DETAILS_STEP, ACCESS_STEP, REVIEW_STEP] : [DETAILS_STEP, REVIEW_STEP],
+    [canManageAccess]
+  );
+
+  const lastStep = steps.length - 1;
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
+  const activeStep = Math.min(step, lastStep);
+  const currentStep = steps[activeStep].id;
+
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
+
+  if (seedKey !== seededFor) {
+    setSeededFor(seedKey);
+    setStep(0);
+    setFurthestStep(seedKey !== null && designation ? lastStep : 0);
+  }
+
+  const summary = useWatch({ control: form.control });
+
+  const goNext = async () => {
+    if (currentStep === "details") {
+      const isValid = await form.trigger(DETAIL_FIELDS, { shouldFocus: true });
+      if (!isValid) return;
+    }
+    const next = Math.min(activeStep + 1, lastStep);
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
 
   const onSubmit = async (values: DesignationFormValues) => {
     try {
@@ -106,6 +151,17 @@ export function DesignationFormModal({
     }
   };
 
+  const onInvalid = () => setStep(0);
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (activeStep < lastStep) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
@@ -117,21 +173,17 @@ export function DesignationFormModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleFormSubmit}>
             <DialogBody className="flex flex-col gap-4">
-              <Tabs defaultValue="details" className="gap-4">
-                <TabsList>
-                  <TabsTrigger value="details" className="cursor-pointer">
-                    Details
-                  </TabsTrigger>
-                  {canManageAccess && (
-                    <TabsTrigger value="access" className="cursor-pointer">
-                      Access ({grant.roleIds.length + grant.grantedMenuCount})
-                    </TabsTrigger>
-                  )}
-                </TabsList>
+              <Stepper
+                steps={steps}
+                current={activeStep}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
 
-                <TabsContent value="details" className="flex flex-col gap-4">
+              {currentStep === "details" && (
+                <div className="flex flex-col gap-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormInput
                       control={form.control}
@@ -168,36 +220,99 @@ export function DesignationFormModal({
                     label="Active"
                     description="Inactive designations stay on existing employees but are not offered on new ones."
                   />
-                </TabsContent>
+                </div>
+              )}
 
-                {canManageAccess && (
-                  <TabsContent value="access">
-                    <AccessGrantEditor
-                      roleIds={grant.roleIds}
-                      onRoleIdsChange={grant.setRoleIds}
-                      permissions={grant.permissions}
-                      onPermissionsChange={grant.setPermissions}
-                      rolesHint="Every employee holding this designation inherits these roles."
-                      permissionsHint="Extra menus every employee with this designation can reach."
-                    />
-                  </TabsContent>
-                )}
-              </Tabs>
+              {currentStep === "access" && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{grant.roleIds.length}</span>{" "}
+                    roles and{" "}
+                    <span className="font-medium text-foreground">{grant.grantedMenuCount}</span>{" "}
+                    menus granted to this designation.
+                  </p>
+                  <AccessGrantEditor
+                    roleIds={grant.roleIds}
+                    onRoleIdsChange={grant.setRoleIds}
+                    permissions={grant.permissions}
+                    onPermissionsChange={grant.setPermissions}
+                    rolesHint="Every employee holding this designation inherits these roles."
+                    permissionsHint="Extra menus every employee with this designation can reach."
+                  />
+                </div>
+              )}
+
+              {currentStep === "review" && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Check the designation before you save it.
+                  </p>
+                  <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Name</dt>
+                      <dd className="truncate font-medium">{summary.name || "—"}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Code</dt>
+                      <dd className="truncate font-medium">{summary.code || "Auto"}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Seniority level</dt>
+                      <dd className="font-medium">{summary.level || 0}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Status</dt>
+                      <dd className="font-medium">{summary.isActive ? "Active" : "Inactive"}</dd>
+                    </div>
+                    {canManageAccess && (
+                      <div className="min-w-0">
+                        <dt className="text-xs text-muted-foreground">Access</dt>
+                        <dd className="font-medium">
+                          {grant.roleIds.length} roles · {grant.grantedMenuCount} menus
+                        </dd>
+                      </div>
+                    )}
+                    <div className="col-span-2 min-w-0 sm:col-span-4">
+                      <dt className="text-xs text-muted-foreground">Description</dt>
+                      <dd className="font-medium">{summary.description || "—"}</dd>
+                    </div>
+                  </dl>
+                </div>
+              )}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Create designation"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {activeStep + 1} of {steps.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => (activeStep === 0 ? onOpenChange(false) : setStep(activeStep - 1))}
+                  disabled={isSaving}
+                >
+                  {activeStep === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {activeStep < lastStep ? (
+                  <Button key="wizard-next" type="button" onClick={() => void goNext()}>
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button key="wizard-submit" type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? "Save changes" : "Create designation"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>

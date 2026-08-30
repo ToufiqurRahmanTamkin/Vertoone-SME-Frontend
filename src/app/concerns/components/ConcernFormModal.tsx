@@ -271,15 +271,14 @@ export function ConcernFormModal({
                     name="name"
                     label="Concern name"
                     placeholder="Vertoone Logistics Ltd."
-                    className="col-span-6 sm:col-span-4"
+                    className="col-span-6 sm:col-span-3"
                   />
                   <FormInput
                     control={form.control}
                     name="code"
                     label="Code"
-                    placeholder="Auto"
-                    description="Left blank, a code is generated from the name."
-                    className="col-span-6 sm:col-span-2"
+                    placeholder="Left blank, a code is generated from the name."
+                    className="col-span-6 sm:col-span-3"
                   />
                   <FormInput
                     control={form.control}
