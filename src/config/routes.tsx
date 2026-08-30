@@ -42,6 +42,9 @@ const Departments = lazy(() => import("@/app/hrms/people/departments/Departments
 const Designations = lazy(() => import("@/app/hrms/people/designations/DesignationsPage"));
 const Teams = lazy(() => import("@/app/hrms/people/teams/TeamsPage"));
 const LeadSources = lazy(() => import("@/app/crm/leadSources/LeadSourcesPage"));
+const ContactTypes = lazy(() => import("@/app/crm/contactTypes/ContactTypesPage"));
+const Contacts = lazy(() => import("@/app/crm/contacts/ContactsPage"));
+const Leads = lazy(() => import("@/app/crm/leads/LeadsPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
 const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
 const Suppliers = lazy(() => import("@/app/sme/purchases/suppliers/SuppliersPage"));
@@ -93,6 +96,9 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/purchases/suppliers", element: <Suppliers /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
+  { path: "crm/contact-types", element: <ContactTypes /> },
+  { path: "crm/contacts", element: <Contacts /> },
+  { path: "crm/leads", element: <Leads /> },
   { path: "calendar/settings", element: <CalendarSettings /> },
   { path: "settings/account", element: <AccountSettings /> },
 ];

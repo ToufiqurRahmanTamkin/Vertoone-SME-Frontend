@@ -1,17 +1,17 @@
-export interface LeadSourceRef {
+export interface ContactTypeRef {
   _id: string;
   name: string;
   color: string;
 }
 
-export interface LeadSource extends LeadSourceRef {
+export interface ContactType extends ContactTypeRef {
   description: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface LeadSourceListQuery {
+export interface ContactTypeListQuery {
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -20,12 +20,11 @@ export interface LeadSourceListQuery {
   isActive?: boolean;
 }
 
-
-export interface LeadSourceOptionQuery {
+export interface ContactTypeOptionQuery {
   search?: string;
 }
 
-export interface LeadSourceSummary {
+export interface ContactTypeSummary {
   used: number;
   limit: number | null;
   remaining: number | null;
@@ -33,11 +32,11 @@ export interface LeadSourceSummary {
   inactiveCount: number;
 }
 
-export interface CreateLeadSourcePayload {
+export interface CreateContactTypePayload {
   name: string;
   color: string;
   description?: string;
   isActive?: boolean;
 }
 
-export type UpdateLeadSourcePayload = Partial<CreateLeadSourcePayload>;
+export type UpdateContactTypePayload = Partial<CreateContactTypePayload>;

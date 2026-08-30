@@ -11,6 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import {
+  useCreateContactTypeMutation,
+  useUpdateContactTypeMutation,
+} from "@/redux/apis/contactTypeApis";
+import {
   useCreateLeadSourceMutation,
   useUpdateLeadSourceMutation,
 } from "@/redux/apis/leadSourceApis";
@@ -23,7 +27,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export type ColorLabelKind = "tag" | "leadSource";
+export type ColorLabelKind = "tag" | "leadSource" | "contactType";
 
 export interface ColorLabel {
   _id: string;
@@ -72,6 +76,19 @@ const COPY: Record<ColorLabelKind, ColorLabelCopy> = {
     createAction: "Create lead source",
     defaultColor: "#0ea5e9",
   },
+  contactType: {
+    entityLabel: "contact type",
+    createTitle: "New contact type",
+    editTitle: "Edit contact type",
+    dialogDescription:
+      "Contact types classify who you are dealing with, each with its own colour so they stand out in a list.",
+    namePlaceholder: "Customer",
+    descriptionPlaceholder: "Who falls under this type (optional)",
+    activeDescription:
+      "Inactive types stay on existing contacts but are not offered on new ones.",
+    createAction: "Create contact type",
+    defaultColor: "#8b5cf6",
+  },
 };
 
 interface ColorLabelFormModalProps {
@@ -110,11 +127,16 @@ export function ColorLabelFormModal({
   const [updateTag, { isLoading: isUpdatingTag }] = useUpdateTagMutation();
   const [createLeadSource, { isLoading: isCreatingSource }] = useCreateLeadSourceMutation();
   const [updateLeadSource, { isLoading: isUpdatingSource }] = useUpdateLeadSourceMutation();
+  const [createContactType, { isLoading: isCreatingType }] = useCreateContactTypeMutation();
+  const [updateContactType, { isLoading: isUpdatingType }] = useUpdateContactTypeMutation();
 
-  const isSaving =
-    kind === "tag"
-      ? isCreatingTag || isUpdatingTag
-      : isCreatingSource || isUpdatingSource;
+  const SAVING_BY_KIND: Record<ColorLabelKind, boolean> = {
+    tag: isCreatingTag || isUpdatingTag,
+    leadSource: isCreatingSource || isUpdatingSource,
+    contactType: isCreatingType || isUpdatingType,
+  };
+
+  const isSaving = SAVING_BY_KIND[kind];
 
   const resolver = React.useMemo(
     () => zodResolver(colorLabelSchema(copy.entityLabel)),
@@ -136,6 +158,11 @@ export function ColorLabelFormModal({
       return record
         ? await updateTag({ id: record._id, body: values }).unwrap()
         : await createTag(values).unwrap();
+    }
+    if (kind === "contactType") {
+      return record
+        ? await updateContactType({ id: record._id, body: values }).unwrap()
+        : await createContactType(values).unwrap();
     }
     return record
       ? await updateLeadSource({ id: record._id, body: values }).unwrap()

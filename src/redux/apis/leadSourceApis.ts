@@ -3,6 +3,8 @@ import type {
   CreateLeadSourcePayload,
   LeadSource,
   LeadSourceListQuery,
+  LeadSourceOptionQuery,
+  LeadSourceRef,
   LeadSourceSummary,
   UpdateLeadSourcePayload,
 } from "@/types/domain/leadSource";
@@ -14,7 +16,7 @@ interface LeadSourceListResult {
   meta: Pagination;
 }
 
-const LEAD_SOURCE_TAGS = ["LeadSources", "LeadSourceSummary"] as const;
+const LEAD_SOURCE_TAGS = ["LeadSources", "LeadSourceSummary", "LeadSourceOptions"] as const;
 
 const leadSourceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -24,6 +26,13 @@ const leadSourceApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["LeadSources"],
+    }),
+    getLeadSourceOptions: builder.query<LeadSourceRef[], LeadSourceOptionQuery | void>({
+      query: (params) => ({
+        url: `/crm/lead-sources/options${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["LeadSourceOptions"],
     }),
     getLeadSourceSummary: builder.query<LeadSourceSummary, void>({
       query: () => ({ url: "/crm/lead-sources/summary", method: "GET" }),
@@ -53,6 +62,7 @@ const leadSourceApi = baseApi.injectEndpoints({
 
 export const {
   useGetLeadSourcesQuery,
+  useGetLeadSourceOptionsQuery,
   useGetLeadSourceSummaryQuery,
   useGetLeadSourceQuery,
   useCreateLeadSourceMutation,
