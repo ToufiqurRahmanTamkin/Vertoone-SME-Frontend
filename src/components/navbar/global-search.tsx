@@ -1,4 +1,3 @@
-import { NAV_ICON_BUTTON } from "@/components/navbar/navbar-styles";
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,7 +9,6 @@ import {
 } from "@/components/ui/command";
 import { getSearchableMenuItems } from "@/config/navigation";
 import { usePermissions } from "@/hooks/use-permission";
-import { cn } from "@/lib/utils";
 import { selectCurrentUser } from "@/redux/authSlice";
 import { Search } from "lucide-react";
 import * as React from "react";
