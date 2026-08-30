@@ -50,16 +50,10 @@ export interface SubCategoryImportPreview {
   missingHeaders: string[];
 }
 
-export interface ExistingSubCategory {
-  name: string;
-  categoryId: string;
-}
-
 export const buildSubCategoryImportPreview = (
   headers: string[],
   rows: string[][],
-  categories: CategoryOption[],
-  existing: ExistingSubCategory[]
+  categories: CategoryOption[]
 ): SubCategoryImportPreview => {
   const headerIndex = new Map(headers.map((header, index) => [normalizeKey(header), index]));
 
@@ -71,7 +65,6 @@ export const buildSubCategoryImportPreview = (
     return { rows: [], ready: [], rejected: [], missingHeaders };
   }
 
-  const taken = new Set(existing.map((row) => `${row.categoryId}:${normalizeKey(row.name)}`));
   const seen = new Set<string>();
 
   const parsed = rows.map<SubCategoryImportRow>((cells, index) => {
@@ -107,8 +100,6 @@ export const buildSubCategoryImportPreview = (
       const key = `${categoryId}:${normalizeKey(name)}`;
       if (seen.has(key)) {
         errors.push("This name appears twice under the same category in the file");
-      } else if (taken.has(key)) {
-        errors.push("This sub category already exists under that category");
       } else {
         seen.add(key);
       }

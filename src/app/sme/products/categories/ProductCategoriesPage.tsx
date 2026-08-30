@@ -15,10 +15,11 @@ import {
 } from "@/redux/apis/productCategoryApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { ProductCategory } from "@/types/domain/productCategory";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Upload } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { ProductCategoryFormModal } from "./components/ProductCategoryFormModal";
+import { ProductCategoryImportModal } from "./components/ProductCategoryImportModal";
 import { productCategoryColumns } from "./product-categories.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -47,6 +48,7 @@ export default function ProductCategoriesPage() {
   const { data: summary } = useGetProductCategorySummaryQuery();
 
   const [formOpen, setFormOpen] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<ProductCategory | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<ProductCategory | null>(null);
   const [deleteCategory, { isLoading: isDeleting }] = useDeleteProductCategoryMutation();
@@ -128,17 +130,31 @@ export default function ProductCategoriesPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New category"
-              onClick={openCreate}
-              disabled={isLimitReached}
-              title={
-                isLimitReached
-                  ? `Your plan allows ${limit} categories. Delete one or upgrade to add more.`
-                  : undefined
-              }
-            />
+            <>
+              <ActionButton
+                icon={Upload}
+                label="Import"
+                variant="outline"
+                onClick={() => setImportOpen(true)}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} categories. Delete one or upgrade to add more.`
+                    : "Create many categories from a spreadsheet"
+                }
+              />
+              <ActionButton
+                icon={Plus}
+                label="New category"
+                onClick={openCreate}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} categories. Delete one or upgrade to add more.`
+                    : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -211,6 +227,8 @@ export default function ProductCategoriesPage() {
         onOpenChange={setFormOpen}
         category={editing}
       />
+
+      <ProductCategoryImportModal open={importOpen} onOpenChange={setImportOpen} />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

@@ -2,7 +2,6 @@ import {
   SUB_CATEGORY_IMPORT_COLUMNS,
   buildSubCategoryImportPreview,
   type CategoryOption,
-  type ExistingSubCategory,
   type SubCategoryImportPreview,
 } from "@/app/sme/products/subCategories/sub-category-import";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +37,6 @@ interface ProductSubCategoryImportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: CategoryOption[];
-  existing: ExistingSubCategory[];
 }
 
 const TEMPLATE_COLUMNS = SUB_CATEGORY_IMPORT_COLUMNS.map((column) => ({
@@ -50,7 +48,6 @@ export function ProductSubCategoryImportModal({
   open,
   onOpenChange,
   categories,
-  existing,
 }: ProductSubCategoryImportModalProps) {
   const [fileName, setFileName] = React.useState("");
   const [preview, setPreview] = React.useState<SubCategoryImportPreview | null>(null);
@@ -96,9 +93,7 @@ export function ProductSubCategoryImportModal({
         return;
       }
 
-      setPreview(
-        buildSubCategoryImportPreview(sheet.headers, sheet.rows, categories, existing)
-      );
+      setPreview(buildSubCategoryImportPreview(sheet.headers, sheet.rows, categories));
     } catch (error: unknown) {
       setPreview(null);
       setParseError(error instanceof Error ? error.message : "Could not read that file");

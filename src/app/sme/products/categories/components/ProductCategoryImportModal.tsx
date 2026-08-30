@@ -35,7 +35,6 @@ import { toast } from "sonner";
 interface ProductCategoryImportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  existingNames: string[];
 }
 
 const TEMPLATE_COLUMNS = CATEGORY_IMPORT_COLUMNS.map((column) => ({
@@ -46,7 +45,6 @@ const TEMPLATE_COLUMNS = CATEGORY_IMPORT_COLUMNS.map((column) => ({
 export function ProductCategoryImportModal({
   open,
   onOpenChange,
-  existingNames,
 }: ProductCategoryImportModalProps) {
   const [fileName, setFileName] = React.useState("");
   const [preview, setPreview] = React.useState<CategoryImportPreview | null>(null);
@@ -92,7 +90,7 @@ export function ProductCategoryImportModal({
         return;
       }
 
-      setPreview(buildCategoryImportPreview(sheet.headers, sheet.rows, existingNames));
+      setPreview(buildCategoryImportPreview(sheet.headers, sheet.rows));
     } catch (error: unknown) {
       setPreview(null);
       setParseError(error instanceof Error ? error.message : "Could not read that file");

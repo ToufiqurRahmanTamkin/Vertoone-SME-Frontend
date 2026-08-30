@@ -72,8 +72,7 @@ export const parseColour = (value: string, errors: string[]): string | null => {
 
 export const buildCategoryImportPreview = (
   headers: string[],
-  rows: string[][],
-  existingNames: string[]
+  rows: string[][]
 ): CategoryImportPreview => {
   const headerIndex = new Map(headers.map((header, index) => [normalizeKey(header), index]));
 
@@ -85,7 +84,6 @@ export const buildCategoryImportPreview = (
     return { rows: [], ready: [], rejected: [], missingHeaders };
   }
 
-  const taken = new Set(existingNames.map(normalizeKey));
   const seen = new Set<string>();
 
   const parsed = rows.map<CategoryImportRow>((cells, index) => {
@@ -103,8 +101,6 @@ export const buildCategoryImportPreview = (
       errors.push("Name is required");
     } else if (seen.has(normalizeKey(name))) {
       errors.push("This name appears more than once in the file");
-    } else if (taken.has(normalizeKey(name))) {
-      errors.push("A category with this name already exists");
     } else {
       seen.add(normalizeKey(name));
     }

@@ -69,6 +69,26 @@ const SalesOrders = lazy(() => import("@/app/sme/sales/orders/SalesOrdersPage"))
 const SalesInvoices = lazy(() => import("@/app/sme/sales/invoices/SalesInvoicesPage"));
 const SalesReturns = lazy(() => import("@/app/sme/sales/returns/SalesReturnsPage"));
 const Pos = lazy(() => import("@/app/sme/pos/PosPage"));
+const SmeGeneralConfig = lazy(
+  () => import("@/app/sme/configuration/general/GeneralConfigPage")
+);
+const SmeEmailConfig = lazy(() => import("@/app/sme/configuration/email/EmailConfigPage"));
+const SmePaymentConfig = lazy(
+  () => import("@/app/sme/configuration/payment/PaymentConfigPage")
+);
+const SmeFinanceConfig = lazy(
+  () => import("@/app/sme/configuration/finance/FinanceConfigPage")
+);
+const SmeTaxConfig = lazy(() => import("@/app/sme/configuration/tax/TaxConfigPage"));
+const SmeInvoiceConfig = lazy(
+  () => import("@/app/sme/configuration/invoice/InvoiceConfigPage")
+);
+const SmeNotificationConfig = lazy(
+  () => import("@/app/sme/configuration/notifications/NotificationConfigPage")
+);
+const SmeIntegrationsConfig = lazy(
+  () => import("@/app/sme/configuration/integrations/IntegrationsConfigPage")
+);
 const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
 const PublicShop = lazy(() => import("@/app/publicShop/PublicShopPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
@@ -133,6 +153,14 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "sme/pos", element: <Pos /> },
   { path: "sme/shop", element: <Shop /> },
+  { path: "sme/configuration/general", element: <SmeGeneralConfig /> },
+  { path: "sme/configuration/email", element: <SmeEmailConfig /> },
+  { path: "sme/configuration/payment", element: <SmePaymentConfig /> },
+  { path: "sme/configuration/finance", element: <SmeFinanceConfig /> },
+  { path: "sme/configuration/tax", element: <SmeTaxConfig /> },
+  { path: "sme/configuration/invoice", element: <SmeInvoiceConfig /> },
+  { path: "sme/configuration/notifications", element: <SmeNotificationConfig /> },
+  { path: "sme/configuration/integrations", element: <SmeIntegrationsConfig /> },
   { path: "crm/tags", element: <Tags /> },
   { path: "crm/lead-sources", element: <LeadSources /> },
   { path: "crm/contact-types", element: <ContactTypes /> },

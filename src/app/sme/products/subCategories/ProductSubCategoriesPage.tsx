@@ -16,10 +16,11 @@ import {
 } from "@/redux/apis/productSubCategoryApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { ProductSubCategory } from "@/types/domain/productSubCategory";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Upload } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { ProductSubCategoryFormModal } from "./components/ProductSubCategoryFormModal";
+import { ProductSubCategoryImportModal } from "./components/ProductSubCategoryImportModal";
 import { productSubCategoryColumns } from "./product-sub-categories.columns";
 
 export default function ProductSubCategoriesPage() {
@@ -39,6 +40,7 @@ export default function ProductSubCategoriesPage() {
   const { data: summary } = useGetProductSubCategorySummaryQuery();
 
   const [formOpen, setFormOpen] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<ProductSubCategory | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<ProductSubCategory | null>(null);
   const [deleteSubCategory, { isLoading: isDeleting }] = useDeleteProductSubCategoryMutation();
@@ -145,19 +147,35 @@ export default function ProductSubCategoriesPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New sub category"
-              onClick={openCreate}
-              disabled={isLimitReached || !hasCategories}
-              title={
-                !hasCategories
-                  ? "Create a product category first."
-                  : isLimitReached
-                    ? `Your plan allows ${limit} sub categories. Delete one or upgrade to add more.`
-                    : undefined
-              }
-            />
+            <>
+              <ActionButton
+                icon={Upload}
+                label="Import"
+                variant="outline"
+                onClick={() => setImportOpen(true)}
+                disabled={isLimitReached || !hasCategories}
+                title={
+                  !hasCategories
+                    ? "Create a product category first."
+                    : isLimitReached
+                      ? `Your plan allows ${limit} sub categories. Delete one or upgrade to add more.`
+                      : "Create many sub categories from a spreadsheet"
+                }
+              />
+              <ActionButton
+                icon={Plus}
+                label="New sub category"
+                onClick={openCreate}
+                disabled={isLimitReached || !hasCategories}
+                title={
+                  !hasCategories
+                    ? "Create a product category first."
+                    : isLimitReached
+                      ? `Your plan allows ${limit} sub categories. Delete one or upgrade to add more.`
+                      : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -232,6 +250,15 @@ export default function ProductSubCategoriesPage() {
         onOpenChange={setFormOpen}
         subCategory={editing}
         defaultCategoryId={filters.categoryId as string | undefined}
+      />
+
+      <ProductSubCategoryImportModal
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        categories={categoryOptions.map((category) => ({
+          _id: category._id,
+          name: category.name,
+        }))}
       />
 
       <ConfirmDialog
