@@ -1,3 +1,7 @@
+import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAccessGrant } from "@/hooks/use-access-grant";
+import { useModulePermission } from "@/hooks/use-permission";
 import { FormInput, FormSelect, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,19 +50,19 @@ const toFormValues = (department: Department): DepartmentFormValues => ({
   isActive: department.isActive,
 });
 
-const toPayload = (values: DepartmentFormValues): DepartmentPayload => ({
+const toPayload = (
+  values: DepartmentFormValues,
+  grant: Pick<DepartmentPayload, "modulePermissions" | "roleIds">
+): DepartmentPayload => ({
   name: values.name,
   code: values.code || undefined,
   description: values.description,
   headId: values.headId,
   isActive: values.isActive,
+  ...grant,
 });
 
-export function DepartmentFormModal({
-  open,
-  onOpenChange,
-  department,
-}: DepartmentFormModalProps) {
+export function DepartmentFormModal({ open, onOpenChange, department }: DepartmentFormModalProps) {
   const isEdit = Boolean(department);
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
@@ -77,6 +81,9 @@ export function DepartmentFormModal({
     form.reset(department ? toFormValues(department) : emptyValues());
   }, [open, department, form]);
 
+  const grant = useAccessGrant(open ? (department?._id ?? "new") : null, department);
+  const canManageAccess = useModulePermission("/configuration/roles").canEdit;
+
   const headChoices = React.useMemo(
     () =>
       employeeOptions.map((option) => ({
@@ -88,11 +95,16 @@ export function DepartmentFormModal({
 
   const onSubmit = async (values: DepartmentFormValues) => {
     try {
+      const body = toPayload(values, {
+        modulePermissions: grant.permissions,
+        roleIds: grant.roleIds,
+      });
+
       if (department) {
-        await updateDepartment({ id: department._id, body: toPayload(values) }).unwrap();
+        await updateDepartment({ id: department._id, body }).unwrap();
         toast.success("Department updated");
       } else {
-        await createDepartment(toPayload(values)).unwrap();
+        await createDepartment(body).unwrap();
         toast.success("Department created");
       }
       onOpenChange(false);
@@ -104,7 +116,7 @@ export function DepartmentFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit department" : "New department"}</DialogTitle>
           <DialogDescription>
@@ -115,44 +127,72 @@ export function DepartmentFormModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="name"
-                  label="Name"
-                  placeholder="Engineering"
-                />
-                <FormInput
-                  control={form.control}
-                  name="code"
-                  label="Code"
-                  placeholder="Left blank, we generate one"
-                />
-              </div>
+              <Tabs defaultValue="details" className="gap-4">
+                <TabsList>
+                  <TabsTrigger value="details" className="cursor-pointer">
+                    Details
+                  </TabsTrigger>
+                  {canManageAccess && (
+                    <TabsTrigger value="access" className="cursor-pointer">
+                      Access ({grant.roleIds.length + grant.grantedMenuCount})
+                    </TabsTrigger>
+                  )}
+                </TabsList>
 
-              <FormSelect
-                control={form.control}
-                name="headId"
-                label="Department head"
-                placeholder="Pick an employee"
-                options={headChoices}
-                searchable
-                description="Every department needs a head. Pick the employee who runs it."
-              />
+                <TabsContent value="details" className="flex flex-col gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormInput
+                      control={form.control}
+                      name="name"
+                      label="Name"
+                      placeholder="Engineering"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="code"
+                      label="Code"
+                      placeholder="Left blank, we generate one"
+                    />
+                  </div>
 
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Description"
-                placeholder="What this department is responsible for (optional)"
-              />
+                  <FormSelect
+                    control={form.control}
+                    name="headId"
+                    label="Department head"
+                    placeholder="Pick an employee"
+                    options={headChoices}
+                    searchable
+                    description="Every department needs a head. Pick the employee who runs it."
+                  />
 
-              <FormSwitch
-                control={form.control}
-                name="isActive"
-                label="Active"
-                description="Inactive departments stay on existing employees but are not offered on new ones."
-              />
+                  <FormTextarea
+                    control={form.control}
+                    name="description"
+                    label="Description"
+                    placeholder="What this department is responsible for (optional)"
+                  />
+
+                  <FormSwitch
+                    control={form.control}
+                    name="isActive"
+                    label="Active"
+                    description="Inactive departments stay on existing employees but are not offered on new ones."
+                  />
+                </TabsContent>
+
+                {canManageAccess && (
+                  <TabsContent value="access">
+                    <AccessGrantEditor
+                      roleIds={grant.roleIds}
+                      onRoleIdsChange={grant.setRoleIds}
+                      permissions={grant.permissions}
+                      onPermissionsChange={grant.setPermissions}
+                      rolesHint="Every employee in this department inherits these roles."
+                      permissionsHint="Extra menus every employee in this department can reach."
+                    />
+                  </TabsContent>
+                )}
+              </Tabs>
             </DialogBody>
 
             <DialogFooter>

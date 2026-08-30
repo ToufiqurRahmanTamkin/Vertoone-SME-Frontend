@@ -1,6 +1,6 @@
-import type { Role, User, UserStatus } from "./auth";
+import type { User, UserRole, UserStatus } from "./auth";
 
-export type CompanyRole = Extract<Role, "COMPANY_OWNER" | "COMPANY_USER">;
+export type CompanyRole = Extract<UserRole, "COMPANY_OWNER" | "COMPANY_USER">;
 
 export interface AdminUser extends User {
   companyName: string;

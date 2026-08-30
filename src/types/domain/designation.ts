@@ -1,3 +1,6 @@
+import type { ModulePermissionMap } from "./permission";
+import type { RoleRef } from "./role";
+
 export interface DesignationRef {
   _id: string;
   name: string;
@@ -7,6 +10,9 @@ export interface DesignationRef {
 export interface Designation extends DesignationRef {
   description: string;
   level: number;
+  modulePermissions: ModulePermissionMap;
+  roles: RoleRef[];
+  roleIds: string[];
   isActive: boolean;
   employeeCount: number;
   createdAt: string;
@@ -40,5 +46,7 @@ export interface DesignationPayload {
   code?: string;
   description?: string;
   level?: number;
+  modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
   isActive?: boolean;
 }

@@ -1,4 +1,6 @@
 import type { EmployeeRef } from "./employee";
+import type { ModulePermissionMap } from "./permission";
+import type { RoleRef } from "./role";
 import type { TagRef } from "./tag";
 
 export interface Team {
@@ -15,6 +17,9 @@ export interface Team {
   memberCount: number;
   tags: TagRef[];
   tagIds: string[];
+  modulePermissions: ModulePermissionMap;
+  roles: RoleRef[];
+  roleIds: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -53,5 +58,7 @@ export interface TeamPayload {
   supervisorId: string;
   memberIds?: string[];
   tagIds?: string[];
+  modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
   isActive?: boolean;
 }

@@ -9,7 +9,7 @@ import {
   FormTextarea,
   type MultiSelectOption,
 } from "@/components/shared/form-fields";
-import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
+import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
 import { FileUploader } from "@/components/shared/file-uploader";
 import {
   Accordion,
@@ -44,14 +44,9 @@ import {
 import { useGetDepartmentOptionsQuery } from "@/redux/apis/departmentApis";
 import { useGetDesignationOptionsQuery } from "@/redux/apis/designationApis";
 import { useGetConcernsQuery } from "@/redux/apis/concernApis";
-import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
-import { usePermissions } from "@/hooks/use-permission";
-import {
-  permissionFor,
-  prunePermissionMap,
-  type ModulePermissionMap,
-} from "@/types/domain/permission";
+import { useAccessGrant } from "@/hooks/use-access-grant";
+import type { ModulePermissionMap } from "@/types/domain/permission";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Employee, EmployeePayload } from "@/types/domain/employee";
 import { EmployeeSchema, type EmployeeFormValues } from "@/validations/employee";
@@ -153,7 +148,8 @@ const toFormValues = (employee: Employee): EmployeeFormValues => ({
 
 const toPayload = (
   values: EmployeeFormValues,
-  modulePermissions: ModulePermissionMap
+  modulePermissions: ModulePermissionMap,
+  roleIds: string[]
 ): EmployeePayload => ({
   fullName: values.fullName,
   email: values.email,
@@ -187,6 +183,7 @@ const toPayload = (
     canSignIn: values.canSignIn,
     ...(values.accessPassword ? { password: values.accessPassword } : {}),
     modulePermissions,
+    roleIds,
   },
   status: values.status,
   bankAccount: {
@@ -208,8 +205,6 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();
   const { data: designationOptions = [] } = useGetDesignationOptionsQuery();
   const { data: concernList } = useGetConcernsQuery({ limit: 100 });
-  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
-  const { modules: entitlement } = usePermissions();
 
   const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
@@ -225,42 +220,14 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
     form.reset(employee ? toFormValues(employee) : emptyValues());
   }, [open, employee, form]);
 
-  const assignableModules = React.useMemo(
-    () =>
-      catalogue.filter(
-        (definition) =>
-          definition.scope === "COMPANY" &&
-          !definition.ownerOnly &&
-          permissionFor(entitlement, definition.key).canView
-      ),
-    [catalogue, entitlement]
-  );
-
-  const knownModuleKeys = React.useMemo(
-    () => new Set(catalogue.map((definition) => definition.key)),
-    [catalogue]
-  );
-
-  const [grant, setGrant] = React.useState<ModulePermissionMap>({});
-
-  const liveGrant = React.useMemo(
-    () => prunePermissionMap(grant, knownModuleKeys),
-    [grant, knownModuleKeys]
-  );
-
-  const [seededFor, setSeededFor] = React.useState<string | null>(null);
-  const seedKey = open ? (employee?._id ?? "new") : null;
-
-  if (seedKey !== seededFor) {
-    setSeededFor(seedKey);
-    setGrant(seedKey === null ? {} : (employee?.access?.modulePermissions ?? {}));
-  }
+  const grant = useAccessGrant(open ? (employee?._id ?? "new") : null, employee?.access);
 
   const concernOptions = React.useMemo(
-    () => (concernList?.data ?? []).map((concern) => ({
-      value: concern._id,
-      label: concern.code ? `${concern.name} (${concern.code})` : concern.name,
-    })),
+    () =>
+      (concernList?.data ?? []).map((concern) => ({
+        value: concern._id,
+        label: concern.code ? `${concern.name} (${concern.code})` : concern.name,
+      })),
     [concernList]
   );
 
@@ -313,10 +280,13 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
   const onSubmit = async (values: EmployeeFormValues) => {
     try {
       if (employee) {
-        await updateEmployee({ id: employee._id, body: toPayload(values, liveGrant) }).unwrap();
+        await updateEmployee({
+          id: employee._id,
+          body: toPayload(values, grant.permissions, grant.roleIds),
+        }).unwrap();
         toast.success("Employee updated");
       } else {
-        await createEmployee(toPayload(values, liveGrant)).unwrap();
+        await createEmployee(toPayload(values, grant.permissions, grant.roleIds)).unwrap();
         toast.success("Employee added");
       }
       onOpenChange(false);
@@ -386,8 +356,9 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
 
               {isEdit && (
                 <p className="text-xs text-muted-foreground">
-                  Employee ID <span className="font-medium text-foreground">{employee?.employeeCode}</span>{" "}
-                  is generated automatically and cannot be changed.
+                  Employee ID{" "}
+                  <span className="font-medium text-foreground">{employee?.employeeCode}</span> is
+                  generated automatically and cannot be changed.
                 </p>
               )}
 
@@ -403,68 +374,69 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
                       description="Square image, at least 256x256."
                       onChange={(asset) => {
                         form.setValue("photoUrl", asset?.url ?? "", { shouldDirty: true });
-                        form.setValue("photoPublicId", asset?.publicId ?? "", { shouldDirty: true });
+                        form.setValue("photoPublicId", asset?.publicId ?? "", {
+                          shouldDirty: true,
+                        });
                       }}
                     />
 
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <FormDate
+                        control={form.control}
+                        name="dateOfBirth"
+                        label="Date of birth"
+                        dateOnly
+                        disableFuture
+                      />
+                      <FormSelect
+                        control={form.control}
+                        name="gender"
+                        label="Gender"
+                        placeholder="Not set"
+                        options={GENDER_OPTIONS}
+                      />
+                      <FormSelect
+                        control={form.control}
+                        name="maritalStatus"
+                        label="Marital status"
+                        placeholder="Not set"
+                        options={MARITAL_STATUS_OPTIONS}
+                      />
+                      <FormSelect
+                        control={form.control}
+                        name="bloodGroup"
+                        label="Blood group"
+                        placeholder="Not set"
+                        options={BLOOD_GROUP_OPTIONS}
+                      />
+                      <FormInput
+                        control={form.control}
+                        name="nationalId"
+                        label="National ID"
+                        placeholder="Optional"
+                      />
+                      <FormInput
+                        control={form.control}
+                        name="workLocation"
+                        label="Work location"
+                        placeholder="Head office"
+                      />
+                    </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormDate
-                  control={form.control}
-                  name="dateOfBirth"
-                  label="Date of birth"
-                  dateOnly
-                  disableFuture
-                />
-                <FormSelect
-                  control={form.control}
-                  name="gender"
-                  label="Gender"
-                  placeholder="Not set"
-                  options={GENDER_OPTIONS}
-                />
-                <FormSelect
-                  control={form.control}
-                  name="maritalStatus"
-                  label="Marital status"
-                  placeholder="Not set"
-                  options={MARITAL_STATUS_OPTIONS}
-                />
-                <FormSelect
-                  control={form.control}
-                  name="bloodGroup"
-                  label="Blood group"
-                  placeholder="Not set"
-                  options={BLOOD_GROUP_OPTIONS}
-                />
-                <FormInput
-                  control={form.control}
-                  name="nationalId"
-                  label="National ID"
-                  placeholder="Optional"
-                />
-                <FormInput
-                  control={form.control}
-                  name="workLocation"
-                  label="Work location"
-                  placeholder="Head office"
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormTextarea
-                  control={form.control}
-                  name="presentAddress"
-                  label="Present address"
-                  placeholder="Where they live now"
-                />
-                <FormTextarea
-                  control={form.control}
-                  name="permanentAddress"
-                  label="Permanent address"
-                  placeholder="Home address"
-                />
-              </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <FormTextarea
+                        control={form.control}
+                        name="presentAddress"
+                        label="Present address"
+                        placeholder="Where they live now"
+                      />
+                      <FormTextarea
+                        control={form.control}
+                        name="permanentAddress"
+                        label="Permanent address"
+                        placeholder="Home address"
+                      />
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
 
@@ -576,15 +548,16 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
                           className="sm:max-w-sm"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Tick the menus this employee can reach. Anything your plan does not
-                          include stays out of reach even when ticked.
+                          They also inherit whatever their departments, designations and teams
+                          grant. Anything your plan does not include stays out of reach.
                         </p>
-                        <ModulePermissionMatrix
-                          modules={assignableModules}
-                          value={liveGrant}
-                          onChange={setGrant}
-                          ceiling={entitlement}
-                          emptyMessage="Your current plan does not include any assignable menus."
+                        <AccessGrantEditor
+                          roleIds={grant.roleIds}
+                          onRoleIdsChange={grant.setRoleIds}
+                          permissions={grant.permissions}
+                          onPermissionsChange={grant.setPermissions}
+                          rolesHint="Roles handed to this employee directly."
+                          permissionsHint="Extra menus granted only to this employee."
                         />
                       </div>
                     )}
@@ -654,7 +627,6 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-
             </DialogBody>
 
             <DialogFooter>

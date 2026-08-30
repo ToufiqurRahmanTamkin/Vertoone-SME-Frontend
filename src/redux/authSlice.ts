@@ -2,7 +2,7 @@ import type { User } from "@/types/domain/auth";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 
-export type { Role, User, UserStatus } from "@/types/domain/auth";
+export type { User, UserRole, UserStatus } from "@/types/domain/auth";
 
 interface AuthState {
   user: User | null;

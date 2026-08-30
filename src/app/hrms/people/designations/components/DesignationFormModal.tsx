@@ -1,3 +1,7 @@
+import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAccessGrant } from "@/hooks/use-access-grant";
+import { useModulePermission } from "@/hooks/use-permission";
 import { FormInput, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,12 +49,16 @@ const toFormValues = (designation: Designation): DesignationFormValues => ({
   isActive: designation.isActive,
 });
 
-const toPayload = (values: DesignationFormValues): DesignationPayload => ({
+const toPayload = (
+  values: DesignationFormValues,
+  grant: Pick<DesignationPayload, "modulePermissions" | "roleIds">
+): DesignationPayload => ({
   name: values.name,
   code: values.code || undefined,
   description: values.description,
   level: values.level === "" ? 0 : values.level,
   isActive: values.isActive,
+  ...grant,
 });
 
 export function DesignationFormModal({
@@ -74,13 +82,21 @@ export function DesignationFormModal({
     form.reset(designation ? toFormValues(designation) : emptyValues());
   }, [open, designation, form]);
 
+  const grant = useAccessGrant(open ? (designation?._id ?? "new") : null, designation);
+  const canManageAccess = useModulePermission("/configuration/roles").canEdit;
+
   const onSubmit = async (values: DesignationFormValues) => {
     try {
+      const body = toPayload(values, {
+        modulePermissions: grant.permissions,
+        roleIds: grant.roleIds,
+      });
+
       if (designation) {
-        await updateDesignation({ id: designation._id, body: toPayload(values) }).unwrap();
+        await updateDesignation({ id: designation._id, body }).unwrap();
         toast.success("Designation updated");
       } else {
-        await createDesignation(toPayload(values)).unwrap();
+        await createDesignation(body).unwrap();
         toast.success("Designation created");
       }
       onOpenChange(false);
@@ -92,7 +108,7 @@ export function DesignationFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit designation" : "New designation"}</DialogTitle>
           <DialogDescription>
@@ -103,42 +119,70 @@ export function DesignationFormModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="name"
-                  label="Name"
-                  placeholder="Software engineer"
-                />
-                <FormInput
-                  control={form.control}
-                  name="code"
-                  label="Code"
-                  placeholder="Left blank, we generate one"
-                />
-              </div>
+              <Tabs defaultValue="details" className="gap-4">
+                <TabsList>
+                  <TabsTrigger value="details" className="cursor-pointer">
+                    Details
+                  </TabsTrigger>
+                  {canManageAccess && (
+                    <TabsTrigger value="access" className="cursor-pointer">
+                      Access ({grant.roleIds.length + grant.grantedMenuCount})
+                    </TabsTrigger>
+                  )}
+                </TabsList>
 
-              <FormInput
-                control={form.control}
-                name="level"
-                label="Seniority level"
-                type="number"
-                description="Higher numbers rank higher. Used to order the designation list."
-              />
+                <TabsContent value="details" className="flex flex-col gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormInput
+                      control={form.control}
+                      name="name"
+                      label="Name"
+                      placeholder="Software engineer"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="code"
+                      label="Code"
+                      placeholder="Left blank, we generate one"
+                    />
+                  </div>
 
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Description"
-                placeholder="What this role covers (optional)"
-              />
+                  <FormInput
+                    control={form.control}
+                    name="level"
+                    label="Seniority level"
+                    type="number"
+                    description="Higher numbers rank higher. Used to order the designation list."
+                  />
 
-              <FormSwitch
-                control={form.control}
-                name="isActive"
-                label="Active"
-                description="Inactive designations stay on existing employees but are not offered on new ones."
-              />
+                  <FormTextarea
+                    control={form.control}
+                    name="description"
+                    label="Description"
+                    placeholder="What this role covers (optional)"
+                  />
+
+                  <FormSwitch
+                    control={form.control}
+                    name="isActive"
+                    label="Active"
+                    description="Inactive designations stay on existing employees but are not offered on new ones."
+                  />
+                </TabsContent>
+
+                {canManageAccess && (
+                  <TabsContent value="access">
+                    <AccessGrantEditor
+                      roleIds={grant.roleIds}
+                      onRoleIdsChange={grant.setRoleIds}
+                      permissions={grant.permissions}
+                      onPermissionsChange={grant.setPermissions}
+                      rolesHint="Every employee holding this designation inherits these roles."
+                      permissionsHint="Extra menus every employee with this designation can reach."
+                    />
+                  </TabsContent>
+                )}
+              </Tabs>
             </DialogBody>
 
             <DialogFooter>

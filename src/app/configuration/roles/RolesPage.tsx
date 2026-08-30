@@ -6,31 +6,29 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
-import { USER_STATUS_COLORS, USER_STATUS_LABELS } from "@/constant";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import {
-  useDeleteTeamMemberMutation,
-  useGetTeamMembersQuery,
-  useGetTeamSummaryQuery,
-} from "@/redux/apis/teamMemberApis";
+  useDeleteRoleMutation,
+  useGetRoleSummaryQuery,
+  useGetRolesQuery,
+} from "@/redux/apis/roleApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import type { UserStatus } from "@/types/domain/auth";
-import type { TeamMember } from "@/types/domain/teamMember";
+import { totalAssignments, type Role } from "@/types/domain/role";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { TeamMemberFormModal } from "./components/TeamMemberFormModal";
-import { teamMemberColumns } from "./team-members.columns";
+import { RoleFormModal } from "./components/RoleFormModal";
+import { roleColumns } from "./roles.columns";
 
 const FILTERS: FilterConfig[] = [
   {
-    name: "status",
+    name: "isActive",
     label: "Status",
     type: "select",
     options: [
-      { label: "Active", value: "ACTIVE" },
-      { label: "Inactive", value: "INACTIVE" },
+      { label: "Active", value: "true" },
+      { label: "Inactive", value: "false" },
     ],
   },
 ];
@@ -40,22 +38,22 @@ const describeAllowance = (used: number, limit: number | null): string =>
     ? `${used} in use · unlimited on your plan`
     : `${used} of ${limit} allowed by your plan`;
 
-export default function TeamMembersPage() {
+export default function RolesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/configuration/team");
+  const access = useModulePermission("/configuration/roles");
 
-  const { data, isLoading, isFetching } = useGetTeamMembersQuery({
+  const { data, isLoading, isFetching } = useGetRolesQuery({
     page: filters.page,
     limit: filters.limit,
     search: filters.search,
-    status: filters.status as UserStatus | undefined,
+    isActive: filters.isActive === undefined ? undefined : filters.isActive === "true",
   });
-  const { data: summary } = useGetTeamSummaryQuery();
+  const { data: summary } = useGetRoleSummaryQuery();
 
   const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<TeamMember | null>(null);
-  const [pendingDelete, setPendingDelete] = React.useState<TeamMember | null>(null);
-  const [deleteMember, { isLoading: isDeleting }] = useDeleteTeamMemberMutation();
+  const [editing, setEditing] = React.useState<Role | null>(null);
+  const [pendingDelete, setPendingDelete] = React.useState<Role | null>(null);
+  const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
   const used = summary?.used ?? 0;
   const limit = summary?.limit ?? access.limit;
@@ -66,19 +64,19 @@ export default function TeamMembersPage() {
     setFormOpen(true);
   };
 
-  const openEdit = (member: TeamMember) => {
-    setEditing(member);
+  const openEdit = (role: Role) => {
+    setEditing(role);
     setFormOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!pendingDelete) return;
     try {
-      await deleteMember(pendingDelete._id).unwrap();
-      toast.success("User removed");
+      await deleteRole(pendingDelete._id).unwrap();
+      toast.success("Role removed");
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
-      toast.error(err?.data?.message || "Could not remove the user");
+      toast.error(err?.data?.message || "Could not remove the role");
     } finally {
       setPendingDelete(null);
     }
@@ -86,7 +84,7 @@ export default function TeamMembersPage() {
 
   const columns = React.useMemo(
     () =>
-      teamMemberColumns({
+      roleColumns({
         onEdit: openEdit,
         onDelete: setPendingDelete,
         canEdit: access.canEdit,
@@ -95,42 +93,38 @@ export default function TeamMembersPage() {
     [access.canEdit, access.canDelete]
   );
 
-  const members = data?.data ?? [];
+  const roles = data?.data ?? [];
   const meta = data?.meta;
 
   return (
     <>
       <PageHeader
-        title="Users"
-        description="People who can sign in to this workspace. Give each of them roles, direct menu access, or both."
+        title="Roles & Permissions"
+        description="Build reusable permission sets, then hand them to a person, a department, a designation or a team."
       />
 
       <StatGrid className="sm:grid-cols-3">
         <Stat>
-          <StatLabel>Users</StatLabel>
+          <StatLabel>Roles</StatLabel>
           <StatValue>{used}</StatValue>
           <StatDescription>{describeAllowance(used, limit)}</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Active</StatLabel>
           <StatValue>{summary?.activeCount ?? 0}</StatValue>
-          <StatDescription>Can sign in right now</StatDescription>
+          <StatDescription>Granting access right now</StatDescription>
         </Stat>
         <Stat>
-          <StatLabel>Remaining</StatLabel>
-          <StatValue>{summary?.remaining ?? "∞"}</StatValue>
-          <StatDescription>
-            {limit === null
-              ? "Your plan sets no cap on users"
-              : "Seats left before you reach the plan limit"}
-          </StatDescription>
+          <StatLabel>People with a role</StatLabel>
+          <StatValue>{summary?.assignedUserCount ?? 0}</StatValue>
+          <StatDescription>Accounts holding at least one role directly</StatDescription>
         </Stat>
       </StatGrid>
 
       <DataTableToolbar
         searchValue={filters.search}
         onSearchChange={(value) => setFilter("search", value)}
-        searchPlaceholder="Search users..."
+        searchPlaceholder="Search roles..."
         filters={FILTERS}
         currentFilters={filters}
         onFilterChange={setFilter}
@@ -140,13 +134,12 @@ export default function TeamMembersPage() {
           access.canCreate && (
             <ActionButton
               icon={Plus}
-              label="Add user"
-
+              label="Add role"
               onClick={openCreate}
               disabled={isLimitReached}
               title={
                 isLimitReached
-                  ? `Your plan allows ${limit} users. Remove one or upgrade to add more.`
+                  ? `Your plan allows ${limit} roles. Remove one or upgrade to add more.`
                   : undefined
               }
             />
@@ -154,16 +147,9 @@ export default function TeamMembersPage() {
         }
       />
 
-      {isLimitReached && (
-        <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-          You have used all {limit} user seats on your plan. Remove a user or upgrade your
-          subscription to add more.
-        </p>
-      )}
-
       <DataTable
         columns={columns}
-        data={members}
+        data={roles}
         isLoading={isLoading}
         pagination={
           meta
@@ -173,54 +159,52 @@ export default function TeamMembersPage() {
         onPageChange={(page) => setFilter("page", page)}
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
-        mobileCard={(member) => (
+        mobileCard={(role) => (
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate font-semibold">{member.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                <p className="truncate font-semibold">{role.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{role.description || "—"}</p>
               </div>
               <StatusBadge
-                color={USER_STATUS_COLORS[member.status]}
-                label={USER_STATUS_LABELS[member.status]}
+                color={role.isActive ? "green" : "zinc"}
+                label={role.isActive ? "Active" : "Inactive"}
               />
             </div>
-            <div className="mt-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               <Badge variant="secondary" className="text-[10px]">
-                {
-                  Object.values(member.effectivePermissions).filter(
-                    (permission) => permission.canView
-                  ).length
-                }{" "}
-                menus
+                {role.moduleCount} menus
+              </Badge>
+              <Badge variant="outline" className="text-[10px]">
+                {totalAssignments(role.assignments)} assignments
               </Badge>
             </div>
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
               <CardActionButton
                 icon={Pencil}
                 label="Edit"
-                onClick={() => openEdit(member)}
+                onClick={() => openEdit(role)}
                 disabled={!access.canEdit}
               />
               <CardActionButton
                 icon={Trash2}
                 label="Remove"
                 className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(member)}
-                disabled={!access.canDelete}
+                onClick={() => setPendingDelete(role)}
+                disabled={!access.canDelete || totalAssignments(role.assignments) > 0}
               />
             </div>
           </div>
         )}
       />
 
-      <TeamMemberFormModal open={formOpen} onOpenChange={setFormOpen} member={editing} />
+      <RoleFormModal open={formOpen} onOpenChange={setFormOpen} role={editing} />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title={`Remove "${pendingDelete?.name ?? ""}"?`}
-        description="They are signed out immediately and lose access to this workspace."
+        description="Everyone holding this role loses the access it granted, immediately."
         confirmText="Remove"
         variant="destructive"
         isLoading={isDeleting}

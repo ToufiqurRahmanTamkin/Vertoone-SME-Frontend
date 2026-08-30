@@ -3,6 +3,7 @@ import type { ModulePermissionMap } from "./permission";
 
 export interface TeamMember extends User {
   modulePermissions: ModulePermissionMap;
+  roleIds: string[];
   effectivePermissions: ModulePermissionMap;
 }
 
@@ -22,6 +23,7 @@ export interface CreateTeamMemberPayload {
   password: string;
   status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
   modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
 }
 
 export interface UpdateTeamMemberPayload {
@@ -30,6 +32,7 @@ export interface UpdateTeamMemberPayload {
   password?: string;
   status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
   modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
 }
 
 export interface TeamMemberSummary {

@@ -7,7 +7,7 @@ export const ROLES = [
   "CONCERN_HEAD",
   "EMPLOYEE",
 ] as const;
-export type Role = (typeof ROLES)[number];
+export type UserRole = (typeof ROLES)[number];
 
 export const USER_STATUSES = ["ACTIVE", "INACTIVE", "PENDING_APPROVAL", "REJECTED"] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];
@@ -17,7 +17,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
-  role: Role;
+  role: UserRole;
   status: UserStatus;
   companyId: string | null;
   concernId: string | null;
@@ -84,7 +84,7 @@ export interface ResetPasswordInput {
   newPassword: string;
 }
 
-export const HOME_ROUTE_BY_ROLE: Record<Role, string> = {
+export const HOME_ROUTE_BY_ROLE: Record<UserRole, string> = {
   SUPER_ADMIN: "/dashboard",
   COMPANY_OWNER: "/dashboard",
   COMPANY_USER: "/my-company",

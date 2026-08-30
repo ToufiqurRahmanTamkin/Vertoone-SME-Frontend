@@ -11,7 +11,7 @@ import type {
 } from "@/types/domain/loginHistory";
 import type { NotificationLevel, NotificationType } from "@/types/domain/notification";
 import type { CompanyStatus, EmployeeRange } from "@/types/domain/company";
-import type { Role, UserStatus } from "@/types/domain/auth";
+import type { UserRole, UserStatus } from "@/types/domain/auth";
 import type {
   BillingOrigin,
   PaymentMethod,
@@ -136,7 +136,7 @@ export const EMPLOYEE_RANGE_LABELS: Record<EmployeeRange, string> = {
   "1000+": "1000+ employees",
 };
 
-export const ROLE_LABELS: Record<Role, string> = {
+export const ROLE_LABELS: Record<UserRole, string> = {
   SUPER_ADMIN: "Super admin",
   COMPANY_OWNER: "Company owner",
   COMPANY_USER: "Team member",

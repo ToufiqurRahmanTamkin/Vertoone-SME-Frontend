@@ -16,6 +16,7 @@ export * from "./notification";
 export * from "./permission";
 export * from "./plan";
 export * from "./report";
+export * from "./role";
 export * from "./soldSubscription";
 export * from "./systemConfig";
 export * from "./tag";

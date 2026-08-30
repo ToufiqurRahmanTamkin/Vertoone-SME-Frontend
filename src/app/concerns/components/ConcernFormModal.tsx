@@ -1,4 +1,5 @@
-import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
+import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
+import { useAccessGrant } from "@/hooks/use-access-grant";
 import {
   FormInput,
   FormPassword,
@@ -19,8 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
-import { usePermissions } from "@/hooks/use-permission";
-import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import {
   useCreateConcernMutation,
   useUpdateConcernHeadMutation,
@@ -28,7 +27,6 @@ import {
 } from "@/redux/apis/concernApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Concern } from "@/types/domain/concern";
-import { permissionFor, type ModulePermissionMap } from "@/types/domain/permission";
 import { ConcernSchema, type ConcernFormValues } from "@/validations/concern";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
@@ -117,27 +115,12 @@ export function ConcernFormModal({
   initialStep = "details",
 }: ConcernFormModalProps) {
   const isEdit = Boolean(concern);
-  const { modules: entitlement } = usePermissions();
 
   const [createConcern, { isLoading: isCreating }] = useCreateConcernMutation();
   const [updateConcern, { isLoading: isUpdating }] = useUpdateConcernMutation();
   const [updateHead, { isLoading: isUpdatingHead }] = useUpdateConcernHeadMutation();
   const isSaving = isCreating || isUpdating || isUpdatingHead;
 
-  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
-
-  const assignableModules = React.useMemo(
-    () =>
-      catalogue.filter(
-        (definition) =>
-          definition.scope === "COMPANY" &&
-          !definition.ownerOnly &&
-          permissionFor(entitlement, definition.key).canView
-      ),
-    [catalogue, entitlement]
-  );
-
-  const [grant, setGrant] = React.useState<ModulePermissionMap>({});
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
 
@@ -153,10 +136,10 @@ export function ConcernFormModal({
 
   const [seededFor, setSeededFor] = React.useState<string | null>(null);
   const seedKey = open ? `${concern?._id ?? "new"}:${initialStep}` : null;
+  const grant = useAccessGrant(seedKey, concern?.head);
 
   if (seedKey !== seededFor) {
     setSeededFor(seedKey);
-    setGrant(seedKey === null ? {} : (concern?.head?.modulePermissions ?? {}));
     const opening = seedKey === null ? 0 : stepIndexOf(initialStep);
     setStep(opening);
     setFurthestStep(seedKey !== null && concern ? LAST_STEP : opening);
@@ -208,7 +191,8 @@ export function ConcernFormModal({
               name: values.headName,
               phone: values.headPhone,
               status: values.headStatus,
-              modulePermissions: grant,
+              modulePermissions: grant.permissions,
+              roleIds: grant.roleIds,
               ...(values.headPassword ? { password: values.headPassword } : {}),
             },
           }).unwrap();
@@ -224,7 +208,8 @@ export function ConcernFormModal({
             password: values.headPassword,
             phone: values.headPhone,
             status: values.headStatus,
-            modulePermissions: grant,
+            modulePermissions: grant.permissions,
+            roleIds: grant.roleIds,
           },
         }).unwrap();
         toast.success("Concern created — the head can sign in with the email and password you set");
@@ -398,12 +383,13 @@ export function ConcernFormModal({
                     Pick the menus the concern head sees once they sign in. Only the menus your own
                     subscription includes can be handed out, and record caps stay with the plan.
                   </p>
-                  <ModulePermissionMatrix
-                    modules={assignableModules}
-                    value={grant}
-                    onChange={setGrant}
-                    ceiling={entitlement}
-                    emptyMessage="Your current plan does not include any assignable menus."
+                  <AccessGrantEditor
+                    roleIds={grant.roleIds}
+                    onRoleIdsChange={grant.setRoleIds}
+                    permissions={grant.permissions}
+                    onPermissionsChange={grant.setPermissions}
+                    rolesHint="The concern head inherits every menu these roles grant."
+                    permissionsHint="Extra menus granted only to this concern head."
                   />
 
                   <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">

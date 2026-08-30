@@ -1,3 +1,7 @@
+import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAccessGrant } from "@/hooks/use-access-grant";
+import { useModulePermission } from "@/hooks/use-permission";
 import {
   FormColor,
   FormInput,
@@ -64,7 +68,10 @@ const toFormValues = (team: Team): TeamFormValues => ({
   isActive: team.isActive,
 });
 
-const toPayload = (values: TeamFormValues): TeamPayload => ({
+const toPayload = (
+  values: TeamFormValues,
+  grant: Pick<TeamPayload, "modulePermissions" | "roleIds">
+): TeamPayload => ({
   name: values.name,
   code: values.code,
   description: values.description,
@@ -75,6 +82,7 @@ const toPayload = (values: TeamFormValues): TeamPayload => ({
   memberIds: values.memberIds,
   tagIds: values.tagIds,
   isActive: values.isActive,
+  ...grant,
 });
 
 export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) {
@@ -97,6 +105,9 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
     form.reset(team ? toFormValues(team) : emptyValues());
   }, [open, team, form]);
 
+  const grant = useAccessGrant(open ? (team?._id ?? "new") : null, team);
+  const canManageAccess = useModulePermission("/configuration/roles").canEdit;
+
   const employeeChoices = React.useMemo(
     () =>
       employeeOptions.map((option) => ({
@@ -118,12 +129,17 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
   );
 
   const onSubmit = async (values: TeamFormValues) => {
+    const teamBody = toPayload(values, {
+      modulePermissions: grant.permissions,
+      roleIds: grant.roleIds,
+    });
+
     try {
       if (team) {
-        await updateTeam({ id: team._id, body: toPayload(values) }).unwrap();
+        await updateTeam({ id: team._id, body: teamBody }).unwrap();
         toast.success("Team updated");
       } else {
-        await createTeam(toPayload(values)).unwrap();
+        await createTeam(teamBody).unwrap();
         toast.success("Team created");
       }
       onOpenChange(false);
@@ -137,7 +153,7 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit team" : "New team"}</DialogTitle>
           <DialogDescription>
@@ -149,89 +165,117 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogBody className="flex flex-col gap-4">
-              {noEmployees && (
-                <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-                  Add employees under HRMS · Employees first. A team cannot be created without a
-                  lead and a supervisor.
-                </p>
-              )}
+              <Tabs defaultValue="details" className="gap-4">
+                <TabsList>
+                  <TabsTrigger value="details" className="cursor-pointer">
+                    Details
+                  </TabsTrigger>
+                  {canManageAccess && (
+                    <TabsTrigger value="access" className="cursor-pointer">
+                      Access ({grant.roleIds.length + grant.grantedMenuCount})
+                    </TabsTrigger>
+                  )}
+                </TabsList>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="name"
-                  label="Team name"
-                  placeholder="Platform engineering"
-                />
-                <FormInput
-                  control={form.control}
-                  name="code"
-                  label="Code"
-                  placeholder="Optional short code"
-                />
-                <FormInput
-                  control={form.control}
-                  name="department"
-                  label="Department"
-                  placeholder="Engineering"
-                />
-                <FormColor control={form.control} name="color" label="Colour" />
-              </div>
+                <TabsContent value="details" className="flex flex-col gap-4">
+                  {noEmployees && (
+                    <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
+                      Add employees under HRMS · Employees first. A team cannot be created without a
+                      lead and a supervisor.
+                    </p>
+                  )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSelect
-                  control={form.control}
-                  name="teamLeadId"
-                  label="Team lead"
-                  placeholder="Pick an employee"
-                  options={employeeChoices}
-                  disabled={noEmployees}
-                  searchable
-                />
-                <FormSelect
-                  control={form.control}
-                  name="supervisorId"
-                  label="Supervisor"
-                  placeholder="Pick an employee"
-                  options={employeeChoices}
-                  disabled={noEmployees}
-                  searchable
-                />
-              </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormInput
+                      control={form.control}
+                      name="name"
+                      label="Team name"
+                      placeholder="Platform engineering"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="code"
+                      label="Code"
+                      placeholder="Optional short code"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="department"
+                      label="Department"
+                      placeholder="Engineering"
+                    />
+                    <FormColor control={form.control} name="color" label="Colour" />
+                  </div>
 
-              <FormMultiSelect
-                control={form.control}
-                name="memberIds"
-                label="Members"
-                placeholder="No members yet"
-                options={memberChoices}
-                disabled={noEmployees}
-                emptyText="No employees found."
-                description="The lead and supervisor are always counted as members."
-              />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormSelect
+                      control={form.control}
+                      name="teamLeadId"
+                      label="Team lead"
+                      placeholder="Pick an employee"
+                      options={employeeChoices}
+                      disabled={noEmployees}
+                      searchable
+                    />
+                    <FormSelect
+                      control={form.control}
+                      name="supervisorId"
+                      label="Supervisor"
+                      placeholder="Pick an employee"
+                      options={employeeChoices}
+                      disabled={noEmployees}
+                      searchable
+                    />
+                  </div>
 
-              <FormMultiSelect
-                control={form.control}
-                name="tagIds"
-                label="Tags"
-                placeholder="No tags"
-                options={tagChoices}
-                emptyText="No tags yet. Create them under CRM · Tags."
-              />
+                  <FormMultiSelect
+                    control={form.control}
+                    name="memberIds"
+                    label="Members"
+                    placeholder="No members yet"
+                    options={memberChoices}
+                    disabled={noEmployees}
+                    emptyText="No employees found."
+                    description="The lead and supervisor are always counted as members."
+                  />
 
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Description"
-                placeholder="What this team is responsible for (optional)"
-              />
+                  <FormMultiSelect
+                    control={form.control}
+                    name="tagIds"
+                    label="Tags"
+                    placeholder="No tags"
+                    options={tagChoices}
+                    emptyText="No tags yet. Create them under CRM · Tags."
+                  />
 
-              <FormSwitch
-                control={form.control}
-                name="isActive"
-                label="Active"
-                description="Inactive teams stay on record but are filtered out by default."
-              />
+                  <FormTextarea
+                    control={form.control}
+                    name="description"
+                    label="Description"
+                    placeholder="What this team is responsible for (optional)"
+                  />
+
+                  <FormSwitch
+                    control={form.control}
+                    name="isActive"
+                    label="Active"
+                    description="Inactive teams stay on record but are filtered out by default."
+                  />
+                </TabsContent>
+
+                {canManageAccess && (
+                  <TabsContent value="access">
+                    <AccessGrantEditor
+                      roleIds={grant.roleIds}
+                      onRoleIdsChange={grant.setRoleIds}
+                      permissions={grant.permissions}
+                      onPermissionsChange={grant.setPermissions}
+                      rolesHint="Members, the lead and the supervisor all inherit these roles."
+                      permissionsHint="Extra menus everyone on this team can reach."
+                    />
+                  </TabsContent>
+                )}
+              </Tabs>
             </DialogBody>
 
             <DialogFooter>

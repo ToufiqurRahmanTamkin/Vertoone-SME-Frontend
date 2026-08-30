@@ -27,6 +27,7 @@ import {
   Hash,
   IdCard,
   Instagram,
+  KeyRound,
   LayoutDashboard,
   LayoutGrid,
   ListChecks,
@@ -41,6 +42,7 @@ import {
   Receipt,
   Ruler,
   ScrollText,
+  Search,
   Send,
   Settings,
   ShieldCheck,
@@ -91,6 +93,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Hash,
   IdCard,
   Instagram,
+  KeyRound,
   LayoutDashboard,
   LayoutGrid,
   ListChecks,
@@ -105,6 +108,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Receipt,
   Ruler,
   ScrollText,
+  Search,
   Send,
   Settings,
   ShieldCheck,
@@ -164,6 +168,8 @@ const EMPLOYEE = ["EMPLOYEE"];
 const COMPANY_ADMIN = ["COMPANY_OWNER"];
 
 const CONCERN_HEAD = ["CONCERN_HEAD"];
+
+const USER_ADMIN = ["COMPANY_OWNER", "CONCERN_HEAD"];
 
 export const MENU_ITEMS: MenuItem[] = [
   {
@@ -399,6 +405,14 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: COMPANY,
     items: [
       {
+        title: "Dashboard",
+        path: "/configuration/team/dashboard",
+        icon: "LayoutDashboard",
+        section: null,
+        roles: COMPANY,
+        description: "Team headcount, leads and supervisors at a glance.",
+      },
+      {
         title: "Employees",
         path: "/hrms/people/employees",
         icon: "Users",
@@ -429,41 +443,6 @@ export const MENU_ITEMS: MenuItem[] = [
         section: null,
         roles: COMPANY,
         description: "Job titles available when hiring or promoting.",
-      },
-    ],
-  },
-  {
-    title: "Teams",
-    path: "/configuration/team",
-    icon: "UserCog",
-    section: null,
-    roles: COMPANY,
-    items: [
-      {
-        title: "Dashboard",
-        path: "/configuration/team/dashboard",
-        icon: "LayoutDashboard",
-        section: null,
-        roles: COMPANY,
-        description: "Team headcount, leads and supervisors at a glance.",
-      },
-      {
-        title: "Members",
-        path: "/configuration/team",
-        icon: "UserCog",
-        section: null,
-        roles: COMPANY_ADMIN,
-        exact: true,
-        description: "People who can sign in to this workspace.",
-      },
-      {
-        title: "Teams",
-        path: "/configuration/teams",
-        icon: "Users",
-        section: null,
-        roles: COMPANY,
-        moduleKey: "HRMS_PEOPLE_TEAMS",
-        description: "Groups of employees, each with a team lead and a supervisor.",
       },
     ],
   },
@@ -697,14 +676,6 @@ export const MENU_ITEMS: MenuItem[] = [
     description: "Headcount, attendance, leave and payroll summaries.",
   },
   {
-    title: "Roles & Permissions",
-    path: "/configuration/roles",
-    icon: "ShieldCheck",
-    section: null,
-    roles: COMPANY_ADMIN,
-    description: "What each role is allowed to see and do.",
-  },
-  {
     title: "Settings",
     path: "/hrms/settings",
     icon: "SlidersHorizontal",
@@ -758,6 +729,33 @@ export const MENU_ITEMS: MenuItem[] = [
         section: null,
         roles: COMPANY,
         description: "Pay cycle, salary components and statutory defaults.",
+      },
+    ],
+  },
+
+  {
+    title: "Access Control",
+    path: "/configuration",
+    icon: "ShieldCheck",
+    section: "Access Control",
+    roles: USER_ADMIN,
+    items: [
+      {
+        title: "Users",
+        path: "/configuration/team",
+        icon: "UserCog",
+        section: null,
+        roles: USER_ADMIN,
+        exact: true,
+        description: "People who can sign in to this workspace and the menus they reach.",
+      },
+      {
+        title: "Roles & Permissions",
+        path: "/configuration/roles",
+        icon: "KeyRound",
+        section: null,
+        roles: COMPANY_ADMIN,
+        description: "Reusable permission sets you assign to people, departments, designations and teams.",
       },
     ],
   },
@@ -1034,6 +1032,14 @@ export const MENU_ITEMS: MenuItem[] = [
     description: "The people and companies you deal with.",
   },
   {
+    title: "Accounts",
+    path: "/crm/accounts",
+    icon: "Building2",
+    section: null,
+    roles: COMPANY,
+    description: "The organisations your contacts and deals belong to.",
+  },
+  {
     title: "Campaigns",
     path: "/crm/campaigns",
     icon: "Send",
@@ -1155,6 +1161,40 @@ export const MENU_ITEMS: MenuItem[] = [
     section: null,
     roles: COMPANY,
     description: "Pipeline, conversion and activity summaries.",
+  },
+
+  {
+    title: "Ads Manager",
+    path: "/ads-manager",
+    icon: "Megaphone",
+    section: "Ads Manager",
+    roles: COMPANY,
+    items: [
+      {
+        title: "Dashboard",
+        path: "/ads-manager/dashboard",
+        icon: "LayoutDashboard",
+        section: null,
+        roles: COMPANY,
+        description: "Spend, reach and return across every ad account you run.",
+      },
+      {
+        title: "Meta Ads",
+        path: "/ads-manager/meta-ads",
+        icon: "Facebook",
+        section: null,
+        roles: COMPANY,
+        description: "Campaigns running on Facebook and Instagram.",
+      },
+      {
+        title: "Google Ads",
+        path: "/ads-manager/google-ads",
+        icon: "Search",
+        section: null,
+        roles: COMPANY,
+        description: "Search, display and shopping campaigns on Google.",
+      },
+    ],
   },
 
   {

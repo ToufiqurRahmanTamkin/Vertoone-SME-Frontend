@@ -15,6 +15,7 @@ export interface ConcernHead {
   status: UserStatus;
   lastLoginAt: string | null;
   modulePermissions: ModulePermissionMap;
+  roleIds: string[];
   effectivePermissions: ModulePermissionMap;
   createdAt: string;
 }
@@ -66,6 +67,7 @@ export interface CreateConcernPayload {
     phone?: string;
     status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
     modulePermissions?: ModulePermissionMap;
+    roleIds?: string[];
   };
 }
 
@@ -77,6 +79,7 @@ export interface UpdateConcernHeadPayload {
   password?: string;
   status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
   modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
 }
 
 export const grantedMenuCount = (head: ConcernHead | null): number =>

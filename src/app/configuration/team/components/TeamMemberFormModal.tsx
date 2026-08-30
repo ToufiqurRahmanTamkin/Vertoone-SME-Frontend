@@ -1,4 +1,5 @@
-import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
+import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
+import { useAccessGrant } from "@/hooks/use-access-grant";
 import { FormInput, FormPassword, FormSelect } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,18 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
-import { usePermissions } from "@/hooks/use-permission";
-import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import {
   useCreateTeamMemberMutation,
   useUpdateTeamMemberMutation,
 } from "@/redux/apis/teamMemberApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import {
-  permissionFor,
-  prunePermissionMap,
-  type ModulePermissionMap,
-} from "@/types/domain/permission";
 import type { TeamMember } from "@/types/domain/teamMember";
 import { TeamMemberSchema, type TeamMemberFormValues } from "@/validations/teamMember";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +38,7 @@ const STATUS_OPTIONS = [
 ];
 
 const STEPS: readonly StepperStep[] = [
-  { id: "details", label: "Member details" },
+  { id: "details", label: "User details" },
   { id: "access", label: "Menu access" },
   { id: "review", label: "Review" },
 ];
@@ -82,36 +76,10 @@ const toFormValues = (member: TeamMember): TeamMemberFormValues => ({
 
 export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFormModalProps) {
   const isEdit = Boolean(member);
-  const { modules: entitlement } = usePermissions();
 
   const [createMember, { isLoading: isCreating }] = useCreateTeamMemberMutation();
   const [updateMember, { isLoading: isUpdating }] = useUpdateTeamMemberMutation();
   const isSaving = isCreating || isUpdating;
-
-  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
-
-  const assignableModules = React.useMemo(
-    () =>
-      catalogue.filter(
-        (definition) =>
-          definition.scope === "COMPANY" &&
-          !definition.ownerOnly &&
-          permissionFor(entitlement, definition.key).canView
-      ),
-    [catalogue, entitlement]
-  );
-
-  const knownModuleKeys = React.useMemo(
-    () => new Set(catalogue.map((definition) => definition.key)),
-    [catalogue]
-  );
-
-  const [grant, setGrant] = React.useState<ModulePermissionMap>({});
-
-  const liveGrant = React.useMemo(
-    () => prunePermissionMap(grant, knownModuleKeys),
-    [grant, knownModuleKeys]
-  );
 
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
@@ -126,12 +94,13 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
     form.reset(member ? toFormValues(member) : emptyValues());
   }, [open, member, form]);
 
-  const [seededFor, setSeededFor] = React.useState<string | null>(null);
   const seedKey = open ? (member?._id ?? "new") : null;
+  const grant = useAccessGrant(seedKey, member);
+
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
 
   if (seedKey !== seededFor) {
     setSeededFor(seedKey);
-    setGrant(seedKey === null ? {} : (member?.modulePermissions ?? {}));
     setStep(0);
     setFurthestStep(seedKey !== null && member ? LAST_STEP : 0);
   }
@@ -145,7 +114,7 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
     const isValid = await form.trigger(STEP_FIELDS[step], { shouldFocus: true });
     if (!isValid) return;
     if (step === 0 && !isEdit && !form.getValues("password")) {
-      form.setError("password", { message: "Set a password for the new team member" });
+      form.setError("password", { message: "Set a password for the new user" });
       return;
     }
     goToStep(Math.min(step + 1, LAST_STEP));
@@ -153,7 +122,7 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
 
   const onSubmit = async (values: TeamMemberFormValues) => {
     if (!isEdit && !values.password) {
-      form.setError("password", { message: "Set a password for the new team member" });
+      form.setError("password", { message: "Set a password for the new user" });
       setStep(0);
       return;
     }
@@ -166,7 +135,8 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
             name: values.name,
             phone: values.phone,
             status: values.status,
-            modulePermissions: liveGrant,
+            modulePermissions: grant.permissions,
+            roleIds: grant.roleIds,
             ...(values.password ? { password: values.password } : {}),
           },
         }).unwrap();
@@ -178,14 +148,15 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
           phone: values.phone,
           password: values.password,
           status: values.status,
-          modulePermissions: liveGrant,
+          modulePermissions: grant.permissions,
+          roleIds: grant.roleIds,
         }).unwrap();
         toast.success("Team member added");
       }
       onOpenChange(false);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
-      toast.error(err?.data?.message || "Could not save the team member");
+      toast.error(err?.data?.message || "Could not save the user");
     }
   };
 
@@ -203,22 +174,17 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
     void form.handleSubmit(onSubmit, onInvalid)(event);
   };
 
-  const grantedMenuCount = React.useMemo(
-    () => Object.values(liveGrant).filter((permission) => permission.canView).length,
-    [liveGrant]
-  );
-
   const summary = useWatch({ control: form.control });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit team member" : "New team member"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit user" : "New user"}</DialogTitle>
           <DialogDescription>
             {isEdit
               ? "Permission changes apply immediately — a revoked menu disappears from their sidebar straight away."
-              : "Create a sign-in for someone in your company and choose which menus they can reach."}
+              : "Create a sign-in for someone in your company, then hand them roles or direct menu access."}
           </DialogDescription>
         </DialogHeader>
 
@@ -284,12 +250,13 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
                     Only the menus your subscription includes can be handed out. Record caps stay
                     with the plan and are shared across everyone in the company.
                   </p>
-                  <ModulePermissionMatrix
-                    modules={assignableModules}
-                    value={liveGrant}
-                    onChange={setGrant}
-                    ceiling={entitlement}
-                    emptyMessage="Your current plan does not include any assignable menus."
+                  <AccessGrantEditor
+                    roleIds={grant.roleIds}
+                    onRoleIdsChange={grant.setRoleIds}
+                    permissions={grant.permissions}
+                    onPermissionsChange={grant.setPermissions}
+                    rolesHint="This person inherits every menu these roles grant."
+                    permissionsHint="Extra menus granted only to this person."
                   />
                 </div>
               )}
@@ -311,8 +278,10 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
                     </dd>
                   </div>
                   <div className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">Menus</dt>
-                    <dd className="font-medium">{grantedMenuCount} granted</dd>
+                    <dt className="text-xs text-muted-foreground">Access</dt>
+                    <dd className="font-medium">
+                      {grant.roleIds.length} roles · {grant.grantedMenuCount} menus
+                    </dd>
                   </div>
                 </dl>
               )}
@@ -357,7 +326,7 @@ export function TeamMemberFormModal({ open, onOpenChange, member }: TeamMemberFo
                     disabled={isSaving}
                   >
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isEdit ? "Save changes" : "Add member"}
+                    {isEdit ? "Save changes" : "Add user"}
                   </Button>
                 )}
               </div>

@@ -1,4 +1,6 @@
 import type { EmployeeRef } from "./employee";
+import type { ModulePermissionMap } from "./permission";
+import type { RoleRef } from "./role";
 
 export interface DepartmentRef {
   _id: string;
@@ -9,6 +11,9 @@ export interface DepartmentRef {
 export interface Department extends DepartmentRef {
   description: string;
   head: EmployeeRef | null;
+  modulePermissions: ModulePermissionMap;
+  roles: RoleRef[];
+  roleIds: string[];
   isActive: boolean;
   employeeCount: number;
   createdAt: string;
@@ -42,5 +47,7 @@ export interface DepartmentPayload {
   code?: string;
   description?: string;
   headId?: string | null;
+  modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
   isActive?: boolean;
 }

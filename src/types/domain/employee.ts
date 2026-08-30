@@ -66,6 +66,7 @@ export interface EmployeeAccess {
   status: UserStatus | null;
   lastLoginAt: string | null;
   modulePermissions: ModulePermissionMap;
+  roleIds: string[];
   effectivePermissions: ModulePermissionMap;
 }
 
@@ -183,6 +184,7 @@ export interface EmployeeAccessPayload {
   password?: string;
   status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
   modulePermissions?: ModulePermissionMap;
+  roleIds?: string[];
 }
 
 export interface BulkEmployeeRowResult {
