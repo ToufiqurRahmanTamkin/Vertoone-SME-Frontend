@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
-import { useGetConcernsQuery } from "@/redux/apis/concernApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
 import { useCreateSupplierMutation, useUpdateSupplierMutation } from "@/redux/apis/supplierApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
@@ -50,7 +49,7 @@ const STEPS: readonly StepperStep[] = [
 ];
 
 const STEP_FIELDS: readonly (keyof SupplierFormValues)[][] = [
-  ["name", "code", "taxId", "concernId", "tagIds", "notes", "isActive"],
+  ["name", "code", "taxId", "tagIds", "notes", "isActive"],
   [
     "contactPerson",
     "email",
@@ -113,7 +112,6 @@ const emptyValues = (): SupplierFormValues => ({
   accountNumber: "",
   routingNumber: "",
   tagIds: [],
-  concernId: "",
   notes: "",
   isActive: true,
 });
@@ -141,7 +139,6 @@ const toFormValues = (supplier: Supplier): SupplierFormValues => ({
   accountNumber: supplier.bankAccount.accountNumber,
   routingNumber: supplier.bankAccount.routingNumber,
   tagIds: supplier.tagIds,
-  concernId: supplier.concernId ?? "",
   notes: supplier.notes,
   isActive: supplier.isActive,
 });
@@ -173,7 +170,6 @@ const toPayload = (values: SupplierFormValues): SupplierPayload => ({
     routingNumber: values.routingNumber,
   },
   tagIds: values.tagIds,
-  concernId: values.concernId || null,
   notes: values.notes,
   isActive: values.isActive,
 });
@@ -182,7 +178,6 @@ export function SupplierFormModal({ open, onOpenChange, supplier }: SupplierForm
   const isEdit = Boolean(supplier);
 
   const { data: tagOptions = [] } = useGetTagOptionsQuery();
-  const { data: concernList } = useGetConcernsQuery({ limit: 100 });
 
   const [createSupplier, { isLoading: isCreating }] = useCreateSupplierMutation();
   const [updateSupplier, { isLoading: isUpdating }] = useUpdateSupplierMutation();
@@ -212,17 +207,6 @@ export function SupplierFormModal({ open, onOpenChange, supplier }: SupplierForm
   const tagChoices = React.useMemo<MultiSelectOption[]>(
     () => tagOptions.map((tag) => ({ value: tag._id, label: tag.name, color: tag.color })),
     [tagOptions]
-  );
-
-  const concernOptions = React.useMemo(
-    () => [
-      { value: "", label: "The organization" },
-      ...(concernList?.data ?? []).map((concern) => ({
-        value: concern._id,
-        label: concern.code ? `${concern.name} (${concern.code})` : concern.name,
-      })),
-    ],
-    [concernList]
   );
 
   const goNext = async () => {
@@ -270,11 +254,6 @@ export function SupplierFormModal({ open, onOpenChange, supplier }: SupplierForm
 
   const summary = useWatch({ control: form.control });
 
-  const concernLabel = React.useMemo(
-    () => concernOptions.find((option) => option.value === (summary.concernId ?? ""))?.label,
-    [concernOptions, summary.concernId]
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
@@ -315,15 +294,6 @@ export function SupplierFormModal({ open, onOpenChange, supplier }: SupplierForm
                       name="taxId"
                       label="TIN / BIN"
                       placeholder="Tax identification number"
-                    />
-                    <FormSelect
-                      control={form.control}
-                      name="concernId"
-                      label="Belongs to"
-                      placeholder="The organization"
-                      options={concernOptions}
-                      searchable
-                      description="Leave blank when the supplier serves the whole company."
                     />
                   </div>
 
@@ -507,10 +477,6 @@ export function SupplierFormModal({ open, onOpenChange, supplier }: SupplierForm
                     <div className="min-w-0">
                       <dt className="text-xs text-muted-foreground">Email</dt>
                       <dd className="truncate font-medium">{summary.email || "—"}</dd>
-                    </div>
-                    <div className="min-w-0">
-                      <dt className="text-xs text-muted-foreground">Belongs to</dt>
-                      <dd className="truncate font-medium">{concernLabel || "The organization"}</dd>
                     </div>
                     <div className="min-w-0">
                       <dt className="text-xs text-muted-foreground">Terms</dt>

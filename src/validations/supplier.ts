@@ -27,7 +27,6 @@ export const SupplierSchema = z.object({
   accountNumber: z.string().trim().max(40),
   routingNumber: z.string().trim().max(40),
   tagIds: z.array(z.string()),
-  concernId: z.string().trim(),
   notes: z.string().trim().max(1000),
   isActive: z.boolean(),
 });

@@ -1,4 +1,3 @@
-import type { ConcernRef } from "./concern";
 import type { TagRef } from "./tag";
 
 export const SUPPLIER_PAYMENT_TERMS = [
@@ -61,8 +60,6 @@ export interface Supplier extends SupplierRef {
   tagIds: string[];
   notes: string;
   isActive: boolean;
-  concernId: string | null;
-  concern: ConcernRef | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,7 +72,6 @@ export interface SupplierListQuery {
   search?: string;
   isActive?: boolean;
   paymentTerms?: SupplierPaymentTerm;
-  concernId?: string;
   tagIds?: string;
 }
 
@@ -109,5 +105,4 @@ export interface SupplierPayload {
   tagIds?: string[];
   notes?: string;
   isActive?: boolean;
-  concernId?: string | null;
 }

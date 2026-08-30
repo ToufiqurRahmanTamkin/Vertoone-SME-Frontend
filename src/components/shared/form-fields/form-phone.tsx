@@ -21,11 +21,26 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 import type { FieldValues } from "react-hook-form";
+import { validatePhoneNumberLength } from "libphonenumber-js/min";
 import PhoneInputWithCountry, {
   getCountryCallingCode,
   type Country,
 } from "react-phone-number-input";
 import type { BaseProps } from "./types";
+
+const clampPhoneLength = (value: string, country?: Country): string => {
+  let clamped = value;
+
+  while (
+    clamped.length > 1 &&
+    validatePhoneNumberLength(clamped, country ? { defaultCountry: country } : undefined) ===
+      "TOO_LONG"
+  ) {
+    clamped = clamped.slice(0, -1);
+  }
+
+  return clamped;
+};
 
 const flagEmoji = (code: string): string =>
   code
@@ -115,10 +130,9 @@ function CountrySelect({ value, onChange, options, disabled, readOnly }: Country
   );
 }
 
-const PhoneNumberInput = React.forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input>
->((props, ref) => <Input {...props} ref={ref} className={cn("h-9", props.className)} />);
+const PhoneNumberInput = React.forwardRef<HTMLInputElement, React.ComponentProps<typeof Input>>(
+  (props, ref) => <Input {...props} ref={ref} className={cn("h-9", props.className)} />
+);
 PhoneNumberInput.displayName = "PhoneNumberInput";
 
 export function FormPhone<TFieldValues extends FieldValues>({
@@ -134,6 +148,8 @@ export function FormPhone<TFieldValues extends FieldValues>({
   disabled?: boolean;
   defaultCountry?: Country;
 }) {
+  const [country, setCountry] = React.useState<Country | undefined>(defaultCountry);
+
   return (
     <FormField
       control={control}
@@ -148,7 +164,8 @@ export function FormPhone<TFieldValues extends FieldValues>({
               addInternationalOption={false}
               defaultCountry={defaultCountry}
               value={field.value ?? undefined}
-              onChange={(value) => field.onChange(value ?? "")}
+              onChange={(value) => field.onChange(clampPhoneLength(value ?? "", country))}
+              onCountryChange={setCountry}
               onBlur={field.onBlur}
               disabled={disabled}
               countrySelectComponent={CountrySelect}
