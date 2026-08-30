@@ -24,7 +24,7 @@ export function PageIdentity({ className }: { className?: string }) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn("flex min-w-0 items-center text-sm", className)}
+      className={cn("hidden sm:flex min-w-0 items-center text-sm", className)}
     >
       <ol className="flex min-w-0 items-center gap-1.5">
         {section && (

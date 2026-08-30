@@ -63,14 +63,6 @@ export function GlobalSearch() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={cn(NAV_ICON_BUTTON, "inline-flex items-center justify-center sm:hidden")}
-        aria-label="Search pages"
-      >
-        <Search className="size-[1.05rem] shrink-0" />
-      </button>
 
       <button
         type="button"

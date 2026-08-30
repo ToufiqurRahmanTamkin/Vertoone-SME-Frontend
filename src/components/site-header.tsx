@@ -48,7 +48,7 @@ export function SiteHeader() {
           <NotificationBell />
           <ThemeCustomizerTrigger
             variant="ghost"
-            className={cn(NAV_ICON_BUTTON, "hidden sm:inline-flex")}
+            className={NAV_ICON_BUTTON}
             onClick={() => setThemeCustomizerOpen(true)}
           />
           <ModeToggle variant="ghost" className={NAV_ICON_BUTTON} />
