@@ -35,7 +35,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function ContactTypesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/crm/contact-types");
+  const access = useModulePermission("/settings/crm/contact-types");
 
   const { data, isLoading, isFetching } = useGetContactTypesQuery({
     page: filters.page,

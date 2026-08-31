@@ -36,7 +36,7 @@ const describeAllowance = (used: number, limit: number | null): string =>
 
 export default function ConcernsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/concerns");
+  const access = useModulePermission("/settings/company/concerns");
 
   const { data, isLoading, isFetching } = useGetConcernsQuery({
     page: filters.page,

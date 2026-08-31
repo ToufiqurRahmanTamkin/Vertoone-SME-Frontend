@@ -124,7 +124,7 @@ export function TeamFormModal({ open, onOpenChange, team }: TeamFormModalProps) 
 
   const seedKey = open ? (team?._id ?? "new") : null;
   const grant = useAccessGrant(seedKey, team);
-  const canManageAccess = useModulePermission("/configuration/roles").canEdit;
+  const canManageAccess = useModulePermission("/settings/access/roles").canEdit;
 
   const steps = React.useMemo<StepperStep[]>(
     () =>

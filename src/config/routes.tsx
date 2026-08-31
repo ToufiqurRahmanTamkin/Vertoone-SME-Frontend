@@ -3,6 +3,7 @@ import { RoleDashboard } from "@/components/router/role-dashboard";
 import { RootRedirect } from "@/components/router/root-redirect";
 import { ProtectedRoute, PublicRoute } from "@/components/router/protected-route";
 import { getMenuLeafPaths } from "@/config/navigation";
+import { Navigate } from "react-router-dom";
 import { lazy } from "react";
 
 const Login = lazy(() => import("@/app/auth/login/LoginPage"));
@@ -109,12 +110,12 @@ const builtRoutes: RouteConfig[] = [
   { path: "system-config", element: <SystemConfig /> },
   { path: "activity", element: <SystemActivity /> },
   { path: "data-wipe", element: <DataWipe /> },
-  { path: "organization/profile", element: <CompanyProfile /> },
-  { path: "concerns", element: <Concerns /> },
+  { path: "settings/company/profile", element: <CompanyProfile /> },
+  { path: "settings/company/concerns", element: <Concerns /> },
   { path: "my-concern", element: <MyConcern /> },
   { path: "my-profile", element: <MyProfile /> },
-  { path: "configuration/team", element: <TeamMembers /> },
-  { path: "configuration/roles", element: <Roles /> },
+  { path: "settings/access/users", element: <TeamMembers /> },
+  { path: "settings/access/roles", element: <Roles /> },
   { path: "hrms/people/employees", element: <Employees /> },
   { path: "hrms/people/teams", element: <Teams /> },
   { path: "hrms/people/departments", element: <Departments /> },
@@ -137,21 +138,95 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "sme/pos", element: <Pos /> },
   { path: "sme/shop", element: <Shop /> },
-  { path: "sme/configuration/email", element: <SmeEmailConfig /> },
-  { path: "sme/configuration/payment", element: <SmePaymentConfig /> },
-  { path: "crm/tags", element: <Tags /> },
-  { path: "crm/lead-sources", element: <LeadSources /> },
-  { path: "crm/contact-types", element: <ContactTypes /> },
+  { path: "settings/sales/email", element: <SmeEmailConfig /> },
+  { path: "settings/sales/payment", element: <SmePaymentConfig /> },
+  { path: "settings/crm/tags", element: <Tags /> },
+  { path: "settings/crm/lead-sources", element: <LeadSources /> },
+  { path: "settings/crm/contact-types", element: <ContactTypes /> },
   { path: "crm/contacts", element: <Contacts /> },
   { path: "crm/leads", element: <Leads /> },
-  { path: "calendar/settings", element: <CalendarSettings /> },
+  { path: "settings/workspace/calendar", element: <CalendarSettings /> },
   { path: "settings/account", element: <AccountSettings /> },
+];
+
+const legacyRedirects: RouteConfig[] = [
+  { path: "crm/my-social/facebook", element: <Navigate to="/crm/social/facebook" replace /> },
+  { path: "crm/my-social/instagram", element: <Navigate to="/crm/social/instagram" replace /> },
+  { path: "crm/my-social/whatsapp", element: <Navigate to="/crm/social/whatsapp" replace /> },
+  { path: "crm/my-social/tiktok", element: <Navigate to="/crm/social/tiktok" replace /> },
+  { path: "company-finance/invoice", element: <Navigate to="/company-finance/invoices" replace /> },
+  { path: "configuration/team/dashboard", element: <Navigate to="/hrms/people/dashboard" replace /> },
+  { path: "calendar", element: <Navigate to="/calendar/view" replace /> },
+  { path: "reports/overview", element: <Navigate to="/insights" replace /> },
+  { path: "reports/sales/summary", element: <Navigate to="/insights/trade/sales" replace /> },
+  { path: "reports/sales/products", element: <Navigate to="/insights/trade/products" replace /> },
+  { path: "reports/purchases/summary", element: <Navigate to="/insights/trade/purchases" replace /> },
+  { path: "reports/inventory/stock", element: <Navigate to="/insights/inventory/stock" replace /> },
+  { path: "reports/inventory/movement", element: <Navigate to="/insights/inventory/movement" replace /> },
+  { path: "reports/finance/profit-loss", element: <Navigate to="/insights/finance/profit-loss" replace /> },
+  { path: "reports/finance/cash-flow", element: <Navigate to="/insights/finance/cash-flow" replace /> },
+  { path: "reports/finance/receivables", element: <Navigate to="/insights/finance/receivables" replace /> },
+  { path: "reports/hr/headcount", element: <Navigate to="/insights/people/headcount" replace /> },
+  { path: "reports/hr/attendance", element: <Navigate to="/insights/people/attendance" replace /> },
+  { path: "reports/hr/leave", element: <Navigate to="/insights/people/leave" replace /> },
+  { path: "reports/hr/payroll", element: <Navigate to="/insights/people/payroll" replace /> },
+  { path: "reports/hr/recruitment", element: <Navigate to="/insights/people/recruitment" replace /> },
+  { path: "reports/hr/performance", element: <Navigate to="/insights/people/performance" replace /> },
+  { path: "reports/crm/pipeline", element: <Navigate to="/insights/customers/pipeline" replace /> },
+  { path: "reports/crm/leads", element: <Navigate to="/insights/customers/leads" replace /> },
+  { path: "reports/crm/deals", element: <Navigate to="/insights/customers/deals" replace /> },
+  { path: "reports/crm/campaigns", element: <Navigate to="/insights/customers/campaigns" replace /> },
+  { path: "reports/tasks/summary", element: <Navigate to="/insights/tasks" replace /> },
+  { path: "organization/profile", element: <Navigate to="/settings/company/profile" replace /> },
+  { path: "concerns", element: <Navigate to="/settings/company/concerns" replace /> },
+  { path: "concerns/dashboard", element: <Navigate to="/settings/company/concerns-dashboard" replace /> },
+  { path: "configuration/team", element: <Navigate to="/settings/access/users" replace /> },
+  { path: "configuration/roles", element: <Navigate to="/settings/access/roles" replace /> },
+  { path: "sme/configuration/email", element: <Navigate to="/settings/sales/email" replace /> },
+  { path: "sme/configuration/payment", element: <Navigate to="/settings/sales/payment" replace /> },
+  { path: "hrms/settings/leave", element: <Navigate to="/settings/people/leave" replace /> },
+  { path: "hrms/settings/overtime", element: <Navigate to="/settings/people/overtime" replace /> },
+  { path: "hrms/settings/attendance-rules", element: <Navigate to="/settings/people/attendance-rules" replace /> },
+  { path: "hrms/settings/late-fine-rules", element: <Navigate to="/settings/people/late-fine-rules" replace /> },
+  { path: "hrms/settings/holiday-calendar", element: <Navigate to="/settings/people/holiday-calendar" replace /> },
+  { path: "hrms/settings/payroll-settings", element: <Navigate to="/settings/people/payroll" replace /> },
+  { path: "crm/lead-sources", element: <Navigate to="/settings/crm/lead-sources" replace /> },
+  { path: "crm/contact-types", element: <Navigate to="/settings/crm/contact-types" replace /> },
+  { path: "crm/tags", element: <Navigate to="/settings/crm/tags" replace /> },
+  { path: "crm/campaigns/settings", element: <Navigate to="/settings/crm/campaigns" replace /> },
+  { path: "calendar/settings", element: <Navigate to="/settings/workspace/calendar" replace /> },
+  { path: "automation/settings", element: <Navigate to="/settings/workspace/automation" replace /> },
+  { path: "business-tools/settings", element: <Navigate to="/settings/workspace/business-tools" replace /> },
 ];
 
 const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
   .map((path) => path.replace(/^\//, ""))
   .filter((path) => path && !builtRoutes.some((route) => route.path === path))
   .map((path) => ({ path, element: <ModulePlaceholder /> }));
+
+const ROUTES_WITHOUT_MENU = new Set(["my-company"]);
+
+const assertRouteCoverage = (): void => {
+  const menuPaths = new Set(getMenuLeafPaths().map((path) => path.replace(/^\//, "")));
+
+  const orphans = builtRoutes
+    .map((route) => route.path)
+    .filter((path) => !menuPaths.has(path) && !ROUTES_WITHOUT_MENU.has(path));
+
+  if (orphans.length > 0) {
+    throw new Error(`Routes with no menu entry: ${orphans.join(", ")}`);
+  }
+
+  const seen = new Set<string>();
+  [...builtRoutes, ...placeholderRoutes, ...legacyRedirects].forEach((route) => {
+    if (seen.has(route.path)) {
+      throw new Error(`Duplicate route path: ${route.path}`);
+    }
+    seen.add(route.path);
+  });
+};
+
+if (import.meta.env.DEV) assertRouteCoverage();
 
 export const routes: RouteConfig[] = [
   {
@@ -175,6 +250,7 @@ export const routes: RouteConfig[] = [
     path: "/",
     element: <ProtectedRoute />,
     children: [
+      ...legacyRedirects,
       {
         path: "/",
         element: <PrivateLayout />,

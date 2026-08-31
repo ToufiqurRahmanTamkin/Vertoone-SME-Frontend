@@ -36,7 +36,7 @@ const STATUS_FILTER: FilterConfig = {
 
 export default function CalendarSettingsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/calendar/settings");
+  const access = useModulePermission("/settings/workspace/calendar");
 
   const { data, isLoading, isFetching } = useGetMeetingRoomsQuery({
     page: filters.page,
