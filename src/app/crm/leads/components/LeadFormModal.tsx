@@ -363,16 +363,15 @@ export function LeadFormModal({ open, onOpenChange, lead }: LeadFormModalProps) 
                       placeholder="No type"
                       options={contactTypeChoices}
                     />
+                    <FormMultiSelect
+                      control={form.control}
+                      name="tagIds"
+                      label="Tags"
+                      placeholder="No tags"
+                      options={tagChoices}
+                      emptyText="No tags yet. Create them under CRM · Settings · Tags."
+                    />
                   </div>
-
-                  <FormMultiSelect
-                    control={form.control}
-                    name="tagIds"
-                    label="Tags"
-                    placeholder="No tags"
-                    options={tagChoices}
-                    emptyText="No tags yet. Create them under CRM · Settings · Tags."
-                  />
                 </div>
               )}
 
