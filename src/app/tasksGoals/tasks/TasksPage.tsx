@@ -1,11 +1,11 @@
 import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Progress } from "@/components/ui/progress";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
@@ -23,14 +23,15 @@ import {
   type TaskBoardVisibility,
   type TaskBoardWithStats,
 } from "@/types/domain/task";
-import { LayoutGrid, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { boardColumns, boardProgress } from "./boards.columns";
 import { BoardFormModal } from "./components/BoardFormModal";
 
 export default function TasksPage() {
-  const { filters, setFilter, clearFilters } = useQueryFilters(12);
+  const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/tasks-goals/tasks");
   const navigate = useNavigate();
 
@@ -102,6 +103,22 @@ export default function TasksPage() {
   const used = summary?.used ?? 0;
   const limit = summary?.limit ?? access.limit;
 
+  const openEdit = React.useCallback((board: TaskBoardWithStats) => {
+    setEditing(board);
+    setFormOpen(true);
+  }, []);
+
+  const columns = React.useMemo(
+    () =>
+      boardColumns({
+        onEdit: openEdit,
+        onDelete: setPendingDelete,
+        canEdit: access.canEdit,
+        canDelete: access.canDelete,
+      }),
+    [openEdit, access.canEdit, access.canDelete]
+  );
+
   return (
     <>
       <PageHeader
@@ -157,123 +174,98 @@ export default function TasksPage() {
         }
       />
 
-      {isLoading ? (
-        <div className="flex justify-center py-16">
-          <LoadingSpinner size="lg" />
-        </div>
-      ) : boards.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-16 text-center">
-          <LayoutGrid className="size-8 text-muted-foreground" aria-hidden />
-          <p className="font-semibold">No boards yet</p>
-          <p className="max-w-md text-sm text-muted-foreground">
-            A board is where the work lives. Create one and it comes with Backlog, To Do, In
-            Progress, Review and Done lists ready to use.
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {boards.map((board) => {
-            const progress =
-              board.taskCount > 0
-                ? Math.round((board.completedCount / board.taskCount) * 100)
-                : 0;
+      <DataTable
+        columns={columns}
+        data={boards}
+        isLoading={isLoading}
+        pagination={
+          meta
+            ? { page: meta.page, limit: meta.limit, total: meta.total, pages: meta.totalPages }
+            : undefined
+        }
+        onPageChange={(page) => setFilter("page", page)}
+        onLimitChange={(nextLimit) => setFilter("limit", nextLimit)}
+        getRowId={(row) => row._id}
+        mobileCard={(board) => {
+          const progress = boardProgress(board);
 
-            return (
-              <article
-                key={board._id}
-                className="flex flex-col overflow-hidden rounded-xl border bg-card transition hover:border-primary/40"
-              >
-                <span
-                  className="block h-1.5 w-full"
-                  style={{ backgroundColor: board.color }}
-                  aria-hidden
-                />
-
-                <div className="flex flex-1 flex-col gap-3 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <button
-                      type="button"
-                      className="min-w-0 cursor-pointer text-left"
-                      onClick={() => navigate(`/tasks-goals/tasks/${board._id}`)}
-                    >
-                      <p className="truncate font-semibold hover:underline">{board.name}</p>
-                      <p className="line-clamp-2 text-xs text-muted-foreground">
-                        {board.description || "No description"}
-                      </p>
-                    </button>
-                    {board.isArchived && <StatusBadge color="zinc" label="Archived" />}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant="outline" className="text-[11px]">
-                      {board.lists.length} lists
-                    </Badge>
-                    <Badge variant="outline" className="text-[11px]">
-                      {board.labels.length} labels
-                    </Badge>
-                    <Badge variant="outline" className="text-[11px]">
-                      {TASK_BOARD_VISIBILITY_LABELS[board.visibility]}
-                    </Badge>
-                    {board.overdueCount > 0 && (
-                      <StatusBadge color="red" label={`${board.overdueCount} overdue`} />
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span>
-                        {board.completedCount} of {board.taskCount} done
-                      </span>
-                      <span className="tabular-nums">{progress}%</span>
-                    </div>
-                    <Progress value={progress} className="h-1.5" />
-                  </div>
-
-                  <p className="truncate text-xs text-muted-foreground">
-                    {board.owner ? `Owned by ${board.owner.name}` : "No owner"}
-                    {board.members.length > 0 && ` · ${board.members.length} members`}
+          return (
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <button
+                  type="button"
+                  className="min-w-0 cursor-pointer text-left"
+                  onClick={() => navigate(`/tasks-goals/tasks/${board._id}`)}
+                >
+                  <ColorChip color={board.color} label={board.name} />
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                    {board.description || "No description"}
                   </p>
+                </button>
+                <StatusBadge
+                  color={board.isArchived ? "zinc" : "green"}
+                  label={board.isArchived ? "Archived" : "Active"}
+                />
+              </div>
 
-                  <div className="mt-auto flex justify-end gap-2 border-t pt-3">
-                    <CardActionButton
-                      icon={LayoutGrid}
-                      label="Open board"
-                      onClick={() => navigate(`/tasks-goals/tasks/${board._id}`)}
-                    />
-                    <CardActionButton
-                      icon={Pencil}
-                      label="Edit board"
-                      onClick={() => {
-                        setEditing(board);
-                        setFormOpen(true);
-                      }}
-                      disabled={!access.canEdit}
-                    />
-                    <CardActionButton
-                      icon={Trash2}
-                      label="Delete board"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => setPendingDelete(board)}
-                      disabled={!access.canDelete}
-                    />
-                  </div>
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <Badge variant="secondary" className="text-[10px] tabular-nums">
+                  {board.lists.length} lists
+                </Badge>
+                <Badge variant="outline" className="text-[10px] tabular-nums">
+                  {board.labels.length} labels
+                </Badge>
+                {board.overdueCount > 0 && (
+                  <StatusBadge color="red" label={`${board.overdueCount} overdue`} />
+                )}
+              </div>
+
+              <dl className="mt-3 grid gap-1 text-xs">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Owner</dt>
+                  <dd className="truncate font-medium">{board.owner?.name ?? "No owner"}</dd>
                 </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Members</dt>
+                  <dd className="font-medium tabular-nums">{board.members.length}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Visibility</dt>
+                  <dd className="truncate font-medium">
+                    {TASK_BOARD_VISIBILITY_LABELS[board.visibility]}
+                  </dd>
+                </div>
+              </dl>
 
-      {meta && meta.totalPages > 1 && (
-        <DataTablePagination
-          page={meta.page}
-          limit={meta.limit}
-          total={meta.total}
-          pages={meta.totalPages}
-          onPageChange={(page) => setFilter("page", page)}
-          onLimitChange={(nextLimit) => setFilter("limit", nextLimit)}
-        />
-      )}
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="tabular-nums text-muted-foreground">
+                    {board.completedCount} of {board.taskCount} done
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">{progress}%</span>
+                </div>
+                <Progress value={progress} className="h-1.5" />
+              </div>
+
+              <div className="mt-3 flex justify-end gap-2 border-t pt-3">
+                <CardActionButton
+                  icon={Pencil}
+                  label="Edit"
+                  onClick={() => openEdit(board)}
+                  disabled={!access.canEdit}
+                />
+                <CardActionButton
+                  icon={Trash2}
+                  label="Delete"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setPendingDelete(board)}
+                  disabled={!access.canDelete}
+                />
+              </div>
+            </div>
+          );
+        }}
+      />
 
       <BoardFormModal
         open={formOpen}
