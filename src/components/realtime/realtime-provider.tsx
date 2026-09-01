@@ -119,6 +119,13 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "FormSummary",
   ],
   BUSINESS_TOOLS_SETTINGS: ["BusinessToolsSettings"],
+  EMAIL_TEMPLATES: [
+    "EmailTemplates",
+    "EmailTemplate",
+    "EmailTemplateSummary",
+    "EmailTemplateOptions",
+  ],
+  EMAIL_DELIVERIES: ["EmailDeliveries", "EmailDelivery", "EmailTemplateSummary"],
 };
 
 const TOAST_BY_LEVEL: Record<string, (title: string, description: string) => void> = {

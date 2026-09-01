@@ -310,6 +310,15 @@ export const ALL_TAG_TYPES = [
   "FormSubmission",
   "FormSubmissionSummary",
   "BusinessToolsSettings",
+  "EmailBlocks",
+  "EmailStarters",
+  "EmailTemplates",
+  "EmailTemplate",
+  "EmailTemplateSummary",
+  "EmailTemplateOptions",
+  "EmailRecipients",
+  "EmailDeliveries",
+  "EmailDelivery",
 ] as const;
 
 export type TagType = (typeof ALL_TAG_TYPES)[number];

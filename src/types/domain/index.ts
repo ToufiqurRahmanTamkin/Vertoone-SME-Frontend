@@ -8,6 +8,7 @@ export * from "./contactType";
 export * from "./dashboard";
 export * from "./dataWipe";
 export * from "./email";
+export * from "./emailBuilder";
 export * from "./finance";
 export * from "./guide";
 export * from "./invoice";

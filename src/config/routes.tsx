@@ -81,6 +81,15 @@ const SmePaymentConfig = lazy(
   () => import("@/app/sme/configuration/payment/PaymentConfigPage")
 );
 const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
+const EmailTemplates = lazy(
+  () => import("@/app/businessTools/emailBuilder/EmailTemplatesPage")
+);
+const EmailTemplateBuilder = lazy(
+  () => import("@/app/businessTools/emailBuilder/EmailTemplateBuilderPage")
+);
+const EmailDeliveries = lazy(
+  () => import("@/app/businessTools/emailBuilder/EmailDeliveriesPage")
+);
 const Websites = lazy(() => import("@/app/businessTools/webBuilder/WebsitesPage"));
 const SitePages = lazy(() => import("@/app/businessTools/webBuilder/SitePagesPage"));
 const PageBuilder = lazy(() => import("@/app/businessTools/webBuilder/PageBuilderPage"));
@@ -161,6 +170,9 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "sme/pos", element: <Pos /> },
   { path: "sme/shop", element: <Shop /> },
+  { path: "business-tools/email-builder", element: <EmailTemplates /> },
+  { path: "business-tools/email-builder/deliveries", element: <EmailDeliveries /> },
+  { path: "business-tools/email-builder/:templateId", element: <EmailTemplateBuilder /> },
   { path: "business-tools/web-builder", element: <Websites /> },
   { path: "business-tools/web-builder/:siteId", element: <SitePages /> },
   { path: "business-tools/web-builder/:siteId/pages/:pageId", element: <PageBuilder /> },
@@ -240,6 +252,8 @@ const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
 
 const ROUTES_WITHOUT_MENU = new Set([
   "my-company",
+  "business-tools/email-builder/deliveries",
+  "business-tools/email-builder/:templateId",
   "business-tools/web-builder/:siteId",
   "business-tools/web-builder/:siteId/pages/:pageId",
   "business-tools/form-builder/:formId",

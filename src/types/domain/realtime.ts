@@ -57,6 +57,8 @@ export const SOCKET_RESOURCES = [
   "FORMS",
   "FORM_SUBMISSIONS",
   "BUSINESS_TOOLS_SETTINGS",
+  "EMAIL_TEMPLATES",
+  "EMAIL_DELIVERIES",
 ] as const;
 export type SocketResource = (typeof SOCKET_RESOURCES)[number];
 

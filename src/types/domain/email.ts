@@ -13,6 +13,8 @@ export const EMAIL_TEMPLATE_KEYS = [
   "PAYMENT_REFUNDED",
   "SUBSCRIPTION_EXPIRING",
   "SUBSCRIPTION_EXPIRED",
+  "FORM_SUBMISSION_RECEIVED",
+  "EMAIL_BUILDER",
 ] as const;
 export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[number];
 

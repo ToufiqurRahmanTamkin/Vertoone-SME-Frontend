@@ -292,6 +292,8 @@ export const LOGIN_FAILURE_REASON_LABELS: Record<LoginFailureReason, string> = {
 };
 
 export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
+  FORM_SUBMISSION_RECEIVED: "Form response received",
+  EMAIL_BUILDER: "Email Builder send",
   SUBSCRIPTION_RENEWED: "Subscription renewed",
   REGISTRATION_RECEIVED: "Registration received",
   REGISTRATION_SUBMITTED_ADMIN: "Registration submitted (admin)",
