@@ -34,6 +34,8 @@ const TYPE_OPTIONS = PIPELINE_STAGE_TYPES.map((type) => ({
   value: type,
 }));
 
+const FIELD_GRID = "grid flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_2.5rem_7.5rem_4.5rem_5.5rem]";
+
 interface StageRowProps {
   id: string;
   index: number;
@@ -54,95 +56,83 @@ function StageRow({ id, index, canRemove, onRemove }: StageRowProps) {
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        "rounded-lg border bg-card p-3",
+        "flex items-center gap-1.5 rounded-lg border bg-card px-2 py-1.5",
         isDragging && "opacity-60 ring-2 ring-primary/30"
       )}
     >
-      <div className="flex items-start gap-2">
-        <button
-          type="button"
-          aria-label={`Reorder stage ${index + 1}`}
-          className="mt-7 cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-4" />
-        </button>
+      <button
+        type="button"
+        aria-label={`Reorder stage ${index + 1}`}
+        className="shrink-0 cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
 
-        <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <FormInput
-            control={form.control}
-            name={`stages.${index}.name`}
-            label="Stage"
-            placeholder="Qualified"
-            className="lg:col-span-2"
-          />
+      <div className={FIELD_GRID}>
+        <FormInput
+          control={form.control}
+          name={`stages.${index}.name`}
+          label="Stage"
+          placeholder="Qualified"
+        />
 
-          <div className="space-y-2">
-            <label
-              className="text-sm leading-none font-medium"
-              htmlFor={`stage-color-${index}`}
-            >
-              Colour
-            </label>
-            <Input
-              id={`stage-color-${index}`}
-              type="color"
-              className="h-9 w-full cursor-pointer p-1"
-              value={/^#[0-9a-f]{6}$/i.test(color ?? "") ? color : DEFAULT_STAGE_COLOR}
-              onChange={(event) =>
-                form.setValue(`stages.${index}.color`, event.target.value.toLowerCase(), {
-                  shouldDirty: true,
-                })
-              }
-            />
-          </div>
-
-          <FormSelect
-            control={form.control}
-            name={`stages.${index}.type`}
-            label="Type"
-            options={TYPE_OPTIONS}
-          />
-
-          <FormInput
-            control={form.control}
-            name={`stages.${index}.probability`}
-            label="Win %"
-            type="number"
-            placeholder="50"
-          />
-
-          <FormInput
-            control={form.control}
-            name={`stages.${index}.rottingDays`}
-            label="Stale after (days)"
-            type="number"
-            placeholder="0"
-            className="lg:col-span-2"
-          />
-
-          <FormInput
-            control={form.control}
-            name={`stages.${index}.description`}
-            label="What happens here"
-            placeholder="Budget confirmed and a decision maker identified"
-            className="sm:col-span-2 lg:col-span-3"
+        <div className="grid min-w-0 content-start gap-1">
+          <label
+            className="text-xs leading-none font-medium text-muted-foreground"
+            htmlFor={`stage-color-${index}`}
+          >
+            Colour
+          </label>
+          <Input
+            id={`stage-color-${index}`}
+            type="color"
+            className="h-8 w-full cursor-pointer p-1"
+            value={/^#[0-9a-f]{6}$/i.test(color ?? "") ? color : DEFAULT_STAGE_COLOR}
+            onChange={(event) =>
+              form.setValue(`stages.${index}.color`, event.target.value.toLowerCase(), {
+                shouldDirty: true,
+              })
+            }
           />
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={`Remove stage ${index + 1}`}
-          className="mt-6 size-8 shrink-0 cursor-pointer text-destructive hover:text-destructive"
-          disabled={!canRemove}
-          onClick={() => onRemove(index)}
-        >
-          <Trash2 className="size-4" />
-        </Button>
+        <FormSelect
+          control={form.control}
+          name={`stages.${index}.type`}
+          label="Type"
+          options={TYPE_OPTIONS}
+        />
+
+        <FormInput
+          control={form.control}
+          name={`stages.${index}.probability`}
+          label="Win %"
+          type="number"
+          placeholder="50"
+        />
+
+        <FormInput
+          control={form.control}
+          name={`stages.${index}.rottingDays`}
+          label="Stale (d)"
+          type="number"
+          placeholder="0"
+        />
       </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label={`Remove stage ${index + 1}`}
+        className="size-7 shrink-0 cursor-pointer text-destructive hover:text-destructive"
+        disabled={!canRemove}
+        onClick={() => onRemove(index)}
+      >
+        <Trash2 className="size-4" />
+      </Button>
     </div>
   );
 }
@@ -171,32 +161,31 @@ export function StageEditor() {
   const stageError = form.formState.errors.stages?.message;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium">Stages</p>
-          <p className="text-xs text-muted-foreground">
-            Drag to reorder. Contacts move left to right through these stages.
-          </p>
-        </div>
+        <p className="text-sm font-medium">
+          Stages
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            Drag to reorder · left to right
+          </span>
+        </p>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="cursor-pointer gap-1.5"
+          className="h-7 cursor-pointer gap-1.5 text-xs"
           disabled={fields.length >= MAX_PIPELINE_STAGES}
           onClick={() =>
             append({
               name: "",
               color: DEFAULT_STAGE_COLOR,
-              description: "",
               probability: 0,
               type: "OPEN",
               rottingDays: 0,
             })
           }
         >
-          <Plus className="size-4" />
+          <Plus className="size-3.5" />
           Add stage
         </Button>
       </div>
@@ -213,7 +202,7 @@ export function StageEditor() {
           items={fields.map((field) => field.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-2">
+          <div className="space-y-1.5 [&_[data-slot=form-item]]:gap-1 [&_[data-slot=form-label]]:text-xs [&_[data-slot=form-label]]:font-medium [&_[data-slot=form-label]]:text-muted-foreground [&_input]:h-8 [&_button[role=combobox]]:h-8">
             {fields.map((field, index) => (
               <StageRow
                 key={field.id}

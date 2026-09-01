@@ -3,7 +3,6 @@ import {
   FormInput,
   FormSelect,
   FormSwitch,
-  FormTextarea,
 } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,41 +46,13 @@ const CURRENCY_OPTIONS = SUPPORTED_CURRENCIES.map((currency) => ({
 }));
 
 const DEFAULT_STAGES: PipelineFormValues["stages"] = [
-  { name: "New", color: "#64748b", description: "", probability: 10, type: "OPEN", rottingDays: 7 },
-  {
-    name: "Contacted",
-    color: "#0ea5e9",
-    description: "",
-    probability: 25,
-    type: "OPEN",
-    rottingDays: 7,
-  },
-  {
-    name: "Qualified",
-    color: "#6366f1",
-    description: "",
-    probability: 45,
-    type: "OPEN",
-    rottingDays: 10,
-  },
-  {
-    name: "Proposal",
-    color: "#f59e0b",
-    description: "",
-    probability: 65,
-    type: "OPEN",
-    rottingDays: 14,
-  },
-  {
-    name: "Negotiation",
-    color: "#f97316",
-    description: "",
-    probability: 80,
-    type: "OPEN",
-    rottingDays: 14,
-  },
-  { name: "Won", color: "#16a34a", description: "", probability: 100, type: "WON", rottingDays: 0 },
-  { name: "Lost", color: "#dc2626", description: "", probability: 0, type: "LOST", rottingDays: 0 },
+  { name: "New", color: "#64748b", probability: 10, type: "OPEN", rottingDays: 7 },
+  { name: "Contacted", color: "#0ea5e9", probability: 25, type: "OPEN", rottingDays: 7 },
+  { name: "Qualified", color: "#6366f1", probability: 45, type: "OPEN", rottingDays: 10 },
+  { name: "Proposal", color: "#f59e0b", probability: 65, type: "OPEN", rottingDays: 14 },
+  { name: "Negotiation", color: "#f97316", probability: 80, type: "OPEN", rottingDays: 14 },
+  { name: "Won", color: "#16a34a", probability: 100, type: "WON", rottingDays: 0 },
+  { name: "Lost", color: "#dc2626", probability: 0, type: "LOST", rottingDays: 0 },
 ];
 
 const emptyValues = (): PipelineFormValues => ({
@@ -91,7 +62,6 @@ const emptyValues = (): PipelineFormValues => ({
   contactTypeId: "",
   ownerId: "",
   currency: "BDT",
-  isDefault: false,
   isActive: true,
   stages: DEFAULT_STAGES.map((stage) => ({ ...stage })),
 });
@@ -103,13 +73,11 @@ const toFormValues = (pipeline: Pipeline): PipelineFormValues => ({
   contactTypeId: pipeline.contactTypeId ?? "",
   ownerId: pipeline.ownerId ?? "",
   currency: pipeline.currency,
-  isDefault: pipeline.isDefault,
   isActive: pipeline.isActive,
   stages: pipeline.stages.map((stage) => ({
     _id: stage._id,
     name: stage.name,
     color: stage.color || DEFAULT_STAGE_COLOR,
-    description: stage.description,
     probability: stage.probability,
     type: stage.type,
     rottingDays: stage.rottingDays,
@@ -123,13 +91,11 @@ const toPayload = (values: PipelineFormValues): PipelinePayload => ({
   contactTypeId: values.contactTypeId || null,
   ownerId: values.ownerId || null,
   currency: values.currency,
-  isDefault: values.isDefault,
   isActive: values.isActive,
   stages: values.stages.map((stage) => ({
     ...(stage._id ? { _id: stage._id } : {}),
     name: stage.name,
     color: stage.color,
-    description: stage.description,
     probability: Number(stage.probability || 0),
     type: stage.type,
     rottingDays: Number(stage.rottingDays || 0),
@@ -192,12 +158,14 @@ export function PipelineFormModal({ open, onOpenChange, pipeline }: PipelineForm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit pipeline" : "New pipeline"}</DialogTitle>
-          <DialogDescription>
-            A pipeline is a board of stages. Contacts are dragged from one stage to the next as the
-            deal progresses.
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
+        <DialogHeader className="sm:p-4">
+          <DialogTitle className="text-base">
+            {isEdit ? "Edit pipeline" : "New pipeline"}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            Stages are the columns on the board. Contacts are dragged left to right as the deal
+            progresses.
           </DialogDescription>
         </DialogHeader>
 
@@ -206,20 +174,27 @@ export function PipelineFormModal({ open, onOpenChange, pipeline }: PipelineForm
             className="flex min-h-0 flex-1 flex-col"
             onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
           >
-            <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <DialogBody className="flex flex-col gap-3 sm:p-4 [&_[data-slot=form-item]]:gap-1.5 [&_[data-slot=form-label]]:text-xs [&_[data-slot=form-label]]:text-muted-foreground">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <FormInput
                   control={form.control}
                   name="name"
                   label="Pipeline name"
                   placeholder="New business"
+                  className="lg:col-span-2"
+                />
+                <FormInput
+                  control={form.control}
+                  name="description"
+                  label="Description"
+                  placeholder="What it is for"
+                  className="lg:col-span-2"
                 />
                 <FormSelect
                   control={form.control}
                   name="contactTypeId"
                   label="Contact type"
                   placeholder="Any contact type"
-                  description="Only contacts of this type are suggested when adding cards."
                   options={contactTypeChoices}
                 />
                 <FormSelect
@@ -235,31 +210,15 @@ export function PipelineFormModal({ open, onOpenChange, pipeline }: PipelineForm
                   label="Currency"
                   options={CURRENCY_OPTIONS}
                 />
-              </div>
-
-              <FormColor control={form.control} name="color" label="Pipeline colour" />
-
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Description"
-                placeholder="What this pipeline is for and who works it"
-              />
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSwitch
-                  control={form.control}
-                  name="isDefault"
-                  label="Default pipeline"
-                  description="Opened first when someone visits Pipelines."
-                />
                 <FormSwitch
                   control={form.control}
                   name="isActive"
                   label="Active"
-                  description="Inactive pipelines are hidden from the picker."
+                  className="self-end p-2"
                 />
               </div>
+
+              <FormColor control={form.control} name="color" label="Pipeline colour" />
 
               <StageEditor />
             </DialogBody>
