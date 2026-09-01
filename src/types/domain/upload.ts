@@ -4,6 +4,7 @@ export const UPLOAD_FOLDERS = [
   "avatars",
   "products",
   "brands",
+  "web",
   "general",
 ] as const;
 export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];

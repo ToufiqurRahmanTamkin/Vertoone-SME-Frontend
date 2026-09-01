@@ -273,6 +273,11 @@ export const ALL_TAG_TYPES = [
   "PosCatalog",
   "PosSummary",
   "PosRecent",
+  "WebBlocks",
+  "WebSite",
+  "WebSiteSummary",
+  "WebPages",
+  "WebPage",
 ] as const;
 
 export type TagType = (typeof ALL_TAG_TYPES)[number];

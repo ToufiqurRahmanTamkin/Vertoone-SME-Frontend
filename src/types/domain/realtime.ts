@@ -52,6 +52,8 @@ export const SOCKET_RESOURCES = [
   "SHOP",
   "POS",
   "ROLES",
+  "WEB_SITE",
+  "WEB_PAGES",
 ] as const;
 export type SocketResource = (typeof SOCKET_RESOURCES)[number];
 

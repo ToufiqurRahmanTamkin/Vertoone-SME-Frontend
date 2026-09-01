@@ -26,3 +26,4 @@ export * from "./systemConfig";
 export * from "./tag";
 export * from "./teamMember";
 export * from "./upload";
+export * from "./webBuilder";
