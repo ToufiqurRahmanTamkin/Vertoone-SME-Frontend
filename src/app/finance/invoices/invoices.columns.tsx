@@ -9,7 +9,7 @@ import {
 } from "@/constant";
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
-import { isInvoiceLinked, type Invoice } from "@/types/domain/invoice";
+import { isInvoiceLinked, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, Link2, Link2Off, Pencil, Trash2 } from "lucide-react";
 
@@ -61,7 +61,19 @@ export const invoiceColumns = ({
   {
     accessorKey: "dueDate",
     header: "Due",
-    cell: ({ row }) => <span className="text-sm">{formatDate(row.original.dueDate)}</span>,
+    cell: ({ row }) => {
+      const overdue = isInvoiceOverdue(row.original);
+      return (
+        <span
+          className={
+            overdue ? "text-sm font-medium text-red-600 dark:text-red-400" : "text-sm"
+          }
+        >
+          {formatDate(row.original.dueDate)}
+          {overdue && " · overdue"}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "status",

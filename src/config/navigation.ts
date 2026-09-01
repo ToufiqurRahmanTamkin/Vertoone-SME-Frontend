@@ -254,6 +254,13 @@ export const MENU_SECTIONS: MenuSection[] = [
     label: "Finance",
     items: [
       {
+        title: "Dashboard",
+        path: "/finance/dashboard",
+        icon: "LayoutDashboard",
+        roles: SUPER_ADMIN,
+        description: "Money in, money out and what is still owed.",
+      },
+      {
         title: "Income",
         path: "/finance/income",
         icon: "TrendingUp",
@@ -272,7 +279,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         path: "/finance/invoices",
         icon: "ScrollText",
         roles: SUPER_ADMIN,
-        description: "Invoices raised to companies on the platform.",
+        description: "Every income and expense entry, as a billable document.",
       },
       {
         title: "Categories",

@@ -14,13 +14,14 @@ import {
   INVOICE_STATUS_COLORS,
   INVOICE_STATUS_LABELS,
   INVOICE_TYPE_COLORS,
+  INVOICE_STATUS_DESCRIPTIONS,
   INVOICE_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "@/constant";
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
-import { invoiceEntry, type Invoice } from "@/types/domain/invoice";
+import { invoiceEntry, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
 import type { PaymentMethod } from "@/types/domain/soldSubscription";
 import * as React from "react";
 
@@ -72,7 +73,14 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
             <span className="text-xs text-muted-foreground">
               {INVOICE_ORIGIN_LABELS[invoice.origin]}
             </span>
+            {isInvoiceOverdue(invoice) && (
+              <StatusBadge color="red" label="Overdue" />
+            )}
           </div>
+
+          <p className="text-xs text-muted-foreground">
+            {INVOICE_STATUS_DESCRIPTIONS[invoice.status]}
+          </p>
 
           <div className="rounded-lg border bg-muted/30 p-4">
             <p className="text-xs text-muted-foreground">Amount</p>
@@ -85,6 +93,8 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
             <Row label={isIncome ? "Billed to" : "Billed from"}>{invoice.party || "—"}</Row>
             <Row label="Issue date">{formatDate(invoice.issueDate)}</Row>
             <Row label="Due date">{formatDate(invoice.dueDate)}</Row>
+            <Row label="Method">{PAYMENT_METHOD_LABELS[invoice.paymentMethod] ?? "—"}</Row>
+            <Row label="Paid on">{invoice.paidAt ? formatDate(invoice.paidAt) : "—"}</Row>
             <Row label="Reference">
               <span className="font-mono">{invoice.reference || "—"}</span>
             </Row>
@@ -107,11 +117,17 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
                 <Row label="Method">
                   {PAYMENT_METHOD_LABELS[linkedEntry.paymentMethod as PaymentMethod] ?? "—"}
                 </Row>
+                <Row label="Entry status">
+                  <StatusBadge
+                    color={INVOICE_STATUS_COLORS[linkedEntry.status]}
+                    label={INVOICE_STATUS_LABELS[linkedEntry.status]}
+                  />
+                </Row>
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
-                This invoice is not attached to an {isIncome ? "income" : "expense"} entry yet. Edit
-                it to link one.
+                This invoice does not bill an {isIncome ? "income" : "expense"} entry yet. Edit it
+                to attach one, or let it generate one.
               </p>
             )}
           </div>

@@ -185,17 +185,28 @@ export const INVOICE_TYPE_COLORS: Record<InvoiceType, StatusColor> = {
 
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   DRAFT: "Draft",
-  ISSUED: "Issued",
+  UNPAID: "Unpaid",
   PAID: "Paid",
-  CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
 export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, StatusColor> = {
   DRAFT: "zinc",
-  ISSUED: "amber",
+  UNPAID: "amber",
   PAID: "green",
-  CANCELLED: "red",
+  CLOSED: "red",
 };
+
+export const INVOICE_STATUS_DESCRIPTIONS: Record<InvoiceStatus, string> = {
+  DRAFT: "Being prepared. Not counted in the books yet.",
+  UNPAID: "Issued and awaiting settlement.",
+  PAID: "Settled in full. Its ledger entry is paid too.",
+  CLOSED: "Written off or cancelled. Left out of the totals.",
+};
+
+export const FINANCE_STATUS_LABELS = INVOICE_STATUS_LABELS;
+
+export const FINANCE_STATUS_COLORS = INVOICE_STATUS_COLORS;
 
 export const INVOICE_ORIGIN_LABELS: Record<InvoiceOrigin, string> = {
   AUTO: "Auto raised",

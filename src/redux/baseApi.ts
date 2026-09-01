@@ -156,6 +156,8 @@ export const ALL_TAG_TYPES = [
   "Expenses",
   "Invoices",
   "LinkableEntries",
+  "LinkableInvoices",
+  "FinanceDashboard",
   "Notifications",
   "NotificationsUnread",
   "LoginHistory",

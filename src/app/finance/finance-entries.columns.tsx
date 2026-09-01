@@ -1,6 +1,11 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { INCOME_SOURCE_TYPE_LABELS, PAYMENT_METHOD_LABELS } from "@/constant";
+import {
+  INCOME_SOURCE_TYPE_LABELS,
+  INVOICE_STATUS_COLORS,
+  INVOICE_STATUS_LABELS,
+  PAYMENT_METHOD_LABELS,
+} from "@/constant";
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
@@ -53,6 +58,27 @@ export const financeEntryColumns = <T extends Income | Expense>({
     accessorKey: "date",
     header: "Date",
     cell: ({ row }) => <span className="text-sm">{formatDate(row.original.date)}</span>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <StatusBadge
+        color={INVOICE_STATUS_COLORS[row.original.status]}
+        label={INVOICE_STATUS_LABELS[row.original.status]}
+      />
+    ),
+  },
+  {
+    id: "invoice",
+    header: "Invoice",
+    cell: ({ row }) => {
+      const invoice = row.original.invoice;
+      if (!invoice) {
+        return <span className="text-xs text-muted-foreground">Not billed</span>;
+      }
+      return <span className="font-mono text-xs">{invoice.invoiceNumber}</span>;
+    },
   },
   {
     id: "party",

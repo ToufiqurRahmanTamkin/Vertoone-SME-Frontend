@@ -11,6 +11,7 @@ import type {
   IncomeListQuery,
   IncomePayload,
 } from "@/types/domain/finance";
+import type { FinanceDashboard } from "@/types/domain/financeDashboard";
 import type {
   Invoice,
   InvoiceListQuery,
@@ -18,6 +19,8 @@ import type {
   InvoiceSummary,
   LinkableEntry,
   LinkableEntryQuery,
+  LinkableInvoice,
+  LinkableInvoiceQuery,
 } from "@/types/domain/invoice";
 import { baseApi } from "../baseApi";
 import { buildQuery } from "./queryString";
@@ -29,6 +32,11 @@ interface ListResult<T> {
 
 const financeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getFinanceDashboard: builder.query<FinanceDashboard, void>({
+      query: () => ({ url: "/finance/dashboard", method: "GET" }),
+      providesTags: ["FinanceDashboard"],
+    }),
+
     getFinanceCategories: builder.query<
       ListResult<FinanceCategory>,
       FinanceCategoryListQuery | void
@@ -48,7 +56,7 @@ const financeApi = baseApi.injectEndpoints({
       { id: string; body: Partial<FinanceCategoryPayload> }
     >({
       query: ({ id, body }) => ({ url: `/finance/categories/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["FinanceCategories", "Incomes", "Expenses"],
+      invalidatesTags: ["FinanceCategories", "Incomes", "Expenses", "FinanceDashboard"],
     }),
     deleteFinanceCategory: builder.mutation<null, string>({
       query: (id) => ({ url: `/finance/categories/${id}`, method: "DELETE" }),
@@ -68,15 +76,15 @@ const financeApi = baseApi.injectEndpoints({
     }),
     createIncome: builder.mutation<Income, IncomePayload>({
       query: (body) => ({ url: "/finance/incomes", method: "POST", body }),
-      invalidatesTags: ["Incomes", "Invoices", "LinkableEntries", "Dashboard"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
     updateIncome: builder.mutation<Income, { id: string; body: Partial<IncomePayload> }>({
       query: ({ id, body }) => ({ url: `/finance/incomes/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["Incomes", "Invoices", "LinkableEntries", "Dashboard"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
     deleteIncome: builder.mutation<null, string>({
       query: (id) => ({ url: `/finance/incomes/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Incomes", "Invoices", "LinkableEntries", "Dashboard"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
 
     getExpenses: builder.query<ListResult<Expense>, ExpenseListQuery | void>({
@@ -92,15 +100,15 @@ const financeApi = baseApi.injectEndpoints({
     }),
     createExpense: builder.mutation<Expense, ExpensePayload>({
       query: (body) => ({ url: "/finance/expenses", method: "POST", body }),
-      invalidatesTags: ["Expenses", "Invoices", "LinkableEntries", "Dashboard"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
     updateExpense: builder.mutation<Expense, { id: string; body: Partial<ExpensePayload> }>({
       query: ({ id, body }) => ({ url: `/finance/expenses/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["Expenses", "Invoices", "LinkableEntries", "Dashboard"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
     deleteExpense: builder.mutation<null, string>({
       query: (id) => ({ url: `/finance/expenses/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Expenses", "Invoices", "LinkableEntries", "Dashboard"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
 
     getInvoices: builder.query<ListResult<Invoice>, InvoiceListQuery | void>({
@@ -123,22 +131,32 @@ const financeApi = baseApi.injectEndpoints({
       }),
       providesTags: ["LinkableEntries"],
     }),
+    getLinkableInvoices: builder.query<LinkableInvoice[], LinkableInvoiceQuery>({
+      query: (params) => ({
+        url: `/finance/invoices/linkable-invoices${buildQuery(
+          params as unknown as Record<string, unknown>
+        )}`,
+        method: "GET",
+      }),
+      providesTags: ["LinkableInvoices"],
+    }),
     createInvoice: builder.mutation<Invoice, InvoicePayload>({
       query: (body) => ({ url: "/finance/invoices", method: "POST", body }),
-      invalidatesTags: ["Invoices", "LinkableEntries", "Incomes", "Expenses"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
     updateInvoice: builder.mutation<Invoice, { id: string; body: Partial<InvoicePayload> }>({
       query: ({ id, body }) => ({ url: `/finance/invoices/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["Invoices", "LinkableEntries", "Incomes", "Expenses"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
     deleteInvoice: builder.mutation<null, string>({
       query: (id) => ({ url: `/finance/invoices/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Invoices", "LinkableEntries", "Incomes", "Expenses"],
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
   }),
 });
 
 export const {
+  useGetFinanceDashboardQuery,
   useGetFinanceCategoriesQuery,
   useCreateFinanceCategoryMutation,
   useUpdateFinanceCategoryMutation,
@@ -156,6 +174,7 @@ export const {
   useGetInvoicesQuery,
   useGetInvoiceSummaryQuery,
   useGetLinkableEntriesQuery,
+  useGetLinkableInvoicesQuery,
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useDeleteInvoiceMutation,

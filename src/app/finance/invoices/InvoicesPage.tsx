@@ -5,7 +5,14 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stat, StatGrid, StatIndicator, StatLabel, StatValue } from "@/components/ui/stat";
+import {
+  Stat,
+  StatDescription,
+  StatGrid,
+  StatIndicator,
+  StatLabel,
+  StatValue,
+} from "@/components/ui/stat";
 import {
   INVOICE_ORIGIN_LABELS,
   INVOICE_STATUS_COLORS,
@@ -55,8 +62,14 @@ const FILTERS: FilterConfig[] = [
     type: "select",
     options: [
       { label: "Linked to an entry", value: "true" },
-      { label: "Standalone", value: "false" },
+      { label: "Not linked yet", value: "false" },
     ],
+  },
+  {
+    name: "overdue",
+    label: "Overdue",
+    type: "select",
+    options: [{ label: "Past its due date", value: "true" }],
   },
   { name: "date", label: "Issued", type: "date-range" },
 ];
@@ -72,6 +85,7 @@ export default function InvoicesPage() {
     type: filters.type as InvoiceType | undefined,
     status: filters.status as InvoiceStatus | undefined,
     linked: filters.linked === undefined ? undefined : filters.linked === "true",
+    overdue: filters.overdue === "true" ? true : undefined,
     dateFrom: filters.from as string | undefined,
     dateTo: filters.to as string | undefined,
   });
@@ -120,26 +134,32 @@ export default function InvoicesPage() {
     {
       label: "Invoices",
       value: formatNumber(summary?.totalCount),
+      description: `${formatNumber(summary?.paidCount)} paid · ${formatNumber(
+        summary?.draftCount
+      )} draft`,
       icon: FileText,
       color: "info" as const,
     },
     {
       label: "Receivable",
       value: formatAmount(summary?.incomeAmount, currency),
+      description: "Billed to customers, cancellations aside",
       icon: TrendingUp,
       color: "success" as const,
     },
     {
       label: "Payable",
       value: formatAmount(summary?.expenseAmount, currency),
+      description: "Billed to you, cancellations aside",
       icon: TrendingDown,
       color: "warning" as const,
     },
     {
       label: "Outstanding",
       value: formatAmount(summary?.outstandingAmount, currency),
+      description: `${formatNumber(summary?.overdueCount)} overdue`,
       icon: Clock3,
-      color: "info" as const,
+      color: (summary?.overdueCount ?? 0) > 0 ? ("error" as const) : ("info" as const),
     },
   ];
 
@@ -147,11 +167,11 @@ export default function InvoicesPage() {
     <>
       <PageHeader
         title="Invoices"
-        description="Every income and expense entry is invoiced. Raise a standalone invoice here and attach it to an entry whenever you are ready."
+        description="Every invoice sits against one income or expense entry. Bill an entry you already recorded, or let the invoice create one. Marking an invoice paid marks its entry paid."
       />
 
       <StatGrid className="xl:grid-cols-4">
-        {stats.map(({ label, value, icon: Icon, color }) => (
+        {stats.map(({ label, value, description, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
             {isSummaryLoading ? (
@@ -162,6 +182,9 @@ export default function InvoicesPage() {
             <StatIndicator variant="icon" color={color}>
               <Icon />
             </StatIndicator>
+            {!isSummaryLoading && description && (
+              <StatDescription>{description}</StatDescription>
+            )}
           </Stat>
         ))}
       </StatGrid>
@@ -215,7 +238,7 @@ export default function InvoicesPage() {
 
             <p className="mt-2 text-xs text-muted-foreground">
               Issued {formatDate(invoice.issueDate)} ·{" "}
-              {isInvoiceLinked(invoice) ? INVOICE_ORIGIN_LABELS[invoice.origin] : "Unlinked"}
+              {isInvoiceLinked(invoice) ? INVOICE_ORIGIN_LABELS[invoice.origin] : "Not linked"}
             </p>
 
             <div className="mt-3 flex justify-end gap-2 border-t pt-3">
@@ -249,7 +272,7 @@ export default function InvoicesPage() {
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title={`Delete invoice ${pendingDelete?.invoiceNumber ?? ""}?`}
-        description="The ledger entry it bills stays put — only the invoice is removed."
+        description="The income or expense entry it bills is removed with it. This cannot be undone."
         confirmText="Delete"
         variant="destructive"
         isLoading={isDeleting}

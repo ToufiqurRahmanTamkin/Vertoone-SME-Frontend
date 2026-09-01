@@ -1,10 +1,13 @@
 import type { Expense, FinanceCategoryRef, Income } from "./finance";
+import type { PaymentMethod } from "./soldSubscription";
 
 export const INVOICE_TYPES = ["INCOME", "EXPENSE"] as const;
 export type InvoiceType = (typeof INVOICE_TYPES)[number];
 
-export const INVOICE_STATUSES = ["DRAFT", "ISSUED", "PAID", "CANCELLED"] as const;
+export const INVOICE_STATUSES = ["DRAFT", "UNPAID", "PAID", "CLOSED"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
+
+export const OPEN_INVOICE_STATUSES: InvoiceStatus[] = ["DRAFT", "UNPAID"];
 
 export const INVOICE_ORIGINS = ["AUTO", "MANUAL"] as const;
 export type InvoiceOrigin = (typeof INVOICE_ORIGINS)[number];
@@ -19,12 +22,15 @@ export interface Invoice {
   origin: InvoiceOrigin;
   incomeId: InvoiceEntryRef<Income>;
   expenseId: InvoiceEntryRef<Expense>;
+  categoryId: FinanceCategoryRef | null;
   title: string;
   party: string;
   amount: number;
   currency: string;
+  paymentMethod: PaymentMethod;
   issueDate: string;
   dueDate: string | null;
+  paidAt: string | null;
   reference: string;
   notes: string;
   issuedBy: string | null;
@@ -37,8 +43,11 @@ export interface LinkedInvoice {
   invoiceNumber: string;
   type: InvoiceType;
   status: InvoiceStatus;
+  origin: InvoiceOrigin;
+  amount: number;
   issueDate: string;
   dueDate: string | null;
+  paidAt: string | null;
 }
 
 export interface InvoiceListQuery {
@@ -50,7 +59,9 @@ export interface InvoiceListQuery {
   type?: InvoiceType;
   status?: InvoiceStatus;
   origin?: InvoiceOrigin;
+  categoryId?: string;
   linked?: boolean;
+  overdue?: boolean;
   dateFrom?: string;
   dateTo?: string;
 }
@@ -58,11 +69,14 @@ export interface InvoiceListQuery {
 export interface InvoicePayload {
   type: InvoiceType;
   entryId?: string | null;
+  generateEntry?: boolean;
+  categoryId?: string;
   status?: InvoiceStatus;
   title?: string;
   party?: string;
   amount?: number;
   currency?: string;
+  paymentMethod?: PaymentMethod;
   issueDate?: string;
   dueDate?: string | null;
   reference?: string;
@@ -74,6 +88,9 @@ export interface InvoiceSummary {
   incomeAmount: number;
   expenseAmount: number;
   outstandingAmount: number;
+  overdueCount: number;
+  draftCount: number;
+  paidCount: number;
 }
 
 export interface LinkableEntry {
@@ -84,6 +101,9 @@ export interface LinkableEntry {
   date: string;
   party: string;
   reference: string;
+  status: InvoiceStatus;
+  paymentMethod: PaymentMethod;
+  categoryId: string;
   categoryName: string;
 }
 
@@ -92,6 +112,26 @@ export interface LinkableEntryQuery {
   search?: string;
   limit?: number;
   invoiceId?: string;
+}
+
+export interface LinkableInvoice {
+  _id: string;
+  invoiceNumber: string;
+  title: string;
+  amount: number;
+  currency: string;
+  status: InvoiceStatus;
+  issueDate: string;
+  dueDate: string | null;
+  party: string;
+  reference: string;
+}
+
+export interface LinkableInvoiceQuery {
+  type: InvoiceType;
+  search?: string;
+  limit?: number;
+  entryId?: string;
 }
 
 export const invoiceEntry = (invoice: Invoice): InvoiceEntryRef<Income | Expense> =>
@@ -104,3 +144,6 @@ export const invoiceEntryId = (invoice: Invoice): string | null => {
 };
 
 export const isInvoiceLinked = (invoice: Invoice): boolean => invoiceEntryId(invoice) !== null;
+
+export const isInvoiceOverdue = (invoice: Invoice): boolean =>
+  invoice.status === "UNPAID" && Boolean(invoice.dueDate) && new Date(invoice.dueDate!) < new Date();

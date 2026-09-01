@@ -1,8 +1,11 @@
-import type { LinkedInvoice } from "./invoice";
+import type { InvoiceStatus, LinkedInvoice } from "./invoice";
 import type { PaymentMethod } from "./soldSubscription";
 
 export const FINANCE_CATEGORY_TYPES = ["INCOME", "EXPENSE"] as const;
 export type FinanceCategoryType = (typeof FINANCE_CATEGORY_TYPES)[number];
+
+export const FINANCE_STATUSES = ["DRAFT", "UNPAID", "PAID", "CLOSED"] as const;
+export type FinanceStatus = (typeof FINANCE_STATUSES)[number];
 
 export const INCOME_SOURCE_TYPES = ["MANUAL", "SOLD_SUBSCRIPTION"] as const;
 export type IncomeSourceType = (typeof INCOME_SOURCE_TYPES)[number];
@@ -35,6 +38,7 @@ export interface Income {
   amount: number;
   currency: string;
   date: string;
+  status: InvoiceStatus;
   paymentMethod: PaymentMethod;
   receivedFrom: string;
   reference: string;
@@ -54,6 +58,7 @@ export interface Expense {
   amount: number;
   currency: string;
   date: string;
+  status: InvoiceStatus;
   paymentMethod: PaymentMethod;
   paidTo: string;
   reference: string;
@@ -68,6 +73,8 @@ export interface FinanceSummary {
   totalCount: number;
   totalAmount: number;
   thisMonthAmount: number;
+  paidAmount: number;
+  unpaidAmount: number;
 }
 
 export interface FinanceCategoryListQuery {
@@ -94,6 +101,7 @@ export interface IncomeListQuery {
   sortOrder?: "asc" | "desc";
   search?: string;
   categoryId?: string;
+  status?: FinanceStatus;
   paymentMethod?: PaymentMethod;
   sourceType?: IncomeSourceType;
   dateFrom?: string;
@@ -106,10 +114,12 @@ export interface IncomePayload {
   amount: number;
   currency?: string;
   date?: string;
+  status?: FinanceStatus;
   paymentMethod?: PaymentMethod;
   receivedFrom?: string;
   reference?: string;
   notes?: string;
+  invoiceId?: string | null;
 }
 
 export interface ExpenseListQuery {
@@ -119,6 +129,7 @@ export interface ExpenseListQuery {
   sortOrder?: "asc" | "desc";
   search?: string;
   categoryId?: string;
+  status?: FinanceStatus;
   paymentMethod?: PaymentMethod;
   dateFrom?: string;
   dateTo?: string;
@@ -130,8 +141,10 @@ export interface ExpensePayload {
   amount: number;
   currency?: string;
   date?: string;
+  status?: FinanceStatus;
   paymentMethod?: PaymentMethod;
   paidTo?: string;
   reference?: string;
   notes?: string;
+  invoiceId?: string | null;
 }

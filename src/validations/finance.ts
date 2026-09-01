@@ -1,4 +1,4 @@
-import { FINANCE_CATEGORY_TYPES } from "@/types/domain/finance";
+import { FINANCE_CATEGORY_TYPES, FINANCE_STATUSES } from "@/types/domain/finance";
 import { INVOICE_STATUSES, INVOICE_TYPES } from "@/types/domain/invoice";
 import { PAYMENT_METHODS, requiresTransactionId } from "@/types/domain/soldSubscription";
 import { z } from "zod";
@@ -12,28 +12,44 @@ export const FinanceCategorySchema = z.object({
 
 export type FinanceCategoryFormValues = z.infer<typeof FinanceCategorySchema>;
 
-export const FinanceEntrySchema = z.object({
-  title: z.string().trim().min(2, "Title must be at least 2 characters").max(140),
-  categoryId: z.string().min(1, "Pick a category"),
-  amount: z.number().min(0, "Amount cannot be negative"),
-  currency: z
-    .string()
-    .trim()
-    .length(3, "Use a 3-letter currency code")
-    .regex(/^[A-Za-z]{3}$/, "Use a 3-letter currency code"),
-  date: z.string().min(1, "Pick a date"),
-  paymentMethod: z.enum(PAYMENT_METHODS),
-  party: z.string().trim().max(140),
-  reference: z.string().trim().max(120),
-  notes: z.string().trim().max(1000),
-});
+export const FINANCE_ENTRY_INVOICE_MODES = ["GENERATE", "LINK"] as const;
+export type FinanceEntryInvoiceMode = (typeof FINANCE_ENTRY_INVOICE_MODES)[number];
+
+export const FinanceEntrySchema = z
+  .object({
+    title: z.string().trim().min(2, "Title must be at least 2 characters").max(140),
+    categoryId: z.string().min(1, "Pick a category"),
+    amount: z.number().min(0, "Amount cannot be negative"),
+    currency: z
+      .string()
+      .trim()
+      .length(3, "Use a 3-letter currency code")
+      .regex(/^[A-Za-z]{3}$/, "Use a 3-letter currency code"),
+    date: z.string().min(1, "Pick a date"),
+    status: z.enum(FINANCE_STATUSES),
+    paymentMethod: z.enum(PAYMENT_METHODS),
+    party: z.string().trim().max(140),
+    reference: z.string().trim().max(120),
+    notes: z.string().trim().max(1000),
+    invoiceMode: z.enum(FINANCE_ENTRY_INVOICE_MODES),
+    invoiceId: z.string(),
+  })
+  .refine((data) => data.invoiceMode !== "LINK" || data.invoiceId.length > 0, {
+    message: "Pick the invoice this entry belongs to",
+    path: ["invoiceId"],
+  });
 
 export type FinanceEntryFormValues = z.infer<typeof FinanceEntrySchema>;
+
+export const INVOICE_ENTRY_MODES = ["GENERATE", "LINK"] as const;
+export type InvoiceEntryMode = (typeof INVOICE_ENTRY_MODES)[number];
 
 export const InvoiceSchema = z
   .object({
     type: z.enum(INVOICE_TYPES),
+    entryMode: z.enum(INVOICE_ENTRY_MODES),
     entryId: z.string(),
+    categoryId: z.string(),
     status: z.enum(INVOICE_STATUSES),
     title: z.string().trim().max(140),
     party: z.string().trim().max(140),
@@ -43,12 +59,21 @@ export const InvoiceSchema = z
       .trim()
       .length(3, "Use a 3-letter currency code")
       .regex(/^[A-Za-z]{3}$/, "Use a 3-letter currency code"),
+    paymentMethod: z.enum(PAYMENT_METHODS),
     issueDate: z.string().min(1, "Pick an issue date"),
     dueDate: z.string(),
     reference: z.string().trim().max(120),
     notes: z.string().trim().max(1000),
   })
-  .refine((data) => Boolean(data.entryId) || data.title.trim().length >= 2, {
+  .refine((data) => data.entryMode !== "LINK" || data.entryId.length > 0, {
+    message: "Pick the entry this invoice bills",
+    path: ["entryId"],
+  })
+  .refine((data) => data.entryMode !== "GENERATE" || data.categoryId.length > 0, {
+    message: "Pick the category the generated entry is filed under",
+    path: ["categoryId"],
+  })
+  .refine((data) => data.entryMode !== "GENERATE" || data.title.trim().length >= 2, {
     message: "Title must be at least 2 characters",
     path: ["title"],
   })

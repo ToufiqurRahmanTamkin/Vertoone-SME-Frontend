@@ -26,8 +26,9 @@ import {
 import { useGetSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
+import type { InvoiceStatus } from "@/types/domain/invoice";
 import type { PaymentMethod } from "@/types/domain/soldSubscription";
-import { CalendarDays, ListChecks, Pencil, Plus, Trash2, Wallet } from "lucide-react";
+import { CalendarDays, Clock3, Pencil, Plus, Trash2, Wallet } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { financeEntryColumns } from "../finance-entries.columns";
@@ -53,6 +54,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
     limit: filters.limit,
     search: filters.search,
     categoryId: filters.categoryId as string | undefined,
+    status: filters.status as InvoiceStatus | undefined,
     paymentMethod: filters.paymentMethod as PaymentMethod | undefined,
     dateFrom: filters.from as string | undefined,
     dateTo: filters.to as string | undefined,
@@ -115,6 +117,12 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
         })),
       },
       {
+        name: "status",
+        label: "Status",
+        type: "select",
+        options: toOptions(INVOICE_STATUS_LABELS),
+      },
+      {
         name: "paymentMethod",
         label: "Method",
         type: "select",
@@ -153,9 +161,18 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
       color: "info" as const,
     },
     {
+      label: copy.outstandingLabel,
+      value: formatAmount(summary?.unpaidAmount, currency),
+      icon: Clock3,
+      color: "warning" as const,
+    },
+    {
       label: copy.countLabel,
-      value: formatNumber(summary?.totalCount),
-      icon: ListChecks,
+      value: `${formatNumber(summary?.totalCount)} · ${formatAmount(
+        summary?.paidAmount,
+        currency
+      )} settled`,
+      icon: Wallet,
       color: "info" as const,
     },
   ];
@@ -164,7 +181,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
     <>
       <PageHeader title={copy.pageTitle} description={copy.pageDescription} />
 
-      <StatGrid className="xl:grid-cols-3">
+      <StatGrid className="xl:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -215,6 +232,13 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
               <span className="truncate font-mono font-medium">{entry.reference || "—"}</span>
             </div>
             <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Status</span>
+              <StatusBadge
+                color={INVOICE_STATUS_COLORS[entry.status]}
+                label={INVOICE_STATUS_LABELS[entry.status]}
+              />
+            </div>
+            <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Invoice</span>
               {entry.invoice ? (
                 <span className="flex min-w-0 items-center gap-1.5">
@@ -259,10 +283,16 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
                   {formatAmount(entry.amount, entry.currency)}
                 </span>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {new Date(entry.date).toLocaleDateString()} ·{" "}
-                {PAYMENT_METHOD_LABELS[entry.paymentMethod]}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <StatusBadge
+                  color={INVOICE_STATUS_COLORS[entry.status]}
+                  label={INVOICE_STATUS_LABELS[entry.status]}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {new Date(entry.date).toLocaleDateString()} ·{" "}
+                  {PAYMENT_METHOD_LABELS[entry.paymentMethod]}
+                </span>
+              </div>
               {entry.invoice && (
                 <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
                   {entry.invoice.invoiceNumber}
@@ -300,7 +330,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title={`Delete "${pendingDelete?.title ?? ""}"?`}
-        description="This permanently removes the entry. This cannot be undone."
+        description="This removes the entry and the invoice raised against it. This cannot be undone."
         confirmText="Delete"
         variant="destructive"
         isLoading={isDeleting}

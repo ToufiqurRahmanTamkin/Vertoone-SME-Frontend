@@ -10,21 +10,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { PAYMENT_METHOD_LABELS, toOptions } from "@/constant";
+import {
+  INVOICE_STATUS_DESCRIPTIONS,
+  INVOICE_STATUS_LABELS,
+  PAYMENT_METHOD_LABELS,
+  toOptions,
+} from "@/constant";
+import { formatAmount } from "@/lib/amount";
+import { formatDate } from "@/lib/date";
 import {
   useCreateExpenseMutation,
   useCreateIncomeMutation,
   useGetFinanceCategoriesQuery,
+  useGetLinkableInvoicesQuery,
   useUpdateExpenseMutation,
   useUpdateIncomeMutation,
 } from "@/redux/apis/financeApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { categoryRefId, type Expense, type Income } from "@/types/domain/finance";
+import type { InvoiceStatus, LinkableInvoice } from "@/types/domain/invoice";
 import { FinanceEntrySchema, type FinanceEntryFormValues } from "@/validations/finance";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { FINANCE_ENTRY_COPY, type FinanceEntryKind } from "../finance-entry-copy";
 
@@ -37,6 +46,7 @@ interface FinanceEntryFormModalProps {
 }
 
 const PAYMENT_METHOD_OPTIONS = toOptions(PAYMENT_METHOD_LABELS);
+const STATUS_OPTIONS = toOptions(INVOICE_STATUS_LABELS);
 
 const toDateInput = (value: Date): string => {
   const offset = value.getTimezoneOffset();
@@ -49,10 +59,13 @@ const emptyValues = (currency: string): FinanceEntryFormValues => ({
   amount: 0,
   currency,
   date: toDateInput(new Date()),
+  status: "PAID",
   paymentMethod: "CASH",
   party: "",
   reference: "",
   notes: "",
+  invoiceMode: "GENERATE",
+  invoiceId: "",
 });
 
 const toFormValues = (entry: Income | Expense, kind: FinanceEntryKind): FinanceEntryFormValues => ({
@@ -61,11 +74,19 @@ const toFormValues = (entry: Income | Expense, kind: FinanceEntryKind): FinanceE
   amount: entry.amount,
   currency: entry.currency,
   date: entry.date?.slice(0, 10) ?? "",
+  status: entry.status,
   paymentMethod: entry.paymentMethod,
   party: (kind === "INCOME" ? (entry as Income).receivedFrom : (entry as Expense).paidTo) ?? "",
   reference: entry.reference ?? "",
   notes: entry.notes ?? "",
+  invoiceMode: "GENERATE",
+  invoiceId: entry.invoice?._id ?? "",
 });
+
+const invoiceOptionLabel = (invoice: LinkableInvoice): string =>
+  `${invoice.invoiceNumber} · ${formatAmount(invoice.amount, invoice.currency)} · ${
+    INVOICE_STATUS_LABELS[invoice.status]
+  } · ${formatDate(invoice.issueDate)}`;
 
 export function FinanceEntryFormModal({
   open,
@@ -98,6 +119,13 @@ export function FinanceEntryFormModal({
     defaultValues: emptyValues(defaultCurrency),
   });
 
+  const invoiceMode = useWatch({ control: form.control, name: "invoiceMode" });
+  const status = useWatch({ control: form.control, name: "status" }) as InvoiceStatus;
+  const isLinking = invoiceMode === "LINK";
+
+  const { data: linkableInvoices = [], isFetching: isLoadingInvoices } =
+    useGetLinkableInvoicesQuery({ type: kind }, { skip: !open || isEdit });
+
   React.useEffect(() => {
     if (!open) return;
     form.reset(entry ? toFormValues(entry, kind) : emptyValues(defaultCurrency));
@@ -108,6 +136,30 @@ export function FinanceEntryFormModal({
     label: category.name,
   }));
 
+  const invoiceOptions = React.useMemo(
+    () =>
+      linkableInvoices.map((invoice) => ({
+        value: invoice._id,
+        label: invoiceOptionLabel(invoice),
+      })),
+    [linkableInvoices]
+  );
+
+  const onInvoiceChange = (nextId: string) => {
+    const invoice = linkableInvoices.find((candidate) => candidate._id === nextId);
+    if (!invoice) return;
+    form.setValue("status", invoice.status, { shouldValidate: true });
+    if (!form.getValues("title")) form.setValue("title", invoice.title);
+    if (!form.getValues("amount")) form.setValue("amount", invoice.amount);
+    if (!form.getValues("party")) form.setValue("party", invoice.party);
+    if (!form.getValues("reference")) form.setValue("reference", invoice.reference);
+    form.setValue("currency", invoice.currency);
+  };
+
+  const onModeChange = (mode: string) => {
+    if (mode === "GENERATE") form.setValue("invoiceId", "");
+  };
+
   const onSubmit = async (values: FinanceEntryFormValues) => {
     const shared = {
       title: values.title,
@@ -115,9 +167,11 @@ export function FinanceEntryFormModal({
       amount: values.amount,
       currency: values.currency.toUpperCase(),
       date: new Date(values.date).toISOString(),
+      status: values.status,
       paymentMethod: values.paymentMethod,
       reference: values.reference,
       notes: values.notes,
+      ...(entry || values.invoiceMode === "GENERATE" ? {} : { invoiceId: values.invoiceId }),
     };
 
     try {
@@ -145,6 +199,11 @@ export function FinanceEntryFormModal({
   };
 
   const hasNoCategories = categoryOptions.length === 0;
+
+  const modeOptions = [
+    { value: "GENERATE", label: "Raise a new invoice for it" },
+    { value: "LINK", label: "Attach it to an invoice I already raised" },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,6 +247,46 @@ export function FinanceEntryFormModal({
                   options={PAYMENT_METHOD_OPTIONS}
                 />
               </div>
+
+              <FormSelect
+                control={form.control}
+                name="status"
+                label="Status"
+                options={STATUS_OPTIONS}
+                description={`${INVOICE_STATUS_DESCRIPTIONS[status] ?? ""} Its invoice carries the same status.`}
+              />
+
+              {!isEdit && (
+                <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
+                  <FormSelect
+                    control={form.control}
+                    name="invoiceMode"
+                    label="Invoice"
+                    options={modeOptions}
+                    onValueChange={onModeChange}
+                    description={`Every ${copy.noun} entry carries exactly one invoice.`}
+                  />
+
+                  {isLinking && (
+                    <FormSelect
+                      control={form.control}
+                      name="invoiceId"
+                      label="Existing invoice"
+                      placeholder={
+                        isLoadingInvoices ? "Loading invoices..." : "Pick an unbilled invoice"
+                      }
+                      options={invoiceOptions}
+                      onValueChange={onInvoiceChange}
+                      searchable
+                      description={
+                        invoiceOptions.length === 0 && !isLoadingInvoices
+                          ? "Every invoice on this side of the books already bills an entry."
+                          : "Only invoices that do not yet bill an entry are listed. The entry adopts the invoice status."
+                      }
+                    />
+                  )}
+                </div>
+              )}
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormInput

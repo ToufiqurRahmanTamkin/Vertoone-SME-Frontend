@@ -21,6 +21,7 @@ interface FinanceEntryCopy {
   deleteErrorToast: string;
   totalLabel: string;
   thisMonthLabel: string;
+  outstandingLabel: string;
   countLabel: string;
 }
 
@@ -29,7 +30,7 @@ export const FINANCE_ENTRY_COPY: Record<FinanceEntryKind, FinanceEntryCopy> = {
     noun: "income",
     pageTitle: "Income",
     pageDescription:
-      "Money received, filed under an income category. Subscription payments you approve land here automatically.",
+      "Money received, filed under an income category. Every entry carries an invoice, and the two share one status.",
     createTitle: "Record income",
     editTitle: "Edit income",
     formDescription: "File this receipt under an income category.",
@@ -47,12 +48,14 @@ export const FINANCE_ENTRY_COPY: Record<FinanceEntryKind, FinanceEntryCopy> = {
     deleteErrorToast: "Could not delete the income entry",
     totalLabel: "Total income",
     thisMonthLabel: "This month",
+    outstandingLabel: "Still to collect",
     countLabel: "Entries",
   },
   EXPENSE: {
     noun: "expense",
     pageTitle: "Expense",
-    pageDescription: "Money paid out, filed under an expense category.",
+    pageDescription:
+      "Money paid out, filed under an expense category. Every entry carries an invoice, and the two share one status.",
     createTitle: "Record expense",
     editTitle: "Edit expense",
     formDescription: "File this payment under an expense category.",
@@ -70,6 +73,7 @@ export const FINANCE_ENTRY_COPY: Record<FinanceEntryKind, FinanceEntryCopy> = {
     deleteErrorToast: "Could not delete the expense entry",
     totalLabel: "Total expense",
     thisMonthLabel: "This month",
+    outstandingLabel: "Still to pay",
     countLabel: "Entries",
   },
 };
