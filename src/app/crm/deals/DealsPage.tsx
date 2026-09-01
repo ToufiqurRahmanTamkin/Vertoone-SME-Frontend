@@ -46,7 +46,7 @@ import {
   type DealPriority,
   type DealStatus,
 } from "@/types/domain/deal";
-import { Columns3, Plus, Table2 } from "lucide-react";
+import { Columns3, PanelRightOpen, Plus, Table2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { formatMoney } from "./deal.helpers";
@@ -240,7 +240,7 @@ export default function DealsPage() {
   const used = summary?.used ?? 0;
   const limit = summary?.limit ?? access.limit;
   const isLimitReached = limit !== null && used >= limit;
-  const currency = board?.pipeline.currency ?? "BDT";
+  const currency = board?.pipeline.currency ?? deals[0]?.currency ?? "BDT";
 
   return (
     <>
@@ -442,7 +442,7 @@ export default function DealsPage() {
                   disabled={!access.canCreate}
                 />
                 <CardActionButton
-                  icon={Table2}
+                  icon={PanelRightOpen}
                   label="Open"
                   onClick={() => openDetail(deal)}
                 />
