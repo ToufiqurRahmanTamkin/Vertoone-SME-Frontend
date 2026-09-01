@@ -118,212 +118,224 @@ export default function CompanyProfilePage() {
 
       <Form {...form}>
         <form className="flex flex-col gap-4 xl:gap-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <SectionCard
-            icon={ImageIcon}
-            title="Branding"
-            description="The logo and banner shown on invoices, payslips and the portal header."
-            contentClassName="gap-5"
-          >
-            <div className="overflow-hidden rounded-xl border">
-              <div
-                className="relative w-full bg-gradient-to-r from-primary/25 via-primary/10 to-transparent"
-                style={{ aspectRatio: String(BANNER_ASPECT) }}
-              >
-                {bannerUrl && (
-                  <img
-                    src={bannerUrl}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
+          {/* Live Preview Hero */}
+          <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div
+              className="relative w-full bg-gradient-to-r from-primary/25 via-primary/10 to-transparent"
+              style={{ aspectRatio: String(BANNER_ASPECT) }}
+            >
+              {bannerUrl && (
+                <img
+                  src={bannerUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+            </div>
+            <div className="flex items-end gap-4 px-4 pb-6 sm:px-6">
+              <span className="-mt-12 flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border-4 border-background bg-background shadow-sm sm:size-32">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="" className="size-full object-cover" />
+                ) : (
+                  <Building2 className="size-10 text-muted-foreground" />
                 )}
-              </div>
-              <div className="flex items-end gap-4 px-4 pb-4 sm:px-6">
-                <span className="-mt-8 flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-background shadow-sm sm:size-20">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    <Building2 className="size-7 text-muted-foreground" />
-                  )}
-                </span>
-                <div className="min-w-0 flex-1 pt-3">
-                  <p className="truncate text-base font-semibold">
-                    {name || "Your company name"}
-                  </p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {tagline || "A short tagline shown under the name"}
-                  </p>
-                </div>
+              </span>
+              <div className="min-w-0 flex-1 pt-3">
+                <h2 className="truncate text-2xl font-bold tracking-tight">
+                  {name || "Your company name"}
+                </h2>
+                <p className="truncate text-base text-muted-foreground">
+                  {tagline || "A short tagline shown under the name"}
+                </p>
               </div>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FileUploader
-                value={logoUrl}
-                publicId={logoPublicId}
-                folder="general"
-                label="Company logo"
-                description="Square image, at least 256×256. PNG or SVG works best."
-                cropAspect={LOGO_ASPECT}
-                cropMaxWidth={512}
-                cropTitle="Position your logo"
-                cropDescription="Drag to reposition and zoom until the logo sits the way you want it."
-                onChange={(asset) => {
-                  form.setValue("logoUrl", asset?.url ?? "", { shouldDirty: true });
-                  form.setValue("logoPublicId", asset?.publicId ?? "", { shouldDirty: true });
-                }}
-              />
-              <FileUploader
-                value={bannerUrl}
-                publicId={bannerPublicId}
-                folder="general"
-                label="Company banner"
-                description="Wide image, around 1600×400."
-                cropAspect={BANNER_ASPECT}
-                cropMaxWidth={1600}
-                cropTitle="Position your banner"
-                cropDescription="Drag to reposition and zoom until the banner is framed the way you want it."
-                onChange={(asset) => {
-                  form.setValue("bannerUrl", asset?.url ?? "", { shouldDirty: true });
-                  form.setValue("bannerPublicId", asset?.publicId ?? "", { shouldDirty: true });
-                }}
-              />
-            </div>
-          </SectionCard>
-
-          <div className="grid items-stretch gap-4 lg:grid-cols-2 xl:gap-6">
-            <SectionCard
-              icon={Building2}
-              title="Identity"
-              description="The legal and trading details of this company."
-            >
-              <FormInput
-                control={form.control}
-                name="name"
-                label="Company name"
-                placeholder="Vertoone Ltd."
-              />
-              <FormInput
-                control={form.control}
-                name="legalName"
-                label="Registered legal name"
-                placeholder="Vertoone Private Limited"
-                description="Used on invoices and contracts when it differs from the trading name."
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="industry"
-                  label="Industry"
-                  placeholder="Software & IT services"
-                />
-                <FormSelect
-                  control={form.control}
-                  name="employeeRange"
-                  label="Company size"
-                  options={EMPLOYEE_RANGE_OPTIONS}
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <FormInput
-                  control={form.control}
-                  name="foundedYear"
-                  label="Founded"
-                  type="number"
-                  min={1800}
-                />
-                <FormInput
-                  control={form.control}
-                  name="registrationNo"
-                  label="Registration no."
-                  placeholder="C-123456"
-                />
-                <FormInput
-                  control={form.control}
-                  name="taxId"
-                  label="TIN / BIN"
-                  placeholder="123456789012"
-                />
-              </div>
-              <FormInput
-                control={form.control}
-                name="tagline"
-                label="Tagline"
-                placeholder="Business software that fits how you already work"
-              />
-            </SectionCard>
-
-            <SectionCard
-              icon={Mail}
-              title="Contact"
-              description="Where customers, employees and suppliers reach this company."
-            >
-              <FormInput
-                control={form.control}
-                name="email"
-                label="Company email"
-                type="email"
-                placeholder="hello@company.com"
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormPhone control={form.control} name="phone" label="Primary phone" />
-                <FormPhone control={form.control} name="supportPhone" label="Support phone" />
-              </div>
-              <FormInput
-                control={form.control}
-                name="website"
-                label="Website"
-                placeholder="https://company.com"
-              />
-              <FormTextarea
-                control={form.control}
-                name="about"
-                label="About"
-                placeholder="A short description of what the company does."
-                className="[&_textarea]:min-h-28"
-              />
-            </SectionCard>
           </div>
 
-          <SectionCard
-            icon={MapPin}
-            title="Address"
-            description="The registered address printed on official documents."
-          >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <FormCountrySelect
-                control={form.control}
-                name="country"
-                label="Country"
-                placeholder="Bangladesh"
-                onValueChange={() => form.setValue("city", "", { shouldDirty: true })}
-              />
-              <FormCitySelect
-                control={form.control}
-                name="city"
-                label="City"
-                placeholder="Dhaka"
-                countryName={country}
-              />
-              <FormInput
-                control={form.control}
-                name="state"
-                label="State / Division"
-                placeholder="Dhaka"
-              />
-              <FormInput
-                control={form.control}
-                name="postalCode"
-                label="Postal code"
-                placeholder="1213"
-              />
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:gap-6">
+            {/* Left Column */}
+            <div className="flex flex-col gap-4 xl:col-span-2 xl:gap-6">
+              <SectionCard
+                icon={Building2}
+                title="Identity"
+                description="The legal and trading details of this company."
+              >
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormInput
+                    control={form.control}
+                    name="name"
+                    label="Company name"
+                    placeholder="Vertoone Ltd."
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="legalName"
+                    label="Registered legal name"
+                    placeholder="Vertoone Private Limited"
+                    description="Used on invoices and contracts when it differs from the trading name."
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormInput
+                    control={form.control}
+                    name="industry"
+                    label="Industry"
+                    placeholder="Software & IT services"
+                  />
+                  <FormSelect
+                    control={form.control}
+                    name="employeeRange"
+                    label="Company size"
+                    options={EMPLOYEE_RANGE_OPTIONS}
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <FormInput
+                    control={form.control}
+                    name="foundedYear"
+                    label="Founded"
+                    type="number"
+                    min={1800}
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="registrationNo"
+                    label="Registration no."
+                    placeholder="C-123456"
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="taxId"
+                    label="TIN / BIN"
+                    placeholder="123456789012"
+                  />
+                </div>
+                <FormInput
+                  control={form.control}
+                  name="tagline"
+                  label="Tagline"
+                  placeholder="Business software that fits how you already work"
+                />
+              </SectionCard>
+
+              <SectionCard
+                icon={Mail}
+                title="About"
+                description="A short description of what the company does."
+              >
+                <FormTextarea
+                  control={form.control}
+                  name="about"
+                  label="Company description"
+                  placeholder="A short description of what the company does."
+                  className="[&_textarea]:min-h-32"
+                />
+              </SectionCard>
             </div>
-            <FormInput
-              control={form.control}
-              name="address"
-              label="Street address"
-              placeholder="House 12, Road 5, Banani"
-            />
-          </SectionCard>
+
+            {/* Right Column */}
+            <div className="flex flex-col gap-4 xl:gap-6">
+              <SectionCard
+                icon={ImageIcon}
+                title="Branding Assets"
+                description="Images used for the hero preview, invoices, and portal header."
+                contentClassName="gap-5"
+              >
+                <FileUploader
+                  value={logoUrl}
+                  publicId={logoPublicId}
+                  folder="general"
+                  label="Company logo"
+                  description="Square image, at least 256×256. PNG or SVG works best."
+                  cropAspect={LOGO_ASPECT}
+                  cropMaxWidth={512}
+                  cropTitle="Position your logo"
+                  cropDescription="Drag to reposition and zoom until the logo sits the way you want it."
+                  onChange={(asset) => {
+                    form.setValue("logoUrl", asset?.url ?? "", { shouldDirty: true });
+                    form.setValue("logoPublicId", asset?.publicId ?? "", { shouldDirty: true });
+                  }}
+                />
+                <FileUploader
+                  value={bannerUrl}
+                  publicId={bannerPublicId}
+                  folder="general"
+                  label="Company banner"
+                  description="Wide image, around 1600×400."
+                  cropAspect={BANNER_ASPECT}
+                  cropMaxWidth={1600}
+                  cropTitle="Position your banner"
+                  cropDescription="Drag to reposition and zoom until the banner is framed the way you want it."
+                  onChange={(asset) => {
+                    form.setValue("bannerUrl", asset?.url ?? "", { shouldDirty: true });
+                    form.setValue("bannerPublicId", asset?.publicId ?? "", { shouldDirty: true });
+                  }}
+                />
+              </SectionCard>
+
+              <SectionCard
+                icon={Mail}
+                title="Contact Info"
+                description="Where customers and suppliers reach you."
+              >
+                <FormInput
+                  control={form.control}
+                  name="email"
+                  label="Company email"
+                  type="email"
+                  placeholder="hello@company.com"
+                />
+                <FormPhone control={form.control} name="phone" label="Primary phone" />
+                <FormPhone control={form.control} name="supportPhone" label="Support phone" />
+                <FormInput
+                  control={form.control}
+                  name="website"
+                  label="Website"
+                  placeholder="https://company.com"
+                />
+              </SectionCard>
+
+              <SectionCard
+                icon={MapPin}
+                title="Address"
+                description="Registered address details."
+              >
+                <FormCountrySelect
+                  control={form.control}
+                  name="country"
+                  label="Country"
+                  placeholder="Bangladesh"
+                  onValueChange={() => form.setValue("city", "", { shouldDirty: true })}
+                />
+                <FormCitySelect
+                  control={form.control}
+                  name="city"
+                  label="City"
+                  placeholder="Dhaka"
+                  countryName={country}
+                />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormInput
+                    control={form.control}
+                    name="state"
+                    label="State / Division"
+                    placeholder="Dhaka"
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="postalCode"
+                    label="Postal code"
+                    placeholder="1213"
+                  />
+                </div>
+                <FormInput
+                  control={form.control}
+                  name="address"
+                  label="Street address"
+                  placeholder="House 12, Road 5, Banani"
+                />
+              </SectionCard>
+            </div>
+          </div>
 
           <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/95 px-4 py-3 shadow-sm backdrop-blur">
             <p className="text-sm text-muted-foreground">
