@@ -47,6 +47,9 @@ const LeadSources = lazy(() => import("@/app/crm/leadSources/LeadSourcesPage"));
 const ContactTypes = lazy(() => import("@/app/crm/contactTypes/ContactTypesPage"));
 const Contacts = lazy(() => import("@/app/crm/contacts/ContactsPage"));
 const Leads = lazy(() => import("@/app/crm/leads/LeadsPage"));
+const Deals = lazy(() => import("@/app/crm/deals/DealsPage"));
+const Tasks = lazy(() => import("@/app/tasksGoals/tasks/TasksPage"));
+const TaskBoard = lazy(() => import("@/app/tasksGoals/tasks/TaskBoardPage"));
 const Pipelines = lazy(() => import("@/app/crm/pipelines/PipelinesPage"));
 const PipelineDetail = lazy(() => import("@/app/crm/pipelines/PipelineDetailPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
@@ -149,6 +152,9 @@ const builtRoutes: RouteConfig[] = [
   { path: "settings/crm/contact-types", element: <ContactTypes /> },
   { path: "crm/contacts", element: <Contacts /> },
   { path: "crm/leads", element: <Leads /> },
+  { path: "crm/deals", element: <Deals /> },
+  { path: "tasks-goals/tasks", element: <Tasks /> },
+  { path: "tasks-goals/tasks/:id", element: <TaskBoard /> },
   { path: "crm/pipelines", element: <Pipelines /> },
   { path: "crm/pipelines/:id", element: <PipelineDetail /> },
   { path: "settings/workspace/calendar", element: <CalendarSettings /> },
@@ -210,7 +216,11 @@ const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
   .filter((path) => path && !builtRoutes.some((route) => route.path === path))
   .map((path) => ({ path, element: <ModulePlaceholder /> }));
 
-const ROUTES_WITHOUT_MENU = new Set(["my-company", "crm/pipelines/:id"]);
+const ROUTES_WITHOUT_MENU = new Set([
+  "my-company",
+  "crm/pipelines/:id",
+  "tasks-goals/tasks/:id",
+]);
 
 const assertRouteCoverage = (): void => {
   const menuPaths = new Set(getMenuLeafPaths().map((path) => path.replace(/^\//, "")));
