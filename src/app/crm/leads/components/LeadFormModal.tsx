@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { ColorLabelFormModal } from "@/components/shared/color-label-form-modal";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { useGetContactTypeOptionsQuery } from "@/redux/apis/contactTypeApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
@@ -36,7 +37,7 @@ import {
 } from "@/types/domain/lead";
 import { LeadSchema, type LeadFormValues } from "@/validations/lead";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Settings } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -213,6 +214,8 @@ export function LeadFormModal({ open, onOpenChange, lead }: LeadFormModalProps) 
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
   const [seededFor, setSeededFor] = React.useState<string | null>(null);
+  const [labelFormModal, setLabelFormModal] = React.useState<{open: boolean, kind: "tag" | "leadSource" | "contactType"}>({open: false, kind: "tag"});
+
   const seedKey = open ? (lead?._id ?? "new") : null;
 
   if (seedKey !== seededFor) {
@@ -352,21 +355,57 @@ export function LeadFormModal({ open, onOpenChange, lead }: LeadFormModalProps) 
                     <FormSelect
                       control={form.control}
                       name="leadSourceId"
-                      label="Lead source"
+                      label={
+                        <div className="flex items-center gap-1.5">
+                          Lead source
+                          <button
+                            type="button"
+                            onClick={() => setLabelFormModal({ open: true, kind: "leadSource" })}
+                            className="text-muted-foreground hover:text-foreground"
+                            tabIndex={-1}
+                          >
+                            <Settings className="size-3.5" />
+                          </button>
+                        </div>
+                      }
                       placeholder="No source"
                       options={leadSourceChoices}
                     />
                     <FormSelect
                       control={form.control}
                       name="contactTypeId"
-                      label="Contact type"
+                      label={
+                        <div className="flex items-center gap-1.5">
+                          Contact type
+                          <button
+                            type="button"
+                            onClick={() => setLabelFormModal({ open: true, kind: "contactType" })}
+                            className="text-muted-foreground hover:text-foreground"
+                            tabIndex={-1}
+                          >
+                            <Settings className="size-3.5" />
+                          </button>
+                        </div>
+                      }
                       placeholder="No type"
                       options={contactTypeChoices}
                     />
                     <FormMultiSelect
                       control={form.control}
                       name="tagIds"
-                      label="Tags"
+                      label={
+                        <div className="flex items-center gap-1.5">
+                          Tags
+                          <button
+                            type="button"
+                            onClick={() => setLabelFormModal({ open: true, kind: "tag" })}
+                            className="text-muted-foreground hover:text-foreground"
+                            tabIndex={-1}
+                          >
+                            <Settings className="size-3.5" />
+                          </button>
+                        </div>
+                      }
                       placeholder="No tags"
                       options={tagChoices}
                       emptyText="No tags yet. Create them under CRM · Settings · Tags."
@@ -602,6 +641,11 @@ export function LeadFormModal({ open, onOpenChange, lead }: LeadFormModalProps) 
           </form>
         </Form>
       </DialogContent>
+      <ColorLabelFormModal
+        open={labelFormModal.open}
+        onOpenChange={(isOpen) => setLabelFormModal((prev) => ({ ...prev, open: isOpen }))}
+        kind={labelFormModal.kind}
+      />
     </Dialog>
   );
 }
