@@ -20,6 +20,9 @@ import type {
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
 import type { EmailStatus, EmailTemplateKey } from "@/types/domain/email";
+import type { BusinessTool } from "@/types/domain/businessToolsDashboard";
+import type { EmailTemplateCategory } from "@/types/domain/emailBuilder";
+import type { SubmissionSource } from "@/types/domain/formBuilder";
 import type {
   ActivityAction,
   ActivityCategory,
@@ -320,6 +323,46 @@ export const EMAIL_STATUS_COLORS: Record<EmailStatus, StatusColor> = {
   SENT: "green",
   FAILED: "red",
   SKIPPED: "amber",
+};
+
+export const BUSINESS_TOOL_LABELS: Record<BusinessTool, string> = {
+  EMAIL: "Email templates",
+  WEB: "Site pages",
+  FORM: "Forms",
+};
+
+export const BUSINESS_TOOL_COLORS: Record<BusinessTool, StatusColor> = {
+  EMAIL: "violet",
+  WEB: "blue",
+  FORM: "green",
+};
+
+export const EMAIL_TEMPLATE_CATEGORY_LABELS: Record<EmailTemplateCategory, string> = {
+  GENERAL: "General",
+  MARKETING: "Marketing",
+  TRANSACTIONAL: "Transactional",
+  ANNOUNCEMENT: "Announcement",
+  INTERNAL: "Internal",
+};
+
+export const EMAIL_TEMPLATE_CATEGORY_COLORS: Record<EmailTemplateCategory, StatusColor> = {
+  GENERAL: "zinc",
+  MARKETING: "violet",
+  TRANSACTIONAL: "blue",
+  ANNOUNCEMENT: "amber",
+  INTERNAL: "orange",
+};
+
+export const SUBMISSION_SOURCE_LABELS: Record<SubmissionSource, string> = {
+  DIRECT_LINK: "Direct link",
+  EMBEDDED: "Embedded on a page",
+  PREVIEW: "Preview",
+};
+
+export const SUBMISSION_SOURCE_COLORS: Record<SubmissionSource, StatusColor> = {
+  DIRECT_LINK: "blue",
+  EMBEDDED: "green",
+  PREVIEW: "zinc",
 };
 
 export const ACTIVITY_CATEGORY_LABELS: Record<ActivityCategory, string> = {

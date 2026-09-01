@@ -81,6 +81,9 @@ const SmePaymentConfig = lazy(
   () => import("@/app/sme/configuration/payment/PaymentConfigPage")
 );
 const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
+const BusinessToolsDashboard = lazy(
+  () => import("@/app/businessTools/dashboard/BusinessToolsDashboardPage")
+);
 const EmailTemplates = lazy(
   () => import("@/app/businessTools/emailBuilder/EmailTemplatesPage")
 );
@@ -170,6 +173,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "sme/pos", element: <Pos /> },
   { path: "sme/shop", element: <Shop /> },
+  { path: "business-tools/dashboard", element: <BusinessToolsDashboard /> },
   { path: "business-tools/email-builder", element: <EmailTemplates /> },
   { path: "business-tools/email-builder/deliveries", element: <EmailDeliveries /> },
   { path: "business-tools/email-builder/:templateId", element: <EmailTemplateBuilder /> },

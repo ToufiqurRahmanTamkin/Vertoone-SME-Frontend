@@ -108,15 +108,23 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
   SALES_RETURNS: ["SalesReturns", "SalesReturnSummary", "SalesInvoices", "Stock"],
   SHOP: ["Shop", "ShopSummary"],
   POS: ["PosSummary", "PosRecent", "PosCatalog", "SalesInvoices", "Stock", "StockSummary"],
-  WEB_SITE: ["WebSites", "WebSite", "WebSiteSummary"],
-  WEB_PAGES: ["WebPages", "WebPage", "WebSites", "WebSite", "WebSiteSummary"],
-  FORMS: ["Forms", "Form", "FormSummary", "FormOptions"],
+  WEB_SITE: ["WebSites", "WebSite", "WebSiteSummary", "BusinessToolsDashboard"],
+  WEB_PAGES: [
+    "WebPages",
+    "WebPage",
+    "WebSites",
+    "WebSite",
+    "WebSiteSummary",
+    "BusinessToolsDashboard",
+  ],
+  FORMS: ["Forms", "Form", "FormSummary", "FormOptions", "BusinessToolsDashboard"],
   FORM_SUBMISSIONS: [
     "FormSubmissions",
     "FormSubmission",
     "FormSubmissionSummary",
     "Forms",
     "FormSummary",
+    "BusinessToolsDashboard",
   ],
   BUSINESS_TOOLS_SETTINGS: ["BusinessToolsSettings"],
   EMAIL_TEMPLATES: [
@@ -124,8 +132,14 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "EmailTemplate",
     "EmailTemplateSummary",
     "EmailTemplateOptions",
+    "BusinessToolsDashboard",
   ],
-  EMAIL_DELIVERIES: ["EmailDeliveries", "EmailDelivery", "EmailTemplateSummary"],
+  EMAIL_DELIVERIES: [
+    "EmailDeliveries",
+    "EmailDelivery",
+    "EmailTemplateSummary",
+    "BusinessToolsDashboard",
+  ],
 };
 
 const TOAST_BY_LEVEL: Record<string, (title: string, description: string) => void> = {

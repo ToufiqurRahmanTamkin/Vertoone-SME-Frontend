@@ -310,6 +310,7 @@ export const ALL_TAG_TYPES = [
   "FormSubmission",
   "FormSubmissionSummary",
   "BusinessToolsSettings",
+  "BusinessToolsDashboard",
   "EmailBlocks",
   "EmailStarters",
   "EmailTemplates",
