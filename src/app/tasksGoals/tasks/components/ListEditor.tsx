@@ -24,7 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
-const FIELD_GRID = "grid flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_2.5rem_5rem_6rem_6rem]";
+const FIELD_GRID = "grid flex-1 items-end grid-cols-2 gap-2 sm:grid-cols-[1fr_2.5rem_4rem_auto_auto]";
 
 interface ListRowProps {
   id: string;
@@ -96,9 +96,9 @@ function ListRow({ id, index, canRemove, onRemove }: ListRowProps) {
           placeholder="0"
         />
 
-        <FormSwitch control={form.control} name={`lists.${index}.isDoneList`} label="Done list" />
+        <FormSwitch control={form.control} name={`lists.${index}.isDoneList`} label="Done list" className="h-8 px-2 py-1" />
 
-        <FormSwitch control={form.control} name={`lists.${index}.isArchived`} label="Archived" />
+        <FormSwitch control={form.control} name={`lists.${index}.isArchived`} label="Archived" className="h-8 px-2 py-1" />
       </div>
 
       <Button
