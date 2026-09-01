@@ -13,7 +13,6 @@ export const PipelineStageSchema = z.object({
   _id: z.string().optional(),
   name: z.string().trim().min(1, "A stage needs a name").max(60),
   color: hexColorValidation,
-  description: z.string().trim().max(200),
   probability: z.union([z.literal(""), z.number().int().min(0, "0 or more").max(100, "100 or less")]),
   type: z.enum(PIPELINE_STAGE_TYPES),
   rottingDays: z.union([z.literal(""), z.number().int().min(0, "0 or more").max(365, "365 or less")]),
@@ -26,7 +25,6 @@ export const PipelineSchema = z.object({
   contactTypeId: z.string(),
   ownerId: z.string(),
   currency: z.enum(SUPPORTED_CURRENCIES),
-  isDefault: z.boolean(),
   isActive: z.boolean(),
   stages: z
     .array(PipelineStageSchema)
