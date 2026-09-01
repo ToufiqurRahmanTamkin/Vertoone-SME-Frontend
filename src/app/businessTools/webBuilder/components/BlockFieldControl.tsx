@@ -12,9 +12,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useGetFormOptionsQuery } from "@/redux/apis/formBuilderApis";
 import { useGetProductOptionsQuery } from "@/redux/apis/productApis";
 import type { BlockField, BlockImage } from "@/types/domain/webBuilder";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { BlockIcon } from "./BlockIcon";
 import { defaultPropsOf } from "../webBuilder.utils";
 
@@ -103,6 +105,49 @@ function ProductPicker({
         );
       })}
     </div>
+  );
+}
+
+function FormPicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled: boolean;
+}) {
+  const { data: forms = [], isLoading } = useGetFormOptionsQuery();
+
+  if (isLoading) {
+    return <p className="text-xs text-muted-foreground">Loading forms…</p>;
+  }
+
+  if (forms.length === 0) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        No published forms yet.{" "}
+        <Link to="/business-tools/form-builder" className="font-medium underline">
+          Build one in the Form Builder
+        </Link>{" "}
+        and publish it — it shows up here straight after.
+      </p>
+    );
+  }
+
+  return (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Choose a form" />
+      </SelectTrigger>
+      <SelectContent>
+        {forms.map((form) => (
+          <SelectItem key={form._id} value={form._id}>
+            {form.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -303,6 +348,15 @@ export function BlockFieldControl({
           </div>
         );
       }
+
+      case "form":
+        return (
+          <FormPicker
+            value={asString(value)}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        );
 
       case "products":
         return (

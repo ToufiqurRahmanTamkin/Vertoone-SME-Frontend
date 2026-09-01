@@ -110,6 +110,14 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
   POS: ["PosSummary", "PosRecent", "PosCatalog", "SalesInvoices", "Stock", "StockSummary"],
   WEB_SITE: ["WebSites", "WebSite", "WebSiteSummary"],
   WEB_PAGES: ["WebPages", "WebPage", "WebSites", "WebSite", "WebSiteSummary"],
+  FORMS: ["Forms", "Form", "FormSummary", "FormOptions"],
+  FORM_SUBMISSIONS: [
+    "FormSubmissions",
+    "FormSubmission",
+    "FormSubmissionSummary",
+    "Forms",
+    "FormSummary",
+  ],
   BUSINESS_TOOLS_SETTINGS: ["BusinessToolsSettings"],
 };
 

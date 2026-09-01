@@ -38,6 +38,7 @@ export type BlockFieldType =
   | "icon"
   | "image"
   | "products"
+  | "form"
   | "repeater";
 
 export interface BlockFieldOption {

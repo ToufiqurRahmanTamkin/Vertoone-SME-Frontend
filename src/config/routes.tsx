@@ -84,6 +84,11 @@ const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
 const Websites = lazy(() => import("@/app/businessTools/webBuilder/WebsitesPage"));
 const SitePages = lazy(() => import("@/app/businessTools/webBuilder/SitePagesPage"));
 const PageBuilder = lazy(() => import("@/app/businessTools/webBuilder/PageBuilderPage"));
+const Forms = lazy(() => import("@/app/businessTools/formBuilder/FormsPage"));
+const FormBuilder = lazy(() => import("@/app/businessTools/formBuilder/FormBuilderPage"));
+const FormResponses = lazy(
+  () => import("@/app/businessTools/formBuilder/FormResponsesPage")
+);
 const BusinessToolsSettings = lazy(
   () => import("@/app/businessTools/settings/BusinessToolsSettingsPage")
 );
@@ -154,6 +159,9 @@ const builtRoutes: RouteConfig[] = [
   { path: "business-tools/web-builder", element: <Websites /> },
   { path: "business-tools/web-builder/:siteId", element: <SitePages /> },
   { path: "business-tools/web-builder/:siteId/pages/:pageId", element: <PageBuilder /> },
+  { path: "business-tools/form-builder", element: <Forms /> },
+  { path: "business-tools/form-builder/:formId", element: <FormBuilder /> },
+  { path: "business-tools/form-builder/:formId/responses", element: <FormResponses /> },
   { path: "business-tools/settings", element: <BusinessToolsSettings /> },
   { path: "settings/sales/email", element: <SmeEmailConfig /> },
   { path: "settings/sales/payment", element: <SmePaymentConfig /> },
@@ -218,7 +226,6 @@ const legacyRedirects: RouteConfig[] = [
   { path: "crm/campaigns/settings", element: <Navigate to="/settings/crm/campaigns" replace /> },
   { path: "calendar/settings", element: <Navigate to="/settings/workspace/calendar" replace /> },
   { path: "automation/settings", element: <Navigate to="/settings/workspace/automation" replace /> },
-  { path: "business-tools/settings", element: <Navigate to="/settings/workspace/business-tools" replace /> },
 ];
 
 const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
@@ -230,6 +237,8 @@ const ROUTES_WITHOUT_MENU = new Set([
   "my-company",
   "business-tools/web-builder/:siteId",
   "business-tools/web-builder/:siteId/pages/:pageId",
+  "business-tools/form-builder/:formId",
+  "business-tools/form-builder/:formId/responses",
   "crm/pipelines/:id",
   "tasks-goals/tasks/:id",
 ]);

@@ -280,6 +280,15 @@ export const ALL_TAG_TYPES = [
   "WebSiteSummary",
   "WebPages",
   "WebPage",
+  "FormFields",
+  "FormTemplates",
+  "Forms",
+  "Form",
+  "FormSummary",
+  "FormOptions",
+  "FormSubmissions",
+  "FormSubmission",
+  "FormSubmissionSummary",
   "BusinessToolsSettings",
 ] as const;
 
