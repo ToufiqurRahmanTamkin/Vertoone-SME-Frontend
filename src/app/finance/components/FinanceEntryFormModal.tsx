@@ -35,11 +35,12 @@ import {
   type FinanceEntryInvoiceMode,
 } from "@/validations/finance";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Settings } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { FINANCE_ENTRY_COPY, type FinanceEntryKind } from "../finance-entry-copy";
+import { FinanceCategoryFormModal } from "../categories/components/FinanceCategoryFormModal";
 
 interface FinanceEntryFormModalProps {
   open: boolean;
@@ -111,6 +112,8 @@ export function FinanceEntryFormModal({
   const copy = FINANCE_ENTRY_COPY[kind];
   const isEdit = Boolean(entry);
   const isIncome = kind === "INCOME";
+
+  const [categoryFormOpen, setCategoryFormOpen] = React.useState(false);
 
   const { data: categoryData } = useGetFinanceCategoriesQuery({
     limit: 100,
@@ -234,21 +237,34 @@ export function FinanceEntryFormModal({
         <Form {...form}>
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={form.handleSubmit(onSubmit)}>
             <DialogBody className="flex flex-col gap-4">
-              <FormInput
-                control={form.control}
-                name="title"
-                label="Title"
-                placeholder={copy.titlePlaceholder}
-              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormInput
+                  control={form.control}
+                  name="title"
+                  label="Title"
+                  placeholder={copy.titlePlaceholder}
+                />
 
-              <FormSelect
-                control={form.control}
-                name="categoryId"
-                label="Category"
-                placeholder="Select a category"
-                options={categoryOptions}
-                searchable
-              />
+                <FormSelect
+                  control={form.control}
+                  name="categoryId"
+                  label={
+                    <div className="flex items-center gap-2">
+                      <span>Category</span>
+                      <Settings
+                        className="h-3.5 w-3.5 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCategoryFormOpen(true);
+                        }}
+                      />
+                    </div>
+                  }
+                  placeholder="Select a category"
+                  options={categoryOptions}
+                  searchable
+                />
+              </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormInput control={form.control} name="amount" label="Amount" type="number" />
@@ -342,6 +358,12 @@ export function FinanceEntryFormModal({
           </form>
         </Form>
       </DialogContent>
+
+      <FinanceCategoryFormModal
+        open={categoryFormOpen}
+        onOpenChange={setCategoryFormOpen}
+        defaultType={kind}
+      />
     </Dialog>
   );
 }
