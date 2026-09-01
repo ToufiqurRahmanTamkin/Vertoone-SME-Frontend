@@ -26,7 +26,7 @@ import type {
   WebSite,
   WebSitePayload,
 } from "@/types/domain/webBuilder";
-import { WebSiteSchema, type WebSiteFormValues } from "@/validations/webBuilder";
+import { WebSiteSchema, type WebSiteSettingsFormValues } from "@/validations/webBuilder";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Globe, Layout, Loader2, Palette, Plus, Search, Share2, Trash2 } from "lucide-react";
 import * as React from "react";
@@ -68,7 +68,7 @@ interface MediaState {
   ogImagePublicId: string | null;
 }
 
-const toFormValues = (site: WebSite): WebSiteFormValues => ({
+const toFormValues = (site: WebSite): WebSiteSettingsFormValues => ({
   name: site.name,
   slug: site.slug,
   tagline: site.tagline,
@@ -112,7 +112,7 @@ export function SiteSettingsForm({ site, canEdit }: SiteSettingsFormProps) {
   const [media, setMedia] = React.useState<MediaState>(() => toMedia(site));
   const [socials, setSocials] = React.useState<SiteSocial[]>(site.socials);
 
-  const form = useForm<WebSiteFormValues>({
+  const form = useForm<WebSiteSettingsFormValues>({
     resolver: zodResolver(WebSiteSchema),
     defaultValues: toFormValues(site),
   });
@@ -121,7 +121,7 @@ export function SiteSettingsForm({ site, canEdit }: SiteSettingsFormProps) {
     (platform) => !socials.some((social) => social.platform === platform)
   );
 
-  const onSubmit = async (values: WebSiteFormValues) => {
+  const onSubmit = async (values: WebSiteSettingsFormValues) => {
     const body: WebSitePayload = {
       name: values.name,
       slug: values.slug,
@@ -164,7 +164,7 @@ export function SiteSettingsForm({ site, canEdit }: SiteSettingsFormProps) {
     };
 
     try {
-      await updateSite(body).unwrap();
+      await updateSite({ id: site._id, body }).unwrap();
       toast.success("Website settings saved");
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;

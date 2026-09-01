@@ -81,8 +81,12 @@ const SmePaymentConfig = lazy(
   () => import("@/app/sme/configuration/payment/PaymentConfigPage")
 );
 const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
-const WebBuilder = lazy(() => import("@/app/businessTools/webBuilder/WebBuilderPage"));
+const Websites = lazy(() => import("@/app/businessTools/webBuilder/WebsitesPage"));
+const SitePages = lazy(() => import("@/app/businessTools/webBuilder/SitePagesPage"));
 const PageBuilder = lazy(() => import("@/app/businessTools/webBuilder/PageBuilderPage"));
+const BusinessToolsSettings = lazy(
+  () => import("@/app/businessTools/settings/BusinessToolsSettingsPage")
+);
 const PublicShop = lazy(() => import("@/app/publicShop/PublicShopPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
@@ -147,8 +151,10 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "sme/pos", element: <Pos /> },
   { path: "sme/shop", element: <Shop /> },
-  { path: "business-tools/web-builder", element: <WebBuilder /> },
-  { path: "business-tools/web-builder/:pageId", element: <PageBuilder /> },
+  { path: "business-tools/web-builder", element: <Websites /> },
+  { path: "business-tools/web-builder/:siteId", element: <SitePages /> },
+  { path: "business-tools/web-builder/:siteId/pages/:pageId", element: <PageBuilder /> },
+  { path: "business-tools/settings", element: <BusinessToolsSettings /> },
   { path: "settings/sales/email", element: <SmeEmailConfig /> },
   { path: "settings/sales/payment", element: <SmePaymentConfig /> },
   { path: "settings/crm/tags", element: <Tags /> },
@@ -222,7 +228,8 @@ const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
 
 const ROUTES_WITHOUT_MENU = new Set([
   "my-company",
-  "business-tools/web-builder/:pageId",
+  "business-tools/web-builder/:siteId",
+  "business-tools/web-builder/:siteId/pages/:pageId",
   "crm/pipelines/:id",
   "tasks-goals/tasks/:id",
 ]);

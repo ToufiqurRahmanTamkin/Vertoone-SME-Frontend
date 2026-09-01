@@ -3,26 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import type { WebSite, WebSiteSummary } from "@/types/domain/webBuilder";
+import type { WebSite } from "@/types/domain/webBuilder";
 import { Copy, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { absoluteSiteUrl } from "../webBuilder.utils";
 
 interface SiteLinkCardProps {
   site: WebSite;
-  summary?: WebSiteSummary;
   canEdit: boolean;
   isSaving: boolean;
   onPublishChange: (isPublished: boolean) => void;
 }
 
-export function SiteLinkCard({
-  site,
-  summary,
-  canEdit,
-  isSaving,
-  onPublishChange,
-}: SiteLinkCardProps) {
+export function SiteLinkCard({ site, canEdit, isSaving, onPublishChange }: SiteLinkCardProps) {
   const url = absoluteSiteUrl(site.publicUrl, site.publicPath);
 
   const copyLink = async () => {
@@ -34,20 +27,20 @@ export function SiteLinkCard({
     }
   };
 
-  const hasPublishedHome = (summary?.publishedPages ?? 0) > 0 && Boolean(summary?.homePageTitle);
+  const hasPublishedHome = site.publishedPageCount > 0 && Boolean(site.homePageTitle);
 
   return (
     <div className="rounded-xl border bg-card p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-semibold">Your website</h2>
+            <h2 className="text-base font-semibold">{site.name}</h2>
             <Badge variant={site.isPublished ? "default" : "secondary"}>
               {site.isPublished ? "Live" : "Not published"}
             </Badge>
-            {(summary?.pagesWithUnpublishedChanges ?? 0) > 0 && (
+            {site.pagesWithUnpublishedChanges > 0 && (
               <Badge variant="outline">
-                {summary?.pagesWithUnpublishedChanges} page(s) with unpublished changes
+                {site.pagesWithUnpublishedChanges} page(s) with unpublished changes
               </Badge>
             )}
           </div>

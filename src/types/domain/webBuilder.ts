@@ -81,6 +81,46 @@ export interface BlockCatalogue {
   };
 }
 
+export type PageShape =
+  | "BLANK"
+  | "HOME"
+  | "SHOWCASE"
+  | "ABOUT"
+  | "SERVICES"
+  | "PRICING"
+  | "CONTACT";
+
+export interface PageTemplate {
+  key: string;
+  label: string;
+  description: string;
+  category: string;
+  categoryLabel: string;
+  shape: PageShape;
+  suggestedTitle: string;
+  suggestedSlug: string;
+}
+
+export interface SiteTemplatePage {
+  title: string;
+  slug: string;
+  templateKey: string;
+  isHome: boolean;
+}
+
+export interface SiteTemplate {
+  key: string;
+  label: string;
+  description: string;
+  accentColor: string;
+  pages: SiteTemplatePage[];
+}
+
+export interface TemplateCatalogue {
+  sites: SiteTemplate[];
+  pages: PageTemplate[];
+}
+
 export type SiteFont = "SYSTEM" | "SERIF" | "ROUNDED";
 
 export type SiteRadius = "NONE" | "SMALL" | "MEDIUM" | "LARGE";
@@ -133,13 +173,28 @@ export interface SiteSeo {
   indexable: boolean;
 }
 
-export interface WebSite {
+export interface WebSiteListItem {
   _id: string;
   slug: string;
   name: string;
   tagline: string;
-  language: string;
+  templateKey: string;
   logoUrl: string | null;
+  primaryColor: string;
+  isPublished: boolean;
+  publishedAt: string | null;
+  publicPath: string;
+  publicUrl: string;
+  pageCount: number;
+  publishedPageCount: number;
+  pagesWithUnpublishedChanges: number;
+  homePageTitle: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebSite extends WebSiteListItem {
+  language: string;
   logoPublicId: string | null;
   faviconUrl: string | null;
   faviconPublicId: string | null;
@@ -149,12 +204,22 @@ export interface WebSite {
   contact: SiteContact;
   socials: SiteSocial[];
   seo: SiteSeo;
-  isPublished: boolean;
-  publishedAt: string | null;
-  publicPath: string;
-  publicUrl: string;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface WebSiteListQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  isPublished?: boolean;
+}
+
+export interface CreateWebSitePayload {
+  name: string;
+  slug?: string;
+  tagline?: string;
+  templateKey?: string;
 }
 
 export interface WebSitePayload {
@@ -176,22 +241,15 @@ export interface WebSitePayload {
 }
 
 export interface WebSiteSummary {
-  isPublished: boolean;
-  publicUrl: string;
-  publicPath: string;
+  totalSites: number;
+  publishedSites: number;
   totalPages: number;
-  publishedPages: number;
-  draftPages: number;
   pagesWithUnpublishedChanges: number;
-  homePageTitle: string;
-  lastPublishedAt: string | null;
-  pageLimit: number | null;
-  pagesRemaining: number | null;
+  siteLimit: number | null;
+  sitesRemaining: number | null;
 }
 
 export type PageStatus = "DRAFT" | "PUBLISHED";
-
-export type PageTemplate = "BLANK" | "LANDING" | "ABOUT" | "SERVICES" | "CONTACT";
 
 export interface WebPageListItem {
   _id: string;
@@ -229,7 +287,7 @@ export interface CreateWebPagePayload {
   slug?: string;
   showInNav?: boolean;
   navLabel?: string;
-  template?: PageTemplate;
+  templateKey?: string;
 }
 
 export interface UpdateWebPagePayload {
@@ -241,4 +299,44 @@ export interface UpdateWebPagePayload {
   seo?: Partial<SiteSeo>;
   blocks?: Block[];
   revision?: number;
+}
+
+export interface WebBuilderSettings {
+  defaultPrimaryColor: string;
+  defaultFont: SiteFont;
+  defaultRadius: SiteRadius;
+  defaultLanguage: string;
+  defaultIndexable: boolean;
+  defaultFooterText: string;
+}
+
+export interface FormBuilderSettings {
+  notifyEmail: string;
+  notifyOnSubmission: boolean;
+  storeSubmissions: boolean;
+  retentionDays: number;
+  spamProtection: boolean;
+  successMessage: string;
+}
+
+export interface EmailBuilderSettings {
+  senderName: string;
+  replyToEmail: string;
+  brandColor: string;
+  contentWidth: number;
+  footerText: string;
+}
+
+export interface BusinessToolsSettings {
+  _id: string;
+  webBuilder: WebBuilderSettings;
+  formBuilder: FormBuilderSettings;
+  emailBuilder: EmailBuilderSettings;
+  updatedAt: string;
+}
+
+export interface BusinessToolsSettingsPayload {
+  webBuilder?: Partial<WebBuilderSettings>;
+  formBuilder?: Partial<FormBuilderSettings>;
+  emailBuilder?: Partial<EmailBuilderSettings>;
 }

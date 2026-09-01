@@ -1,4 +1,4 @@
-import { FormInput, FormSelect, FormSwitch } from "@/components/shared/form-fields";
+import { FormInput, FormSwitch } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,39 +10,54 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { useCreateWebPageMutation } from "@/redux/apis/webBuilderApis";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import {
+  useCreateWebPageMutation,
+  useGetTemplateCatalogueQuery,
+} from "@/redux/apis/webBuilderApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import type { PageTemplate } from "@/types/domain/webBuilder";
 import { WebPageSchema, type WebPageFormValues } from "@/validations/webBuilder";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-const TEMPLATES = [
-  { label: "Blank page", value: "BLANK" },
-  { label: "Landing page", value: "LANDING" },
-  { label: "About us", value: "ABOUT" },
-  { label: "Services", value: "SERVICES" },
-  { label: "Contact", value: "CONTACT" },
-];
-
 const emptyValues = (): WebPageFormValues => ({
   title: "",
   slug: "",
-  template: "LANDING",
+  templateKey: "BLANK",
   showInNav: true,
 });
 
 interface PageFormModalProps {
+  siteId: string;
+  siteTemplateKey: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function PageFormModal({ open, onOpenChange }: PageFormModalProps) {
+export function PageFormModal({
+  siteId,
+  siteTemplateKey,
+  open,
+  onOpenChange,
+}: PageFormModalProps) {
   const navigate = useNavigate();
+  const { data: catalogue } = useGetTemplateCatalogueQuery();
   const [createPage, { isLoading }] = useCreateWebPageMutation();
+
+  const [category, setCategory] = React.useState(siteTemplateKey);
 
   const form = useForm<WebPageFormValues>({
     resolver: zodResolver(WebPageSchema),
@@ -50,21 +65,51 @@ export function PageFormModal({ open, onOpenChange }: PageFormModalProps) {
   });
 
   React.useEffect(() => {
-    if (open) form.reset(emptyValues());
-  }, [open, form]);
+    if (!open) return;
+    form.reset(emptyValues());
+    setCategory(siteTemplateKey);
+  }, [open, siteTemplateKey, form]);
+
+  const templates = React.useMemo(() => catalogue?.pages ?? [], [catalogue]);
+
+  const categories = React.useMemo(() => {
+    const seen = new Map<string, string>();
+    templates.forEach((template) => seen.set(template.category, template.categoryLabel));
+    return [...seen.entries()].map(([value, label]) => ({ value, label }));
+  }, [templates]);
+
+  const visible = React.useMemo(
+    () =>
+      templates.filter(
+        (template) => template.key === "BLANK" || template.category === category
+      ),
+    [templates, category]
+  );
+
+  const templateKey = form.watch("templateKey");
+
+  const pick = (template: PageTemplate) => {
+    form.setValue("templateKey", template.key);
+    if (!form.getValues("title")) {
+      form.setValue("title", template.suggestedTitle);
+    }
+  };
 
   const onSubmit = async (values: WebPageFormValues) => {
     try {
       const page = await createPage({
-        title: values.title,
-        slug: values.slug || undefined,
-        template: values.template,
-        showInNav: values.showInNav,
+        siteId,
+        body: {
+          title: values.title,
+          slug: values.slug || undefined,
+          templateKey: values.templateKey,
+          showInNav: values.showInNav,
+        },
       }).unwrap();
 
       toast.success("Page created");
       onOpenChange(false);
-      navigate(`/business-tools/web-builder/${page._id}`);
+      navigate(`/business-tools/web-builder/${siteId}/pages/${page._id}`);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not create the page");
@@ -73,38 +118,87 @@ export function PageFormModal({ open, onOpenChange }: PageFormModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>New page</DialogTitle>
           <DialogDescription>
-            Pick a starting point. Every section can be changed, moved or removed afterwards.
+            Start from a premade layout, then change anything you like in the builder.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogBody className="space-y-4">
-              <FormInput
-                control={form.control}
-                name="title"
-                label="Page title"
-                placeholder="About us"
-              />
+            <DialogBody className="space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormInput
+                  control={form.control}
+                  name="title"
+                  label="Page title"
+                  placeholder="About us"
+                />
+                <FormInput
+                  control={form.control}
+                  name="slug"
+                  label="Address"
+                  placeholder="about-us"
+                  description="Leave empty and we build it from the title."
+                />
+              </div>
 
-              <FormInput
-                control={form.control}
-                name="slug"
-                label="Address"
-                placeholder="about-us"
-                description="Leave empty and we build it from the title."
-              />
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Label className="text-sm">Starting point</Label>
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger className="w-56">
+                      <SelectValue placeholder="Kind of website" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((entry) => (
+                        <SelectItem key={entry.value} value={entry.value}>
+                          {entry.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <FormSelect
-                control={form.control}
-                name="template"
-                label="Starting point"
-                options={TEMPLATES}
-              />
+                <div className="grid max-h-64 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+                  {visible.map((template) => {
+                    const selected = template.key === templateKey;
+
+                    return (
+                      <button
+                        key={template.key}
+                        type="button"
+                        onClick={() => pick(template)}
+                        className={cn(
+                          "flex items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                          selected
+                            ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                            : "hover:bg-muted/60"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border",
+                            selected && "border-primary bg-primary text-primary-foreground"
+                          )}
+                        >
+                          {selected && <Check className="size-3.5" />}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold">
+                            {template.suggestedTitle}
+                          </span>
+                          <span className="block text-[11px] text-muted-foreground">
+                            {template.description}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               <FormSwitch
                 control={form.control}

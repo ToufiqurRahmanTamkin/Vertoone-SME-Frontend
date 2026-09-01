@@ -38,6 +38,7 @@ import { Link } from "react-router-dom";
 import { absoluteSiteUrl } from "../webBuilder.utils";
 
 interface PagesListProps {
+  siteId: string;
   pages: WebPageListItem[];
   canEdit: boolean;
   canDelete: boolean;
@@ -50,6 +51,7 @@ interface PagesListProps {
 }
 
 function PageRow({
+  siteId,
   page,
   canEdit,
   canDelete,
@@ -89,7 +91,7 @@ function PageRow({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            to={`/business-tools/web-builder/${page._id}`}
+            to={`/business-tools/web-builder/${siteId}/pages/${page._id}`}
             className="truncate text-sm font-semibold hover:underline"
           >
             {page.title}
@@ -114,7 +116,7 @@ function PageRow({
       </span>
 
       <Button variant="outline" size="sm" asChild>
-        <Link to={`/business-tools/web-builder/${page._id}`}>
+        <Link to={`/business-tools/web-builder/${siteId}/pages/${page._id}`}>
           <Pencil className="mr-2 size-3.5" />
           Edit
         </Link>

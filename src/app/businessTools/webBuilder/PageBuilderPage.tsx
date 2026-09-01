@@ -78,11 +78,15 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 }
 
 export default function PageBuilderPage() {
-  const { pageId = "" } = useParams<{ pageId: string }>();
+  const { siteId = "", pageId = "" } = useParams<{ siteId: string; pageId: string }>();
   const navigate = useNavigate();
   const access = useModulePermission("/business-tools/web-builder");
 
-  const { data: page, isLoading, isError } = useGetWebPageQuery(pageId, { skip: !pageId });
+  const {
+    data: page,
+    isLoading,
+    isError,
+  } = useGetWebPageQuery({ siteId, pageId }, { skip: !siteId || !pageId });
   const { data: catalogue } = useGetBlockCatalogueQuery();
 
   const [savePage, { isLoading: isSaving }] = useUpdateWebPageMutation();
@@ -121,12 +125,17 @@ export default function PageBuilderPage() {
   const previewKey = useDebounce(JSON.stringify({ blocks, selectedId }), 400);
 
   React.useEffect(() => {
-    if (!pageId || !previewKey) return;
+    if (!siteId || !pageId || !previewKey) return;
 
     let cancelled = false;
     const payload = JSON.parse(previewKey) as { blocks: Block[]; selectedId: string };
 
-    renderPreview({ id: pageId, blocks: payload.blocks, selectedBlockId: payload.selectedId })
+    renderPreview({
+      siteId,
+      pageId,
+      blocks: payload.blocks,
+      selectedBlockId: payload.selectedId,
+    })
       .unwrap()
       .then((result) => {
         if (!cancelled) setHtml(result.html);
@@ -136,7 +145,7 @@ export default function PageBuilderPage() {
     return () => {
       cancelled = true;
     };
-  }, [pageId, previewKey, renderPreview]);
+  }, [siteId, pageId, previewKey, renderPreview]);
 
   React.useEffect(() => {
     if (!isDirty) return;
@@ -177,7 +186,8 @@ export default function PageBuilderPage() {
 
     try {
       await savePage({
-        id: page._id,
+        siteId,
+        pageId: page._id,
         body: {
           title: meta.title,
           slug: page.isHome ? undefined : meta.slug,
@@ -195,7 +205,7 @@ export default function PageBuilderPage() {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not save the page");
     }
-  }, [page, meta, blocks, savePage]);
+  }, [page, meta, blocks, savePage, siteId]);
 
   React.useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
@@ -213,7 +223,7 @@ export default function PageBuilderPage() {
 
     try {
       if (isDirty) await save();
-      await publishPage(page._id).unwrap();
+      await publishPage({ siteId, pageId: page._id }).unwrap();
       toast.success("Page published");
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
@@ -260,7 +270,7 @@ export default function PageBuilderPage() {
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This page is not available</p>
         <Button variant="outline" size="sm" className="mt-4" asChild>
-          <Link to="/business-tools/web-builder">Back to the site</Link>
+          <Link to={`/business-tools/web-builder/${siteId}`}>Back to the website</Link>
         </Button>
       </div>
     );
@@ -280,7 +290,7 @@ export default function PageBuilderPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/business-tools/web-builder")}
+            onClick={() => navigate(`/business-tools/web-builder/${siteId}`)}
             aria-label="Back to the site"
           >
             <ArrowLeft className="size-4" />

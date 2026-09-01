@@ -1147,6 +1147,13 @@ export const MENU_SECTIONS: MenuSection[] = [
             roles: COMPANY,
             description: "Forms you embed on your site to capture leads.",
           },
+          {
+            title: "Settings",
+            path: "/business-tools/settings",
+            icon: "SlidersHorizontal",
+            roles: COMPANY,
+            description: "Shared defaults for the email, page and form builders.",
+          },
         ],
       },
     ],

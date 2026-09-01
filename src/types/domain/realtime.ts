@@ -54,6 +54,7 @@ export const SOCKET_RESOURCES = [
   "ROLES",
   "WEB_SITE",
   "WEB_PAGES",
+  "BUSINESS_TOOLS_SETTINGS",
 ] as const;
 export type SocketResource = (typeof SOCKET_RESOURCES)[number];
 

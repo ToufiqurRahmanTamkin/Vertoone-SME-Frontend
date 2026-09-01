@@ -2,25 +2,36 @@ import type { Pagination } from "@/types";
 import type {
   Block,
   BlockCatalogue,
+  BusinessToolsSettings,
+  BusinessToolsSettingsPayload,
   CreateWebPagePayload,
+  CreateWebSitePayload,
+  TemplateCatalogue,
   UpdateWebPagePayload,
   WebPage,
   WebPageListItem,
   WebPageListQuery,
   WebSite,
+  WebSiteListItem,
+  WebSiteListQuery,
   WebSitePayload,
   WebSiteSummary,
 } from "@/types/domain/webBuilder";
 import { baseApi } from "../baseApi";
 import { buildQuery } from "./queryString";
 
-const SITE_ROOT = "/business-tools/web-builder/site";
+const SITES_ROOT = "/business-tools/web-builder/sites";
 
-const PAGES_ROOT = "/business-tools/web-builder/pages";
+const pagesRoot = (siteId: string): string => `${SITES_ROOT}/${siteId}/pages`;
 
-const SITE_TAGS = ["WebSite", "WebSiteSummary"] as const;
+const SITE_TAGS = ["WebSites", "WebSite", "WebSiteSummary"] as const;
 
-const PAGE_TAGS = ["WebPages", "WebPage", "WebSiteSummary"] as const;
+const PAGE_TAGS = ["WebPages", "WebPage", "WebSites", "WebSite", "WebSiteSummary"] as const;
+
+interface WebSiteListResult {
+  data: WebSiteListItem[];
+  meta: Pagination;
+}
 
 interface WebPageListResult {
   data: WebPageListItem[];
@@ -34,81 +45,161 @@ const webBuilderApi = baseApi.injectEndpoints({
       providesTags: ["WebBlocks"],
       keepUnusedDataFor: 3600,
     }),
+    getTemplateCatalogue: builder.query<TemplateCatalogue, void>({
+      query: () => ({ url: `${SITES_ROOT}/templates`, method: "GET" }),
+      providesTags: ["WebTemplates"],
+      keepUnusedDataFor: 3600,
+    }),
 
-    getWebSite: builder.query<WebSite, void>({
-      query: () => ({ url: SITE_ROOT, method: "GET" }),
-      providesTags: ["WebSite"],
+    getWebSites: builder.query<WebSiteListResult, WebSiteListQuery | void>({
+      query: (params) => ({
+        url: `${SITES_ROOT}${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["WebSites"],
     }),
     getWebSiteSummary: builder.query<WebSiteSummary, void>({
-      query: () => ({ url: `${SITE_ROOT}/summary`, method: "GET" }),
+      query: () => ({ url: `${SITES_ROOT}/summary`, method: "GET" }),
       providesTags: ["WebSiteSummary"],
     }),
-    updateWebSite: builder.mutation<WebSite, WebSitePayload>({
-      query: (body) => ({ url: SITE_ROOT, method: "PATCH", body }),
+    getWebSite: builder.query<WebSite, string>({
+      query: (id) => ({ url: `${SITES_ROOT}/${id}`, method: "GET" }),
+      providesTags: (_result, _error, id) => [{ type: "WebSite" as const, id }],
+    }),
+    createWebSite: builder.mutation<WebSite, CreateWebSitePayload>({
+      query: (body) => ({ url: SITES_ROOT, method: "POST", body }),
       invalidatesTags: [...SITE_TAGS],
     }),
+    updateWebSite: builder.mutation<WebSite, { id: string; body: WebSitePayload }>({
+      query: ({ id, body }) => ({ url: `${SITES_ROOT}/${id}`, method: "PATCH", body }),
+      invalidatesTags: (_result, _error, { id }) => [...SITE_TAGS, { type: "WebSite", id }],
+    }),
+    deleteWebSite: builder.mutation<null, string>({
+      query: (id) => ({ url: `${SITES_ROOT}/${id}`, method: "DELETE" }),
+      invalidatesTags: [...SITE_TAGS, "WebPages"],
+    }),
 
-    getWebPages: builder.query<WebPageListResult, WebPageListQuery | void>({
-      query: (params) => ({
-        url: `${PAGES_ROOT}${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+    getWebPages: builder.query<
+      WebPageListResult,
+      { siteId: string; query?: WebPageListQuery }
+    >({
+      query: ({ siteId, query }) => ({
+        url: `${pagesRoot(siteId)}${buildQuery((query ?? {}) as Record<string, unknown>)}`,
         method: "GET",
       }),
       providesTags: ["WebPages"],
     }),
-    getWebPage: builder.query<WebPage, string>({
-      query: (id) => ({ url: `${PAGES_ROOT}/${id}`, method: "GET" }),
-      providesTags: (_result, _error, id) => [{ type: "WebPage" as const, id }],
+    getWebPage: builder.query<WebPage, { siteId: string; pageId: string }>({
+      query: ({ siteId, pageId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, { pageId }) => [{ type: "WebPage" as const, id: pageId }],
     }),
-    createWebPage: builder.mutation<WebPage, CreateWebPagePayload>({
-      query: (body) => ({ url: PAGES_ROOT, method: "POST", body }),
+    createWebPage: builder.mutation<WebPage, { siteId: string; body: CreateWebPagePayload }>({
+      query: ({ siteId, body }) => ({ url: pagesRoot(siteId), method: "POST", body }),
       invalidatesTags: [...PAGE_TAGS],
     }),
-    updateWebPage: builder.mutation<WebPage, { id: string; body: UpdateWebPagePayload }>({
-      query: ({ id, body }) => ({ url: `${PAGES_ROOT}/${id}`, method: "PATCH", body }),
-      invalidatesTags: (_result, _error, { id }) => [...PAGE_TAGS, { type: "WebPage", id }],
+    updateWebPage: builder.mutation<
+      WebPage,
+      { siteId: string; pageId: string; body: UpdateWebPagePayload }
+    >({
+      query: ({ siteId, pageId, body }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { pageId }) => [
+        ...PAGE_TAGS,
+        { type: "WebPage", id: pageId },
+      ],
     }),
-    publishWebPage: builder.mutation<WebPage, string>({
-      query: (id) => ({ url: `${PAGES_ROOT}/${id}/publish`, method: "POST" }),
-      invalidatesTags: (_result, _error, id) => [...PAGE_TAGS, ...SITE_TAGS, { type: "WebPage", id }],
+    publishWebPage: builder.mutation<WebPage, { siteId: string; pageId: string }>({
+      query: ({ siteId, pageId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}/publish`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, { pageId }) => [
+        ...PAGE_TAGS,
+        { type: "WebPage", id: pageId },
+      ],
     }),
-    unpublishWebPage: builder.mutation<WebPage, string>({
-      query: (id) => ({ url: `${PAGES_ROOT}/${id}/unpublish`, method: "POST" }),
-      invalidatesTags: (_result, _error, id) => [...PAGE_TAGS, ...SITE_TAGS, { type: "WebPage", id }],
+    unpublishWebPage: builder.mutation<WebPage, { siteId: string; pageId: string }>({
+      query: ({ siteId, pageId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}/unpublish`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, { pageId }) => [
+        ...PAGE_TAGS,
+        { type: "WebPage", id: pageId },
+      ],
     }),
-    duplicateWebPage: builder.mutation<WebPage, string>({
-      query: (id) => ({ url: `${PAGES_ROOT}/${id}/duplicate`, method: "POST" }),
+    duplicateWebPage: builder.mutation<WebPage, { siteId: string; pageId: string }>({
+      query: ({ siteId, pageId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}/duplicate`,
+        method: "POST",
+      }),
       invalidatesTags: [...PAGE_TAGS],
     }),
-    setHomeWebPage: builder.mutation<WebPage, string>({
-      query: (id) => ({ url: `${PAGES_ROOT}/${id}/home`, method: "POST" }),
-      invalidatesTags: [...PAGE_TAGS, ...SITE_TAGS],
-    }),
-    deleteWebPage: builder.mutation<null, string>({
-      query: (id) => ({ url: `${PAGES_ROOT}/${id}`, method: "DELETE" }),
+    setHomeWebPage: builder.mutation<WebPage, { siteId: string; pageId: string }>({
+      query: ({ siteId, pageId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}/home`,
+        method: "POST",
+      }),
       invalidatesTags: [...PAGE_TAGS],
     }),
-    reorderWebPages: builder.mutation<WebPageListItem[], string[]>({
-      query: (pageIds) => ({ url: `${PAGES_ROOT}/reorder`, method: "PATCH", body: { pageIds } }),
+    deleteWebPage: builder.mutation<null, { siteId: string; pageId: string }>({
+      query: ({ siteId, pageId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [...PAGE_TAGS],
+    }),
+    reorderWebPages: builder.mutation<
+      WebPageListItem[],
+      { siteId: string; pageIds: string[] }
+    >({
+      query: ({ siteId, pageIds }) => ({
+        url: `${pagesRoot(siteId)}/reorder`,
+        method: "PATCH",
+        body: { pageIds },
+      }),
       invalidatesTags: ["WebPages"],
     }),
     previewWebPage: builder.mutation<
       { html: string },
-      { id: string; blocks: Block[]; selectedBlockId?: string }
+      { siteId: string; pageId: string; blocks: Block[]; selectedBlockId?: string }
     >({
-      query: ({ id, blocks, selectedBlockId }) => ({
-        url: `${PAGES_ROOT}/${id}/preview`,
+      query: ({ siteId, pageId, blocks, selectedBlockId }) => ({
+        url: `${pagesRoot(siteId)}/${pageId}/preview`,
         method: "POST",
         body: { blocks, selectedBlockId },
       }),
+    }),
+
+    getBusinessToolsSettings: builder.query<BusinessToolsSettings, void>({
+      query: () => ({ url: "/business-tools/settings", method: "GET" }),
+      providesTags: ["BusinessToolsSettings"],
+    }),
+    updateBusinessToolsSettings: builder.mutation<
+      BusinessToolsSettings,
+      BusinessToolsSettingsPayload
+    >({
+      query: (body) => ({ url: "/business-tools/settings", method: "PATCH", body }),
+      invalidatesTags: ["BusinessToolsSettings"],
     }),
   }),
 });
 
 export const {
   useGetBlockCatalogueQuery,
-  useGetWebSiteQuery,
+  useGetTemplateCatalogueQuery,
+  useGetWebSitesQuery,
   useGetWebSiteSummaryQuery,
+  useGetWebSiteQuery,
+  useCreateWebSiteMutation,
   useUpdateWebSiteMutation,
+  useDeleteWebSiteMutation,
   useGetWebPagesQuery,
   useGetWebPageQuery,
   useCreateWebPageMutation,
@@ -120,4 +211,6 @@ export const {
   useDeleteWebPageMutation,
   useReorderWebPagesMutation,
   usePreviewWebPageMutation,
+  useGetBusinessToolsSettingsQuery,
+  useUpdateBusinessToolsSettingsMutation,
 } = webBuilderApi;
