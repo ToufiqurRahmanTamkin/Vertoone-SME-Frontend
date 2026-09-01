@@ -115,53 +115,60 @@ function PageRow({
         {page.blockCount} section{page.blockCount === 1 ? "" : "s"}
       </span>
 
-      <Button variant="outline" size="sm" asChild>
-        <Link to={`/business-tools/web-builder/${siteId}/pages/${page._id}`}>
-          <Pencil className="mr-2 size-3.5" />
-          Edit
-        </Link>
-      </Button>
+      <div className="flex items-center justify-end gap-1">
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/business-tools/web-builder/${siteId}/pages/${page._id}`}>
+            <Pencil className="size-3.5" />
+            Edit
+          </Link>
+        </Button>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-8" aria-label="More actions">
-            <MoreHorizontal className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            disabled={page.status !== "PUBLISHED"}
-            onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
-          >
-            <ExternalLink className="mr-2 size-4" />
-            View live
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={!canEdit}
-            onClick={() => (page.status === "PUBLISHED" ? onUnpublish(page) : onPublish(page))}
-          >
-            <UploadCloud className="mr-2 size-4" />
-            {page.status === "PUBLISHED" ? "Take offline" : "Publish"}
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled={!canEdit} onClick={() => onDuplicate(page)}>
-            <Copy className="mr-2 size-4" />
-            Duplicate
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled={!canEdit || page.isHome} onClick={() => onSetHome(page)}>
-            <Home className="mr-2 size-4" />
-            Make home page
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            disabled={!canDelete || page.isHome}
-            className="text-destructive focus:text-destructive"
-            onClick={() => onDelete(page)}
-          >
-            <Trash2 className="mr-2 size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              aria-label={`More actions for ${page.title}`}
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem
+              disabled={page.status !== "PUBLISHED"}
+              onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+            >
+              <ExternalLink />
+              View live
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!canEdit}
+              onClick={() => (page.status === "PUBLISHED" ? onUnpublish(page) : onPublish(page))}
+            >
+              <UploadCloud />
+              {page.status === "PUBLISHED" ? "Take offline" : "Publish"}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!canEdit} onClick={() => onDuplicate(page)}>
+              <Copy />
+              Duplicate
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!canEdit || page.isHome} onClick={() => onSetHome(page)}>
+              <Home />
+              Make home page
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={!canDelete || page.isHome}
+              onClick={() => onDelete(page)}
+            >
+              <Trash2 />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }

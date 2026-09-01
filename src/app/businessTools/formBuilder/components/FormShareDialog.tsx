@@ -104,7 +104,7 @@ export function FormShareDialog({ form, onOpenChange }: FormShareDialogProps) {
                 size="sm"
                 onClick={() => void copy(snippet, "Embed code")}
               >
-                <Copy className="mr-2 size-4" />
+                <Copy className="size-4" />
                 Copy embed code
               </Button>
               <p className="text-[11px] text-muted-foreground">
@@ -145,7 +145,7 @@ export function FormShareDialog({ form, onOpenChange }: FormShareDialogProps) {
             disabled={!isLive}
             onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
           >
-            <ExternalLink className="mr-2 size-4" />
+            <ExternalLink className="size-4" />
             Open form
           </Button>
         </DialogFooter>

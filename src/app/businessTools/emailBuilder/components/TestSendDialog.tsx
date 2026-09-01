@@ -104,9 +104,9 @@ export function TestSendDialog({
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Send className="mr-2 size-4" />
+                  <Send className="size-4" />
                 )}
                 Send test
               </Button>

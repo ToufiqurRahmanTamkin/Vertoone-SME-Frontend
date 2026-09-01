@@ -1,29 +1,14 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { EmailTemplateListItem } from "@/types/domain/emailBuilder";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Copy, Mail, MoreHorizontal, Pencil, Send, Trash2, UploadCloud } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  EmailTemplateRowActions,
+  type EmailTemplateRowActionHandlers,
+} from "./components/EmailTemplateRowActions";
 import { relativeDate, titleCase } from "./emailBuilder.utils";
-
-interface EmailTemplateColumnActions {
-  onSend: (template: EmailTemplateListItem) => void;
-  onTogglePublished: (template: EmailTemplateListItem) => void;
-  onDuplicate: (template: EmailTemplateListItem) => void;
-  onDelete: (template: EmailTemplateListItem) => void;
-  canCreate: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}
 
 export const emailTemplateColumns = ({
   onSend,
@@ -33,7 +18,7 @@ export const emailTemplateColumns = ({
   canCreate,
   canEdit,
   canDelete,
-}: EmailTemplateColumnActions): ColumnDef<EmailTemplateListItem>[] => [
+}: EmailTemplateRowActionHandlers): ColumnDef<EmailTemplateListItem>[] => [
   {
     accessorKey: "name",
     header: "Email",
@@ -62,9 +47,7 @@ export const emailTemplateColumns = ({
   {
     accessorKey: "category",
     header: "Category",
-    cell: ({ row }) => (
-      <Badge variant="secondary">{titleCase(row.original.category)}</Badge>
-    ),
+    cell: ({ row }) => <Badge variant="secondary">{titleCase(row.original.category)}</Badge>,
   },
   {
     accessorKey: "blockCount",
@@ -107,65 +90,17 @@ export const emailTemplateColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const template = row.original;
-      const canSend = template.status === "PUBLISHED";
-
-      return (
-        <div className="flex items-center justify-end gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!canSend || !canCreate}
-                  onClick={() => onSend(template)}
-                >
-                  <Send className="mr-2 size-3.5" />
-                  Send
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {canSend ? "Choose who receives this" : "Publish this email before sending it"}
-            </TooltipContent>
-          </Tooltip>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8" aria-label="More actions">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to={`/business-tools/email-builder/${template._id}`}>
-                  <Pencil className="mr-2 size-4" />
-                  Edit
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!canEdit} onClick={() => onTogglePublished(template)}>
-                <UploadCloud className="mr-2 size-4" />
-                {template.status === "PUBLISHED" ? "Move back to draft" : "Publish"}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!canCreate} onClick={() => onDuplicate(template)}>
-                <Copy className="mr-2 size-4" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={!canDelete}
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete(template)}
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <EmailTemplateRowActions
+        template={row.original}
+        onSend={onSend}
+        onTogglePublished={onTogglePublished}
+        onDuplicate={onDuplicate}
+        onDelete={onDelete}
+        canCreate={canCreate}
+        canEdit={canEdit}
+        canDelete={canDelete}
+      />
+    ),
   },
 ];

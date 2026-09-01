@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { BackLink } from "@/components/shared/back-link";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -28,7 +29,6 @@ import {
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
-  ArrowLeft,
   ExternalLink,
   Inbox,
   Loader2,
@@ -40,7 +40,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import * as React from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { FieldInspector } from "./components/FieldInspector";
 import { FieldLayers } from "./components/FieldLayers";
@@ -82,7 +82,6 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 
 export default function FormBuilderPage() {
   const { formId = "" } = useParams<{ formId: string }>();
-  const navigate = useNavigate();
   const access = useModulePermission("/business-tools/form-builder");
 
   const { data: form, isLoading, isError } = useGetFormQuery(formId, { skip: !formId });
@@ -269,9 +268,12 @@ export default function FormBuilderPage() {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This form is not available</p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
-          <Link to="/business-tools/form-builder">Back to forms</Link>
-        </Button>
+        <BackLink
+          to="/business-tools/form-builder"
+          label="All forms"
+          variant="outline"
+          className="mt-4"
+        />
       </div>
     );
   }
@@ -290,14 +292,6 @@ export default function FormBuilderPage() {
     <div className="flex min-h-[78vh] flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/business-tools/form-builder")}
-            aria-label="Back to forms"
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate text-base font-semibold">{meta.name || "Untitled form"}</h1>
@@ -314,6 +308,8 @@ export default function FormBuilderPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <BackLink to="/business-tools/form-builder" label="All forms" />
+
           <div className="flex items-center rounded-lg border p-0.5">
             {DEVICES.map((entry) => (
               <Tooltip key={entry.value}>
@@ -339,7 +335,7 @@ export default function FormBuilderPage() {
 
           <Button variant="outline" size="sm" asChild>
             <Link to={`/business-tools/form-builder/${form._id}/responses`}>
-              <Inbox className="mr-2 size-4" />
+              <Inbox className="size-4" />
               Responses
               {form.submissionCount > 0 && (
                 <Badge variant="secondary" className="ml-2 tabular-nums">
@@ -350,7 +346,7 @@ export default function FormBuilderPage() {
           </Button>
 
           <Button variant="outline" size="sm" onClick={() => setShareOpen(true)}>
-            <Share2 className="mr-2 size-4" />
+            <Share2 className="size-4" />
             Share
           </Button>
 
@@ -360,7 +356,7 @@ export default function FormBuilderPage() {
             disabled={!isLive}
             onClick={() => window.open(liveUrl, "_blank", "noopener,noreferrer")}
           >
-            <ExternalLink className="mr-2 size-4" />
+            <ExternalLink className="size-4" />
             View live
           </Button>
 
@@ -371,18 +367,18 @@ export default function FormBuilderPage() {
             disabled={!canEdit || !isDirty || isSaving}
           >
             {isSaving ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Save className="mr-2 size-4" />
+              <Save className="size-4" />
             )}
             {isDirty ? "Save" : "Saved"}
           </Button>
 
           <Button size="sm" onClick={publish} disabled={!canEdit || isPublishing}>
             {isPublishing ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <UploadCloud className="mr-2 size-4" />
+              <UploadCloud className="size-4" />
             )}
             Publish
           </Button>

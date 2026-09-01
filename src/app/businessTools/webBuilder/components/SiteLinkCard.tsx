@@ -53,7 +53,7 @@ export function SiteLinkCard({ site, canEdit, isSaving, onPublishChange }: SiteL
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={copyLink}>
-            <Copy className="mr-2 size-4" />
+            <Copy className="size-4" />
             Copy link
           </Button>
           <Button
@@ -61,7 +61,7 @@ export function SiteLinkCard({ site, canEdit, isSaving, onPublishChange }: SiteL
             disabled={!site.isPublished}
             onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
           >
-            <ExternalLink className="mr-2 size-4" />
+            <ExternalLink className="size-4" />
             Open website
           </Button>
         </div>

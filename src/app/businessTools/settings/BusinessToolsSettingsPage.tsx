@@ -298,7 +298,7 @@ function SettingsForm({
 
         <div className="flex justify-end">
           <Button type="submit" disabled={!canEdit || isLoading}>
-            {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {isLoading && <Loader2 className="size-4 animate-spin" />}
             Save settings
           </Button>
         </div>

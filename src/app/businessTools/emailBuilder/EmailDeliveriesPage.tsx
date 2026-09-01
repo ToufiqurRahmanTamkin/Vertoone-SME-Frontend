@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/shared/back-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { type ApiErrorResponse } from "@/redux/baseApi";
@@ -24,10 +24,9 @@ import {
 } from "@/redux/apis/emailBuilderApis";
 import type { EmailDeliveryListItem } from "@/types/domain/emailBuilder";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowLeft, Eye, RotateCw } from "lucide-react";
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { DeliveryRowActions } from "./components/DeliveryRowActions";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -190,40 +189,12 @@ export default function EmailDeliveriesPage() {
         id: "actions",
         header: () => <span className="sr-only">Actions</span>,
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => setPreviewId(row.original._id)}
-                  aria-label="View this email"
-                >
-                  <Eye className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>See what was sent</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    disabled={!access.canCreate}
-                    onClick={() => void resend(row.original)}
-                    aria-label="Send again"
-                  >
-                    <RotateCw className="size-4" />
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>Send this exact copy again</TooltipContent>
-            </Tooltip>
-          </div>
+          <DeliveryRowActions
+            delivery={row.original}
+            onPreview={(delivery) => setPreviewId(delivery._id)}
+            onResend={(delivery) => void resend(delivery)}
+            canResend={access.canCreate}
+          />
         ),
       },
     ],
@@ -235,6 +206,7 @@ export default function EmailDeliveriesPage() {
       <PageHeader
         title="Sent emails"
         description="Every email your team has sent from the Email Builder, with what actually happened to it."
+        actions={<BackLink to="/business-tools/email-builder" label="All emails" />}
       />
 
       <DataTableToolbar
@@ -246,14 +218,6 @@ export default function EmailDeliveriesPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/business-tools/email-builder">
-              <ArrowLeft className="mr-2 size-4" />
-              Back to emails
-            </Link>
-          </Button>
-        }
       />
 
       <DataTable
@@ -287,11 +251,13 @@ export default function EmailDeliveriesPage() {
                 {new Date(delivery.sentAt).toLocaleString()}
               </p>
 
-              <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-                <Button variant="outline" size="sm" onClick={() => setPreviewId(delivery._id)}>
-                  <Eye className="mr-2 size-3.5" />
-                  View
-                </Button>
+              <div className="mt-3 border-t pt-3">
+                <DeliveryRowActions
+                  delivery={delivery}
+                  onPreview={(item) => setPreviewId(item._id)}
+                  onResend={(item) => void resend(item)}
+                  canResend={access.canCreate}
+                />
               </div>
             </div>
           );

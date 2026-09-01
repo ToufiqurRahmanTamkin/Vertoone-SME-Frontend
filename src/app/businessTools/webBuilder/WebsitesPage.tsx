@@ -1,8 +1,7 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
@@ -17,11 +16,15 @@ import {
   useUpdateWebSiteMutation,
 } from "@/redux/apis/webBuilderApis";
 import type { WebSiteListItem } from "@/types/domain/webBuilder";
-import { Files, Plus, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { SiteFormModal } from "./components/SiteFormModal";
+import {
+  WebsiteRowActions,
+  type WebsiteRowActionHandlers,
+} from "./components/WebsiteRowActions";
 import { SiteSettingsDialog } from "./components/SiteSettingsDialog";
 import { absoluteSiteUrl } from "./webBuilder.utils";
 import { websiteColumns } from "./websites.columns";
@@ -90,17 +93,18 @@ export default function WebsitesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      websiteColumns({
-        onSettings: setSettingsFor,
-        onTogglePublished: (site) => void togglePublished(site),
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo<WebsiteRowActionHandlers>(
+    () => ({
+      onSettings: setSettingsFor,
+      onTogglePublished: (site) => void togglePublished(site),
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete, togglePublished]
   );
+
+  const columns = React.useMemo(() => websiteColumns(rowActions), [rowActions]);
 
   return (
     <>
@@ -211,18 +215,8 @@ export default function WebsitesPage() {
               )}
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`/business-tools/web-builder/${site._id}`}>
-                  <Files className="mr-2 size-3.5" />
-                  Pages
-                </Link>
-              </Button>
-              <CardActionButton
-                icon={Settings}
-                label="Settings"
-                onClick={() => setSettingsFor(site)}
-              />
+            <div className="mt-3 border-t pt-3">
+              <WebsiteRowActions site={site} {...rowActions} />
             </div>
           </div>
         )}

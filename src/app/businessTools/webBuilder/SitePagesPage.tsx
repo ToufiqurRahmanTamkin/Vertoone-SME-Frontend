@@ -1,4 +1,5 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { BackLink } from "@/components/shared/back-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -17,9 +18,9 @@ import {
   useUpdateWebSiteMutation,
 } from "@/redux/apis/webBuilderApis";
 import type { WebPageListItem } from "@/types/domain/webBuilder";
-import { ArrowLeft, Plus, Settings } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import * as React from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PageFormModal } from "./components/PageFormModal";
 import { PagesList } from "./components/PagesList";
@@ -72,9 +73,12 @@ export default function SitePagesPage() {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This website is not available</p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
-          <Link to="/business-tools/web-builder">Back to websites</Link>
-        </Button>
+        <BackLink
+          to="/business-tools/web-builder"
+          label="All websites"
+          variant="outline"
+          className="mt-4"
+        />
       </div>
     );
   }
@@ -86,14 +90,9 @@ export default function SitePagesPage() {
         description="The pages that make up this website. Drag to set the order they appear in the menu."
         actions={
           <>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/business-tools/web-builder">
-                <ArrowLeft className="mr-2 size-4" />
-                All websites
-              </Link>
-            </Button>
+            <BackLink to="/business-tools/web-builder" label="All websites" />
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-              <Settings className="mr-2 size-4" />
+              <Settings className="size-4" />
               Settings
             </Button>
             {access.canCreate && (

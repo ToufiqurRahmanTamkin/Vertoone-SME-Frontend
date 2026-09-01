@@ -91,7 +91,7 @@ export function SubmissionDetailSheet({
                 {submission.contactEmail && (
                   <Button variant="outline" size="sm" asChild>
                     <a href={`mailto:${submission.contactEmail}`}>
-                      <Mail className="mr-2 size-4" />
+                      <Mail className="size-4" />
                       Reply
                     </a>
                   </Button>
@@ -102,7 +102,7 @@ export function SubmissionDetailSheet({
                   disabled={!canEdit}
                   onClick={() => onToggleSpam(submission._id, !submission.isSpam)}
                 >
-                  <Ban className="mr-2 size-4" />
+                  <Ban className="size-4" />
                   {submission.isSpam ? "Not spam" : "Mark as spam"}
                 </Button>
                 <Button
@@ -112,7 +112,7 @@ export function SubmissionDetailSheet({
                   disabled={!canDelete}
                   onClick={() => onDelete(submission._id)}
                 >
-                  <Trash2 className="mr-2 size-4" />
+                  <Trash2 className="size-4" />
                   Delete
                 </Button>
               </div>

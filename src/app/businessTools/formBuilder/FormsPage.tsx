@@ -1,8 +1,7 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
@@ -19,11 +18,12 @@ import {
   useUnpublishFormMutation,
 } from "@/redux/apis/formBuilderApis";
 import type { FormListItem, FormStatus } from "@/types/domain/formBuilder";
-import { Inbox, Plus, Share2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { FormFormModal } from "./components/FormFormModal";
+import { FormRowActions, type FormRowActionHandlers } from "./components/FormRowActions";
 import { FormShareDialog } from "./components/FormShareDialog";
 import { absoluteFormUrl } from "./formBuilder.utils";
 import { formColumns } from "./forms.columns";
@@ -110,19 +110,20 @@ export default function FormsPage() {
     setPendingDelete(null);
   };
 
-  const columns = React.useMemo(
-    () =>
-      formColumns({
-        onShare: setShareTarget,
-        onTogglePublished: (form) => void togglePublished(form),
-        onDuplicate: (form) => void duplicate(form),
-        onDelete: setPendingDelete,
-        canCreate: access.canCreate,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo<FormRowActionHandlers>(
+    () => ({
+      onShare: setShareTarget,
+      onTogglePublished: (form) => void togglePublished(form),
+      onDuplicate: (form) => void duplicate(form),
+      onDelete: setPendingDelete,
+      canCreate: access.canCreate,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canCreate, access.canEdit, access.canDelete, togglePublished, duplicate]
   );
+
+  const columns = React.useMemo(() => formColumns(rowActions), [rowActions]);
 
   return (
     <>
@@ -231,18 +232,8 @@ export default function FormsPage() {
               {form.hasUnpublishedChanges && <Badge variant="outline">Changes pending</Badge>}
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`/business-tools/form-builder/${form._id}/responses`}>
-                  <Inbox className="mr-2 size-3.5" />
-                  Responses
-                </Link>
-              </Button>
-              <CardActionButton
-                icon={Share2}
-                label="Share"
-                onClick={() => setShareTarget(form)}
-              />
+            <div className="mt-3 border-t pt-3">
+              <FormRowActions form={form} {...rowActions} />
             </div>
           </div>
         )}

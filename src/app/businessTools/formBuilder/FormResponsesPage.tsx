@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/shared/back-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +24,15 @@ import {
 } from "@/redux/apis/formBuilderApis";
 import type { SubmissionListItem } from "@/types/domain/formBuilder";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowLeft, CheckCheck, Download, Pencil, Trash2 } from "lucide-react";
+import { CheckCheck, Download } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  SubmissionRowActions,
+  type SubmissionRowActionHandlers,
+} from "./components/SubmissionRowActions";
 import { SubmissionDetailSheet } from "./components/SubmissionDetailSheet";
 
 const FILTERS: FilterConfig[] = [
@@ -130,6 +135,31 @@ export default function FormResponsesPage() {
     }
   };
 
+  const toggleSpam = React.useCallback(
+    (submission: SubmissionListItem) =>
+      void run(
+        updateSubmission({
+          formId,
+          id: submission._id,
+          body: { isSpam: !submission.isSpam },
+        }).unwrap(),
+        submission.isSpam ? "No longer marked as spam" : "Marked as spam",
+        "Could not update the response"
+      ),
+    [formId, updateSubmission]
+  );
+
+  const rowActions = React.useMemo<SubmissionRowActionHandlers>(
+    () => ({
+      onOpen: (submission) => setOpenId(submission._id),
+      onToggleSpam: toggleSpam,
+      onDelete: (submission) => setPendingDelete(submission._id),
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
+    [toggleSpam, access.canEdit, access.canDelete]
+  );
+
   const columns = React.useMemo<ColumnDef<SubmissionListItem>[]>(
     () => [
       {
@@ -188,31 +218,10 @@ export default function FormResponsesPage() {
       {
         id: "actions",
         header: () => <span className="sr-only">Actions</span>,
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setOpenId(row.original._id)}
-            >
-              <Pencil className="mr-2 size-3.5" />
-              Open
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-destructive hover:text-destructive"
-              disabled={!access.canDelete}
-              onClick={() => setPendingDelete(row.original._id)}
-              aria-label="Delete response"
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => <SubmissionRowActions submission={row.original} {...rowActions} />,
       },
     ],
-    [access.canDelete]
+    [rowActions]
   );
 
   if (isLoadingForm) {
@@ -223,9 +232,12 @@ export default function FormResponsesPage() {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This form is not available</p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
-          <Link to="/business-tools/form-builder">Back to forms</Link>
-        </Button>
+        <BackLink
+          to="/business-tools/form-builder"
+          label="All forms"
+          variant="outline"
+          className="mt-4"
+        />
       </div>
     );
   }
@@ -241,12 +253,7 @@ export default function FormResponsesPage() {
         }
         actions={
           <>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/business-tools/form-builder/${formId}`}>
-                <ArrowLeft className="mr-2 size-4" />
-                Back to the builder
-              </Link>
-            </Button>
+            <BackLink to={`/business-tools/form-builder/${formId}`} label="Back to the form" />
             <Button
               variant="outline"
               size="sm"
@@ -259,7 +266,7 @@ export default function FormResponsesPage() {
                 )
               }
             >
-              <CheckCheck className="mr-2 size-4" />
+              <CheckCheck className="size-4" />
               Mark all read
             </Button>
             <Button
@@ -267,7 +274,7 @@ export default function FormResponsesPage() {
               disabled={isExporting || (summary?.totalSubmissions ?? 0) === 0}
               onClick={() => void exportCsv()}
             >
-              <Download className="mr-2 size-4" />
+              <Download className="size-4" />
               Export CSV
             </Button>
           </>
@@ -321,31 +328,37 @@ export default function FormResponsesPage() {
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
         mobileCard={(submission) => (
-          <button
-            type="button"
-            onClick={() => setOpenId(submission._id)}
-            className="w-full rounded-xl border bg-card p-4 text-left"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <span className="flex items-center gap-2">
-                  {!submission.isRead && (
-                    <span className="size-2 shrink-0 rounded-full bg-primary" />
-                  )}
-                  <span className="truncate text-sm font-semibold">
-                    {submission.contactName || submission.contactEmail || "Response"}
+          <div className="rounded-xl border bg-card p-4">
+            <button
+              type="button"
+              onClick={() => setOpenId(submission._id)}
+              className="w-full text-left"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="flex items-center gap-2">
+                    {!submission.isRead && (
+                      <span className="size-2 shrink-0 rounded-full bg-primary" />
+                    )}
+                    <span className="truncate text-sm font-semibold">
+                      {submission.contactName || submission.contactEmail || "Response"}
+                    </span>
                   </span>
-                </span>
-                <span className="line-clamp-2 text-[11px] text-muted-foreground">
-                  {submission.summary || "No answers"}
-                </span>
+                  <span className="line-clamp-2 text-[11px] text-muted-foreground">
+                    {submission.summary || "No answers"}
+                  </span>
+                </div>
+                {submission.isSpam && <StatusBadge color="red" label="Spam" />}
               </div>
-              {submission.isSpam && <StatusBadge color="red" label="Spam" />}
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                {new Date(submission.submittedAt).toLocaleString()}
+              </p>
+            </button>
+
+            <div className="mt-3 border-t pt-3">
+              <SubmissionRowActions submission={submission} {...rowActions} />
             </div>
-            <p className="mt-3 border-t pt-3 text-[11px] text-muted-foreground">
-              {new Date(submission.submittedAt).toLocaleString()}
-            </p>
-          </button>
+          </div>
         )}
       />
 

@@ -1,35 +1,10 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { WebSiteListItem } from "@/types/domain/webBuilder";
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  ExternalLink,
-  Files,
-  Globe,
-  MoreHorizontal,
-  Settings,
-  Trash2,
-  UploadCloud,
-} from "lucide-react";
+import { Globe } from "lucide-react";
 import { Link } from "react-router-dom";
-import { absoluteSiteUrl } from "./webBuilder.utils";
-
-interface WebsiteColumnActions {
-  onSettings: (site: WebSiteListItem) => void;
-  onTogglePublished: (site: WebSiteListItem) => void;
-  onDelete: (site: WebSiteListItem) => void;
-  canEdit: boolean;
-  canDelete: boolean;
-}
+import { WebsiteRowActions, type WebsiteRowActionHandlers } from "./components/WebsiteRowActions";
 
 export const websiteColumns = ({
   onSettings,
@@ -37,7 +12,7 @@ export const websiteColumns = ({
   onDelete,
   canEdit,
   canDelete,
-}: WebsiteColumnActions): ColumnDef<WebSiteListItem>[] => [
+}: WebsiteRowActionHandlers): ColumnDef<WebSiteListItem>[] => [
   {
     accessorKey: "name",
     header: "Website",
@@ -114,65 +89,15 @@ export const websiteColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const site = row.original;
-      const url = absoluteSiteUrl(site.publicUrl, site.publicPath);
-
-      return (
-        <div className="flex items-center justify-end gap-1">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/business-tools/web-builder/${site._id}`}>
-              <Files className="mr-2 size-3.5" />
-              Pages
-            </Link>
-          </Button>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={() => onSettings(site)}
-                aria-label={`Settings for ${site.name}`}
-              >
-                <Settings className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Website settings</TooltipContent>
-          </Tooltip>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8" aria-label="More actions">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                disabled={!site.isPublished}
-                onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
-              >
-                <ExternalLink className="mr-2 size-4" />
-                View live
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!canEdit} onClick={() => onTogglePublished(site)}>
-                <UploadCloud className="mr-2 size-4" />
-                {site.isPublished ? "Take offline" : "Take live"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={!canDelete}
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete(site)}
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <WebsiteRowActions
+        site={row.original}
+        onSettings={onSettings}
+        onTogglePublished={onTogglePublished}
+        onDelete={onDelete}
+        canEdit={canEdit}
+        canDelete={canDelete}
+      />
+    ),
   },
 ];

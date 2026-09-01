@@ -1,39 +1,10 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { FormListItem } from "@/types/domain/formBuilder";
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  ClipboardList,
-  Copy,
-  ExternalLink,
-  Inbox,
-  MoreHorizontal,
-  Pencil,
-  Share2,
-  Trash2,
-  UploadCloud,
-} from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
-import { absoluteFormUrl } from "./formBuilder.utils";
-
-interface FormColumnActions {
-  onShare: (form: FormListItem) => void;
-  onTogglePublished: (form: FormListItem) => void;
-  onDuplicate: (form: FormListItem) => void;
-  onDelete: (form: FormListItem) => void;
-  canCreate: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}
+import { FormRowActions, type FormRowActionHandlers } from "./components/FormRowActions";
 
 const relativeDate = (value: string | null): string => {
   if (!value) return "No responses yet";
@@ -54,7 +25,7 @@ export const formColumns = ({
   canCreate,
   canEdit,
   canDelete,
-}: FormColumnActions): ColumnDef<FormListItem>[] => [
+}: FormRowActionHandlers): ColumnDef<FormListItem>[] => [
   {
     accessorKey: "name",
     header: "Form",
@@ -131,75 +102,17 @@ export const formColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const form = row.original;
-      const url = absoluteFormUrl(form.publicUrl, form.publicPath);
-
-      return (
-        <div className="flex items-center justify-end gap-1">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/business-tools/form-builder/${form._id}/responses`}>
-              <Inbox className="mr-2 size-3.5" />
-              Responses
-            </Link>
-          </Button>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={() => onShare(form)}
-                aria-label={`Share ${form.name}`}
-              >
-                <Share2 className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Share this form</TooltipContent>
-          </Tooltip>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8" aria-label="More actions">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to={`/business-tools/form-builder/${form._id}`}>
-                  <Pencil className="mr-2 size-4" />
-                  Edit
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={form.status !== "PUBLISHED"}
-                onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
-              >
-                <ExternalLink className="mr-2 size-4" />
-                View live
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!canEdit} onClick={() => onTogglePublished(form)}>
-                <UploadCloud className="mr-2 size-4" />
-                {form.status === "PUBLISHED" ? "Take offline" : "Publish"}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!canCreate} onClick={() => onDuplicate(form)}>
-                <Copy className="mr-2 size-4" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={!canDelete}
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete(form)}
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <FormRowActions
+        form={row.original}
+        onShare={onShare}
+        onTogglePublished={onTogglePublished}
+        onDuplicate={onDuplicate}
+        onDelete={onDelete}
+        canCreate={canCreate}
+        canEdit={canEdit}
+        canDelete={canDelete}
+      />
+    ),
   },
 ];

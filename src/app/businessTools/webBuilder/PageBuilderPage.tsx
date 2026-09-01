@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { BackLink } from "@/components/shared/back-link";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -28,7 +29,6 @@ import {
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
-  ArrowLeft,
   ExternalLink,
   Loader2,
   Monitor,
@@ -38,7 +38,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import * as React from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { BlockInspector } from "./components/BlockInspector";
 import { BlockLayers } from "./components/BlockLayers";
@@ -79,7 +79,6 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 
 export default function PageBuilderPage() {
   const { siteId = "", pageId = "" } = useParams<{ siteId: string; pageId: string }>();
-  const navigate = useNavigate();
   const access = useModulePermission("/business-tools/web-builder");
 
   const {
@@ -269,9 +268,12 @@ export default function PageBuilderPage() {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This page is not available</p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
-          <Link to={`/business-tools/web-builder/${siteId}`}>Back to the website</Link>
-        </Button>
+        <BackLink
+          to={`/business-tools/web-builder/${siteId}`}
+          label="All pages"
+          variant="outline"
+          className="mt-4"
+        />
       </div>
     );
   }
@@ -287,14 +289,6 @@ export default function PageBuilderPage() {
     <div className="flex min-h-[78vh] flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/business-tools/web-builder/${siteId}`)}
-            aria-label="Back to the site"
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="truncate text-base font-semibold">{meta.title || "Untitled page"}</h1>
@@ -311,6 +305,8 @@ export default function PageBuilderPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <BackLink to={`/business-tools/web-builder/${siteId}`} label="All pages" />
+
           <div className="flex items-center rounded-lg border p-0.5">
             {DEVICES.map((entry) => (
               <Tooltip key={entry.value}>
@@ -340,24 +336,24 @@ export default function PageBuilderPage() {
             disabled={page.status !== "PUBLISHED"}
             onClick={() => window.open(liveUrl, "_blank", "noopener,noreferrer")}
           >
-            <ExternalLink className="mr-2 size-4" />
+            <ExternalLink className="size-4" />
             View live
           </Button>
 
           <Button size="sm" variant="outline" onClick={save} disabled={!canEdit || !isDirty || isSaving}>
             {isSaving ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Save className="mr-2 size-4" />
+              <Save className="size-4" />
             )}
             {isDirty ? "Save" : "Saved"}
           </Button>
 
           <Button size="sm" onClick={publish} disabled={!canEdit || isPublishing || blocks.length === 0}>
             {isPublishing ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <UploadCloud className="mr-2 size-4" />
+              <UploadCloud className="size-4" />
             )}
             Publish
           </Button>

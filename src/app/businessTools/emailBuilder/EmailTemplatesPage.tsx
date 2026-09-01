@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +24,15 @@ import type {
   EmailTemplateStatus,
 } from "@/types/domain/emailBuilder";
 import { EMAIL_TEMPLATE_CATEGORIES } from "@/types/domain/emailBuilder";
-import { History, Plus, Send } from "lucide-react";
+import { History, Plus } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { EmailTemplateFormModal } from "./components/EmailTemplateFormModal";
+import {
+  EmailTemplateRowActions,
+  type EmailTemplateRowActionHandlers,
+} from "./components/EmailTemplateRowActions";
 import { SendEmailDialog } from "./components/SendEmailDialog";
 import { emailTemplateColumns } from "./emailTemplates.columns";
 import { titleCase } from "./emailBuilder.utils";
@@ -133,19 +137,20 @@ export default function EmailTemplatesPage() {
     setPendingDelete(null);
   };
 
-  const columns = React.useMemo(
-    () =>
-      emailTemplateColumns({
-        onSend: setSendTarget,
-        onTogglePublished: (template) => void togglePublished(template),
-        onDuplicate: (template) => void duplicate(template),
-        onDelete: setPendingDelete,
-        canCreate: access.canCreate,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo<EmailTemplateRowActionHandlers>(
+    () => ({
+      onSend: setSendTarget,
+      onTogglePublished: (template) => void togglePublished(template),
+      onDuplicate: (template) => void duplicate(template),
+      onDelete: setPendingDelete,
+      canCreate: access.canCreate,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canCreate, access.canEdit, access.canDelete, togglePublished, duplicate]
   );
+
+  const columns = React.useMemo(() => emailTemplateColumns(rowActions), [rowActions]);
 
   return (
     <>
@@ -199,7 +204,7 @@ export default function EmailTemplatesPage() {
           <>
             <Button variant="outline" size="sm" asChild>
               <Link to="/business-tools/email-builder/deliveries">
-                <History className="mr-2 size-4" />
+                <History className="size-4" />
                 Sent history
               </Link>
             </Button>
@@ -269,12 +274,8 @@ export default function EmailTemplatesPage() {
               </Badge>
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Send}
-                label="Send"
-                onClick={() => setSendTarget(template)}
-              />
+            <div className="mt-3 border-t pt-3">
+              <EmailTemplateRowActions template={template} {...rowActions} />
             </div>
           </div>
         )}

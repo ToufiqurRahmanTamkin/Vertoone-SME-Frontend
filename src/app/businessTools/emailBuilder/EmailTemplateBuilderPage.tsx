@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { BackLink } from "@/components/shared/back-link";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -32,7 +33,6 @@ import {
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
-  ArrowLeft,
   Loader2,
   Monitor,
   Save,
@@ -41,7 +41,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import * as React from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { EmailBlockInspector } from "./components/EmailBlockInspector";
 import { EmailBlockLayers } from "./components/EmailBlockLayers";
@@ -83,7 +83,6 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 
 export default function EmailTemplateBuilderPage() {
   const { templateId = "" } = useParams<{ templateId: string }>();
-  const navigate = useNavigate();
   const access = useModulePermission("/business-tools/email-builder");
 
   const {
@@ -277,9 +276,12 @@ export default function EmailTemplateBuilderPage() {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This email is not available</p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
-          <Link to="/business-tools/email-builder">Back to your emails</Link>
-        </Button>
+        <BackLink
+          to="/business-tools/email-builder"
+          label="All emails"
+          variant="outline"
+          className="mt-4"
+        />
       </div>
     );
   }
@@ -295,14 +297,6 @@ export default function EmailTemplateBuilderPage() {
     <div className="flex min-h-[78vh] flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/business-tools/email-builder")}
-            aria-label="Back to your emails"
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate text-base font-semibold">{meta.name || "Untitled email"}</h1>
@@ -320,6 +314,8 @@ export default function EmailTemplateBuilderPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <BackLink to="/business-tools/email-builder" label="All emails" />
+
           <div className="flex items-center rounded-lg border p-0.5">
             {DEVICES.map((entry) => (
               <Tooltip key={entry.value}>
@@ -344,7 +340,7 @@ export default function EmailTemplateBuilderPage() {
           </div>
 
           <Button variant="outline" size="sm" onClick={() => setTestOpen(true)}>
-            <Send className="mr-2 size-4" />
+            <Send className="size-4" />
             Test
           </Button>
 
@@ -355,9 +351,9 @@ export default function EmailTemplateBuilderPage() {
             disabled={!canEdit || !isDirty || isSaving}
           >
             {isSaving ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Save className="mr-2 size-4" />
+              <Save className="size-4" />
             )}
             {isDirty ? "Save" : "Saved"}
           </Button>
@@ -369,9 +365,9 @@ export default function EmailTemplateBuilderPage() {
             disabled={!canEdit || isPublishing || blocks.length === 0}
           >
             {isPublishing ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <UploadCloud className="mr-2 size-4" />
+              <UploadCloud className="size-4" />
             )}
             Publish
           </Button>
@@ -384,7 +380,7 @@ export default function EmailTemplateBuilderPage() {
                   disabled={!access.canCreate || !isLive || isDirty}
                   onClick={() => setSendTarget({ ...template, name: meta.name })}
                 >
-                  <Send className="mr-2 size-4" />
+                  <Send className="size-4" />
                   Send
                 </Button>
               </span>

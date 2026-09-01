@@ -145,7 +145,7 @@ export function FieldOptionsEditor({
               ])
             }
           >
-            <Plus className="mr-2 size-4" />
+            <Plus className="size-4" />
             Add option
           </Button>
         </>

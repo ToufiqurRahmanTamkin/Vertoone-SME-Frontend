@@ -205,7 +205,7 @@ function RepeaterField({
         disabled={disabled || items.length >= max}
         onClick={() => onChange([...items, defaultPropsOf(subFields)])}
       >
-        <Plus className="mr-2 size-4" />
+        <Plus className="size-4" />
         Add {(field.itemLabel ?? "item").toLowerCase()}
       </Button>
     </div>
