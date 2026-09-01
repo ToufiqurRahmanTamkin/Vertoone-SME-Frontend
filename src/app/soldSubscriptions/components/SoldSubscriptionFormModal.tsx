@@ -41,7 +41,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 interface SoldSubscriptionFormModalProps {
@@ -130,8 +130,8 @@ export function SoldSubscriptionFormModal({
   const onPlanChange = (planId: string) => {
     const plan = plans.find((p) => p._id === planId);
     if (!plan) return;
-    form.setValue("amount", plan.price, { shouldValidate: true });
-    form.setValue("currency", plan.currency, { shouldValidate: true });
+    form.setValue("amount", plan.price, { shouldValidate: true, shouldDirty: true });
+    form.setValue("currency", plan.currency, { shouldValidate: true, shouldDirty: true });
     const start = form.getValues("startDate");
     const startDate = start ? new Date(start) : new Date();
     form.setValue(
@@ -142,6 +142,10 @@ export function SoldSubscriptionFormModal({
       }
     );
   };
+
+  const selectedPlanId = useWatch({ control: form.control, name: "planId" });
+  const amountDescription =
+    isEdit || selectedPlanId ? "Taken from the plan." : "Select a plan to fill this in.";
 
   const planOptions = plans.map((plan) => ({
     value: plan._id,
@@ -191,7 +195,7 @@ export function SoldSubscriptionFormModal({
           <DialogDescription>
             {isEdit
               ? "The plan and invoice number are fixed once a sale is recorded."
-              : "Selecting a plan fills in the price, currency and end date. Any of them can be changed."}
+              : "Selecting a plan sets the price and currency. The end date follows the billing cycle and can be changed."}
           </DialogDescription>
         </DialogHeader>
 
@@ -237,8 +241,21 @@ export function SoldSubscriptionFormModal({
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput control={form.control} name="amount" label="Amount" type="number" />
-                <FormInput control={form.control} name="currency" label="Currency" />
+                <FormInput
+                  control={form.control}
+                  name="amount"
+                  label="Amount"
+                  type="number"
+                  disabled
+                  description={amountDescription}
+                />
+                <FormInput
+                  control={form.control}
+                  name="currency"
+                  label="Currency"
+                  disabled
+                  description={amountDescription}
+                />
                 <FormDate control={form.control} name="startDate" label="Start date" dateOnly />
                 <FormDate control={form.control} name="endDate" label="End date" dateOnly />
               </div>

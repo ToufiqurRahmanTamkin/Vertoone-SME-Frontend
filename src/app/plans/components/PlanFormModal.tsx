@@ -13,9 +13,11 @@ import {
 import { Form } from "@/components/ui/form";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
+import { useGetFinanceCategoriesQuery } from "@/redux/apis/financeApis";
 import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import { categoryRefId } from "@/types/domain/finance";
 import { prunePermissionMap, type ModulePermissionMap } from "@/types/domain/permission";
 import {
   DEFAULT_CURRENCY,
@@ -48,7 +50,16 @@ const STEPS: readonly StepperStep[] = [
 ];
 
 const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
-  ["name", "billingCycle", "price", "currency", "trialDays", "description", "features"],
+  [
+    "name",
+    "billingCycle",
+    "price",
+    "currency",
+    "financeCategoryId",
+    "trialDays",
+    "description",
+    "features",
+  ],
   ["limitUsers"],
   ["isActive", "autoRenewEnabled", "isPrivate"],
 ];
@@ -70,6 +81,7 @@ const emptyValues = (currency: string): PlanFormValues => ({
   description: "",
   price: 0,
   currency: resolveCurrency(currency),
+  financeCategoryId: "",
   billingCycle: "MONTHLY",
   features: "",
   limitUsers: "",
@@ -84,6 +96,7 @@ const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   description: plan.description ?? "",
   price: plan.price,
   currency: resolveCurrency(plan.currency),
+  financeCategoryId: plan.financeCategoryId ? categoryRefId(plan.financeCategoryId) : "",
   billingCycle: plan.billingCycle,
   features: (plan.features ?? []).join("\n"),
   limitUsers: plan.limits?.users ?? "",
@@ -103,6 +116,17 @@ export function PlanFormModal({
   const [createPlan, { isLoading: isCreating }] = useCreatePlanMutation();
   const [updatePlan, { isLoading: isUpdating }] = useUpdatePlanMutation();
   const isSaving = isCreating || isUpdating;
+
+  const { data: categoryData } = useGetFinanceCategoriesQuery({
+    limit: 100,
+    type: "INCOME",
+    isActive: true as never,
+  });
+
+  const incomeCategoryOptions = React.useMemo(
+    () => (categoryData?.data ?? []).map((category) => ({ value: category._id, label: category.name })),
+    [categoryData]
+  );
 
   const { data: catalogue = [] } = useGetModuleCatalogueQuery();
   const companyModules = React.useMemo(
@@ -161,6 +185,7 @@ export function PlanFormModal({
       description: values.description,
       price: values.price,
       currency: values.currency,
+      financeCategoryId: values.financeCategoryId,
       billingCycle: values.billingCycle,
       features: parseFeatures(values.features),
       limits: { users: toLimit(values.limitUsers) },
@@ -206,6 +231,9 @@ export function PlanFormModal({
   );
 
   const summary = useWatch({ control: form.control });
+
+  const selectedCategoryName =
+    incomeCategoryOptions.find((option) => option.value === summary.financeCategoryId)?.label ?? "—";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -266,6 +294,16 @@ export function PlanFormModal({
                     label="Trial days"
                     type="number"
                     className="col-span-3 sm:col-span-2"
+                  />
+                  <FormSelect
+                    control={form.control}
+                    name="financeCategoryId"
+                    label="Income category"
+                    placeholder="Select an income category"
+                    options={incomeCategoryOptions}
+                    description="Sales of this plan are booked as income under this category."
+                    className="col-span-6"
+                    searchable
                   />
 
                   <FormTextarea
@@ -340,7 +378,7 @@ export function PlanFormModal({
                     />
                   </div>
 
-                  <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">
+                  <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-5">
                     <div>
                       <dt className="text-xs text-muted-foreground">Plan</dt>
                       <dd className="truncate font-medium">{summary.name || "—"}</dd>
@@ -361,6 +399,10 @@ export function PlanFormModal({
                     <div>
                       <dt className="text-xs text-muted-foreground">Menus</dt>
                       <dd className="font-medium">{selectedModuleCount} enabled</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Income category</dt>
+                      <dd className="truncate font-medium">{selectedCategoryName}</dd>
                     </div>
                   </dl>
                 </div>

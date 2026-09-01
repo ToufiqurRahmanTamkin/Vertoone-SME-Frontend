@@ -47,6 +47,20 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
   ],
   CONTACTS: ["Contacts", "ContactSummary", "ContactOptions", "Leads"],
   LEADS: ["Leads", "LeadSummary"],
+  PIPELINES: ["Pipelines", "PipelineSummary", "PipelineOptions", "PipelineBoard"],
+  PIPELINE_ENTRIES: [
+    "PipelineEntries",
+    "PipelineEntrySummary",
+    "PipelineBoard",
+    "Pipelines",
+    "PipelineSummary",
+  ],
+  PIPELINE_ACTIVITIES: [
+    "PipelineActivities",
+    "PipelineActivitySummary",
+    "PipelineBoard",
+    "PipelineEntries",
+  ],
   SUPPLIERS: ["Suppliers", "SupplierSummary", "SupplierOptions"],
   PRODUCTS: ["Products", "ProductSummary", "ProductOptions"],
   PRODUCT_CATEGORIES: [

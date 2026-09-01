@@ -17,6 +17,7 @@ export * from "./loginHistory";
 export * from "./meetingRoom";
 export * from "./notification";
 export * from "./permission";
+export * from "./pipeline";
 export * from "./plan";
 export * from "./report";
 export * from "./role";

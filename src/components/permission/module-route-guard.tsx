@@ -11,8 +11,14 @@ export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
   const { modules, role, isLoading } = usePermissions();
 
   const moduleKey = React.useMemo(() => {
-    const lookup = findMenuItemByPath(pathname, role);
-    return lookup ? menuModuleKey(lookup.item) : moduleKeyFromPath(pathname);
+    const segments = pathname.replace(/^\/+/, "").split("/").filter(Boolean);
+
+    for (let depth = segments.length; depth > 0; depth -= 1) {
+      const lookup = findMenuItemByPath(`/${segments.slice(0, depth).join("/")}`, role);
+      if (lookup) return menuModuleKey(lookup.item);
+    }
+
+    return moduleKeyFromPath(pathname);
   }, [pathname, role]);
 
   if (isLoading) {

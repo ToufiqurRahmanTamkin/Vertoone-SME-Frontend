@@ -89,6 +89,7 @@ export interface ContactListQuery {
 
 export interface ContactOptionQuery {
   search?: string;
+  contactTypeId?: string;
 }
 
 export interface ContactSummary {

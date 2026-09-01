@@ -46,6 +46,8 @@ const LeadSources = lazy(() => import("@/app/crm/leadSources/LeadSourcesPage"));
 const ContactTypes = lazy(() => import("@/app/crm/contactTypes/ContactTypesPage"));
 const Contacts = lazy(() => import("@/app/crm/contacts/ContactsPage"));
 const Leads = lazy(() => import("@/app/crm/leads/LeadsPage"));
+const Pipelines = lazy(() => import("@/app/crm/pipelines/PipelinesPage"));
+const PipelineDetail = lazy(() => import("@/app/crm/pipelines/PipelineDetailPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
 const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
 const Products = lazy(() => import("@/app/sme/products/list/ProductsPage"));
@@ -145,6 +147,8 @@ const builtRoutes: RouteConfig[] = [
   { path: "settings/crm/contact-types", element: <ContactTypes /> },
   { path: "crm/contacts", element: <Contacts /> },
   { path: "crm/leads", element: <Leads /> },
+  { path: "crm/pipelines", element: <Pipelines /> },
+  { path: "crm/pipelines/:id", element: <PipelineDetail /> },
   { path: "settings/workspace/calendar", element: <CalendarSettings /> },
   { path: "settings/account", element: <AccountSettings /> },
 ];
@@ -204,7 +208,7 @@ const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
   .filter((path) => path && !builtRoutes.some((route) => route.path === path))
   .map((path) => ({ path, element: <ModulePlaceholder /> }));
 
-const ROUTES_WITHOUT_MENU = new Set(["my-company"]);
+const ROUTES_WITHOUT_MENU = new Set(["my-company", "crm/pipelines/:id"]);
 
 const assertRouteCoverage = (): void => {
   const menuPaths = new Set(getMenuLeafPaths().map((path) => path.replace(/^\//, "")));

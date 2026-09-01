@@ -10,6 +10,7 @@ export const PlanSchema = z.object({
   description: z.string().trim().max(500, "Description must be 500 characters or fewer"),
   price: z.number().min(0, "Price cannot be negative"),
   currency: z.enum(SUPPORTED_CURRENCIES),
+  financeCategoryId: z.string().min(1, "Select an income category"),
   billingCycle: z.enum(BILLING_CYCLES),
   features: z.string().max(4000).optional(),
   limitUsers: limitField,

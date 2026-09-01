@@ -24,6 +24,7 @@ interface DataTableProps<TData, TValue> {
   mobileCard?: (row: TData) => ReactNode;
   expandableContent?: (row: TData) => ReactNode;
   getRowId?: (row: TData) => string;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -36,6 +37,7 @@ export function DataTable<TData, TValue>({
   mobileCard,
   expandableContent,
   getRowId,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -98,9 +100,16 @@ export function DataTable<TData, TValue>({
                   return (
                     <Fragment key={row.id}>
                       <TableRow
-                        className={expandableContent ? "cursor-pointer hover:bg-muted/50" : undefined}
+                        className={
+                          expandableContent || onRowClick
+                            ? "cursor-pointer hover:bg-muted/50"
+                            : undefined
+                        }
                         data-state={row.getIsSelected() && "selected"}
-                        onClick={() => expandableContent && toggleRow(rowId)}
+                        onClick={() => {
+                          if (expandableContent) toggleRow(rowId);
+                          onRowClick?.(row.original);
+                        }}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>

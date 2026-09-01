@@ -1,3 +1,4 @@
+import type { FinanceCategoryRef } from "./finance";
 import type { ModulePermissionMap } from "./permission";
 
 export const BILLING_CYCLES = ["MONTHLY", "QUARTERLY", "HALF_YEARLY", "YEARLY"] as const;
@@ -31,6 +32,7 @@ export interface SubscriptionPlan {
   description: string;
   price: number;
   currency: string;
+  financeCategoryId?: FinanceCategoryRef;
   billingCycle: BillingCycle;
   features: string[];
   limits: PlanLimits;
@@ -60,6 +62,7 @@ export interface PlanPayload {
   description?: string;
   price: number;
   currency?: string;
+  financeCategoryId: string;
   billingCycle: BillingCycle;
   features?: string[];
   limits?: Partial<PlanLimits>;
