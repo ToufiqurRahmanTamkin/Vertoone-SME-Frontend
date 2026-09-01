@@ -9,4 +9,5 @@ export * from "./form-phone";
 export * from "./form-select";
 export * from "./form-switch";
 export * from "./form-textarea";
+export * from "./form-location";
 export * from "./types";

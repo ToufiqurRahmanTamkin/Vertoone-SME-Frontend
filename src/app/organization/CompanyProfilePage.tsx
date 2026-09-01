@@ -1,5 +1,7 @@
 import { FileUploader } from "@/components/shared/file-uploader";
 import {
+  FormCitySelect,
+  FormCountrySelect,
   FormInput,
   FormPhone,
   FormSelect,
@@ -88,6 +90,7 @@ export default function CompanyProfilePage() {
   const bannerPublicId = useWatch({ control: form.control, name: "bannerPublicId" });
   const name = useWatch({ control: form.control, name: "name" });
   const tagline = useWatch({ control: form.control, name: "tagline" });
+  const country = useWatch({ control: form.control, name: "country" });
 
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -286,14 +289,21 @@ export default function CompanyProfilePage() {
             title="Address"
             description="The registered address printed on official documents."
           >
-            <FormInput
-              control={form.control}
-              name="address"
-              label="Street address"
-              placeholder="House 12, Road 5, Banani"
-            />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <FormInput control={form.control} name="city" label="City" placeholder="Dhaka" />
+              <FormCountrySelect
+                control={form.control}
+                name="country"
+                label="Country"
+                placeholder="Bangladesh"
+                onValueChange={() => form.setValue("city", "", { shouldDirty: true })}
+              />
+              <FormCitySelect
+                control={form.control}
+                name="city"
+                label="City"
+                placeholder="Dhaka"
+                countryName={country}
+              />
               <FormInput
                 control={form.control}
                 name="state"
@@ -306,13 +316,13 @@ export default function CompanyProfilePage() {
                 label="Postal code"
                 placeholder="1213"
               />
-              <FormInput
-                control={form.control}
-                name="country"
-                label="Country"
-                placeholder="Bangladesh"
-              />
             </div>
+            <FormInput
+              control={form.control}
+              name="address"
+              label="Street address"
+              placeholder="House 12, Road 5, Banani"
+            />
           </SectionCard>
 
           <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/95 px-4 py-3 shadow-sm backdrop-blur">
