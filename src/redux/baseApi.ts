@@ -9,6 +9,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { Mutex } from "async-mutex";
 import { logOut, setCredentials, type User } from "./authSlice";
+import type { UserRole } from "@/types/domain/auth";
 
 const mutex = new Mutex();
 
@@ -69,6 +70,22 @@ const isPublicRequest = (args: string | FetchArgs): boolean => {
   return PUBLIC_ENDPOINT_PATHS.some((publicPath) => path.startsWith(publicPath));
 };
 
+const PLATFORM_FINANCE_PREFIX = "/finance/";
+const COMPANY_FINANCE_PREFIX = "/company-finance/";
+
+const scopeFinanceUrl = (
+  args: string | FetchArgs,
+  role: UserRole | undefined
+): string | FetchArgs => {
+  if (!role || role === "SUPER_ADMIN") return args;
+
+  const url = typeof args === "string" ? args : args.url;
+  if (!url.startsWith(PLATFORM_FINANCE_PREFIX)) return args;
+
+  const scoped = `${COMPANY_FINANCE_PREFIX}${url.slice(PLATFORM_FINANCE_PREFIX.length)}`;
+  return typeof args === "string" ? scoped : { ...args, url: scoped };
+};
+
 const redirectToLogin = () => {
   if (typeof window === "undefined") return;
   const basename = (import.meta.env.VITE_BASENAME || "").replace(/\/+$/, "");
@@ -81,7 +98,10 @@ export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
-> = async (args, api, extraOptions) => {
+> = async (rawArgs, api, extraOptions) => {
+  const role = (api.getState() as { auth: { user: User | null } }).auth.user?.role;
+  const args = scopeFinanceUrl(rawArgs, role);
+
   await mutex.waitForUnlock();
   let result = await baseQuery(args, api, extraOptions);
 

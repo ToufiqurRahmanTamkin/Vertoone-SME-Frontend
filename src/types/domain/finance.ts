@@ -120,6 +120,7 @@ export interface IncomePayload {
   reference?: string;
   notes?: string;
   invoiceId?: string | null;
+  raiseInvoice?: boolean;
 }
 
 export interface ExpenseListQuery {
@@ -147,4 +148,5 @@ export interface ExpensePayload {
   reference?: string;
   notes?: string;
   invoiceId?: string | null;
+  raiseInvoice?: boolean;
 }

@@ -77,7 +77,7 @@ const emptyValues = (currency: string): InvoiceFormValues => ({
 
 const toFormValues = (invoice: Invoice): InvoiceFormValues => ({
   type: invoice.type,
-  entryMode: invoiceEntryId(invoice) ? "LINK" : "GENERATE",
+  entryMode: invoiceEntryId(invoice) ? "LINK" : "NONE",
   entryId: invoiceEntryId(invoice) ?? "",
   categoryId: invoice.categoryId ? categoryRefId(invoice.categoryId) : "",
   status: invoice.status,
@@ -163,7 +163,7 @@ export function InvoiceFormModal({
   };
 
   const onModeChange = (mode: string) => {
-    if (mode === "GENERATE") {
+    if (mode !== "LINK") {
       form.setValue("entryId", "");
     }
   };
@@ -175,11 +175,12 @@ export function InvoiceFormModal({
 
   const onSubmit = async (values: InvoiceFormValues) => {
     const linked = values.entryMode === "LINK";
+    const generating = values.entryMode === "GENERATE";
 
     const body: InvoicePayload = {
       type: values.type,
       entryId: linked ? values.entryId : null,
-      generateEntry: !linked,
+      generateEntry: generating,
       categoryId: values.categoryId || undefined,
       status: values.status,
       title: values.title,
@@ -204,7 +205,13 @@ export function InvoiceFormModal({
         toast.success("Invoice updated");
       } else {
         await createInvoice(body).unwrap();
-        toast.success(linked ? "Invoice created and linked" : "Invoice and its entry created");
+        toast.success(
+          linked
+            ? "Invoice created and linked"
+            : generating
+              ? "Invoice and its entry created"
+              : "Invoice created"
+        );
       }
       onOpenChange(false);
     } catch (error: unknown) {
@@ -218,6 +225,7 @@ export function InvoiceFormModal({
   const modeOptions = [
     { value: "GENERATE", label: `Generate a new ${entryNoun} entry from this invoice` },
     { value: "LINK", label: `Bill an existing ${entryNoun} entry` },
+    { value: "NONE", label: `Raise it on its own and attach an ${entryNoun} entry later` },
   ];
 
   const hasNoCategories = categoryOptions.length === 0;

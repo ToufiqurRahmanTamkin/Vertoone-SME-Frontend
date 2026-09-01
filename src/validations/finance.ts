@@ -12,7 +12,7 @@ export const FinanceCategorySchema = z.object({
 
 export type FinanceCategoryFormValues = z.infer<typeof FinanceCategorySchema>;
 
-export const FINANCE_ENTRY_INVOICE_MODES = ["GENERATE", "LINK"] as const;
+export const FINANCE_ENTRY_INVOICE_MODES = ["GENERATE", "LINK", "NONE"] as const;
 export type FinanceEntryInvoiceMode = (typeof FINANCE_ENTRY_INVOICE_MODES)[number];
 
 export const FinanceEntrySchema = z
@@ -41,7 +41,7 @@ export const FinanceEntrySchema = z
 
 export type FinanceEntryFormValues = z.infer<typeof FinanceEntrySchema>;
 
-export const INVOICE_ENTRY_MODES = ["GENERATE", "LINK"] as const;
+export const INVOICE_ENTRY_MODES = ["GENERATE", "LINK", "NONE"] as const;
 export type InvoiceEntryMode = (typeof INVOICE_ENTRY_MODES)[number];
 
 export const InvoiceSchema = z
@@ -69,11 +69,11 @@ export const InvoiceSchema = z
     message: "Pick the entry this invoice bills",
     path: ["entryId"],
   })
-  .refine((data) => data.entryMode !== "GENERATE" || data.categoryId.length > 0, {
-    message: "Pick the category the generated entry is filed under",
+  .refine((data) => data.entryMode === "LINK" || data.categoryId.length > 0, {
+    message: "Pick the category this invoice is filed under",
     path: ["categoryId"],
   })
-  .refine((data) => data.entryMode !== "GENERATE" || data.title.trim().length >= 2, {
+  .refine((data) => data.entryMode === "LINK" || data.title.trim().length >= 2, {
     message: "Title must be at least 2 characters",
     path: ["title"],
   })

@@ -29,7 +29,11 @@ import {
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { categoryRefId, type Expense, type Income } from "@/types/domain/finance";
 import type { InvoiceStatus, LinkableInvoice } from "@/types/domain/invoice";
-import { FinanceEntrySchema, type FinanceEntryFormValues } from "@/validations/finance";
+import {
+  FinanceEntrySchema,
+  type FinanceEntryFormValues,
+  type FinanceEntryInvoiceMode,
+} from "@/validations/finance";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
@@ -82,6 +86,15 @@ const toFormValues = (entry: Income | Expense, kind: FinanceEntryKind): FinanceE
   invoiceMode: "GENERATE",
   invoiceId: entry.invoice?._id ?? "",
 });
+
+const invoiceLinkFields = (
+  mode: FinanceEntryInvoiceMode,
+  invoiceId: string
+): { invoiceId?: string; raiseInvoice?: boolean } => {
+  if (mode === "LINK") return { invoiceId };
+  if (mode === "NONE") return { raiseInvoice: false };
+  return {};
+};
 
 const invoiceOptionLabel = (invoice: LinkableInvoice): string =>
   `${invoice.invoiceNumber} · ${formatAmount(invoice.amount, invoice.currency)} · ${
@@ -157,7 +170,7 @@ export function FinanceEntryFormModal({
   };
 
   const onModeChange = (mode: string) => {
-    if (mode === "GENERATE") form.setValue("invoiceId", "");
+    if (mode !== "LINK") form.setValue("invoiceId", "");
   };
 
   const onSubmit = async (values: FinanceEntryFormValues) => {
@@ -171,7 +184,7 @@ export function FinanceEntryFormModal({
       paymentMethod: values.paymentMethod,
       reference: values.reference,
       notes: values.notes,
-      ...(entry || values.invoiceMode === "GENERATE" ? {} : { invoiceId: values.invoiceId }),
+      ...(entry ? {} : invoiceLinkFields(values.invoiceMode, values.invoiceId)),
     };
 
     try {
@@ -203,6 +216,7 @@ export function FinanceEntryFormModal({
   const modeOptions = [
     { value: "GENERATE", label: "Raise a new invoice for it" },
     { value: "LINK", label: "Attach it to an invoice I already raised" },
+    { value: "NONE", label: "Leave it unbilled for now" },
   ];
 
   return (
