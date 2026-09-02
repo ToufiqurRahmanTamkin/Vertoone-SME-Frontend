@@ -14,8 +14,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Banknote, CreditCard, Hammer, Landmark, TestTube, Wallet } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { ConfigActions } from "../components/ConfigActions";
-import { ProviderCard } from "../components/ProviderCard";
+import { ConfigActions } from "./components/ConfigActions";
+import { ProviderCard } from "./components/ProviderCard";
 
 const GATEWAYS = [
   { label: "Stripe", value: "stripe" },

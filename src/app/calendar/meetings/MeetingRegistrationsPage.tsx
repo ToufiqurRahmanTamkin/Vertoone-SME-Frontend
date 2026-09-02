@@ -10,14 +10,14 @@ export default function MeetingRegistrationsPage() {
     <RegistrationsPage
       resourceType="MEETING"
       resourceId={id}
-      modulePath="/calendar/meetings"
+      modulePath="/company/calendar/meetings"
       heading={meeting ? `${meeting.title} · Attendees` : "Attendees"}
       description={
         meeting?.payment.isPaid
           ? "Everyone who registered. Check each transaction ID against your wallet before you hold the seat."
           : "Everyone who registered through the public page."
       }
-      backTo="/calendar/meetings"
+      backTo="/company/calendar/meetings"
       backLabel="All meetings"
       emptyMessage="This meeting is not available"
       isLoadingResource={isLoading}

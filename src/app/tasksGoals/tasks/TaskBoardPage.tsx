@@ -38,7 +38,7 @@ import { TaskFormModal } from "./components/TaskFormModal";
 export default function TaskBoardPage() {
   const { id = "" } = useParams();
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/tasks-and-goals/tasks");
+  const access = useModulePermission("/company/tasks-and-goals/tasks");
   const navigate = useNavigate();
 
   const { data: boardDetail } = useGetTaskBoardQuery(id, { skip: !id });
@@ -149,7 +149,7 @@ export default function TaskBoardPage() {
       await deleteBoard(id).unwrap();
       toast.success("Board deleted");
       setBoardPendingDelete(false);
-      navigate("/tasks-and-goals/tasks");
+      navigate("/company/tasks-and-goals/tasks");
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not delete the board");
@@ -175,7 +175,7 @@ export default function TaskBoardPage() {
           type="button"
           variant="outline"
           className="cursor-pointer gap-1.5"
-          onClick={() => navigate("/tasks-and-goals/tasks")}
+          onClick={() => navigate("/company/tasks-and-goals/tasks")}
         >
           <ArrowLeft className="size-4" />
           Back to boards
@@ -191,7 +191,7 @@ export default function TaskBoardPage() {
         variant="ghost"
         size="sm"
         className="-ml-2 w-fit cursor-pointer gap-1.5 text-muted-foreground"
-        onClick={() => navigate("/tasks-and-goals/tasks")}
+        onClick={() => navigate("/company/tasks-and-goals/tasks")}
       >
         <ArrowLeft className="size-4" />
         All boards

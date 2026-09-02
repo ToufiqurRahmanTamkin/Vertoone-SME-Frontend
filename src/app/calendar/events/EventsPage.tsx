@@ -37,7 +37,7 @@ import type { EventRowActionHandlers } from "./components/EventRowActions";
 import { EventRowActions } from "./components/EventRowActions";
 import { eventColumns, seatsLabel } from "./events.columns";
 
-const MODULE_PATH = "/calendar/events";
+const MODULE_PATH = "/company/calendar/events";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -242,7 +242,7 @@ export default function EventsPage() {
                   </span>
                   <div className="min-w-0">
                     <Link
-                      to={`/calendar/events/${event._id}/registrations`}
+                      to={`/company/calendar/events/${event._id}/registrations`}
                       className="block truncate text-sm font-semibold hover:underline"
                     >
                       {event.title}

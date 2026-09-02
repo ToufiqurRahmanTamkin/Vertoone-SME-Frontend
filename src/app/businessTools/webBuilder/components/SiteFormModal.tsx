@@ -64,7 +64,7 @@ export function SiteFormModal({ open, onOpenChange }: SiteFormModalProps) {
 
       toast.success("Website created");
       onOpenChange(false);
-      navigate(`/business-tools/web-builder/${site._id}`);
+      navigate(`/company/business-tools/web-builder/${site._id}`);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not create the website");

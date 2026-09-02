@@ -13,7 +13,7 @@ export function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  const home = HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard";
+  const home = HOME_ROUTE_BY_ROLE[user.role] ?? "/platform/dashboard";
 
   if (location.pathname === "/") {
     return <Navigate to={home} replace />;
@@ -31,7 +31,7 @@ export function PublicRoute() {
   const user = useSelector(selectCurrentUser);
 
   if (token && user) {
-    return <Navigate to={HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard"} replace />;
+    return <Navigate to={HOME_ROUTE_BY_ROLE[user.role] ?? "/platform/dashboard"} replace />;
   }
 
   return <Outlet />;

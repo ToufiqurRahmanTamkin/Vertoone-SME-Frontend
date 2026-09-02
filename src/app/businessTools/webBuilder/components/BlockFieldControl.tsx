@@ -127,7 +127,7 @@ function FormPicker({
     return (
       <p className="text-xs text-muted-foreground">
         No published forms yet.{" "}
-        <Link to="/business-tools/form-builder" className="font-medium underline">
+        <Link to="/company/business-tools/form-builder" className="font-medium underline">
           Build one in the Form Builder
         </Link>{" "}
         and publish it — it shows up here straight after.

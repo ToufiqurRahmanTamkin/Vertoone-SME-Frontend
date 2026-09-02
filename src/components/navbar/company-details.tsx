@@ -196,7 +196,7 @@ export function CompanyDetails() {
 
                 {user?.role === "COMPANY_OWNER" && (
                   <Button asChild variant="outline" className="w-full cursor-pointer">
-                    <Link to="/my-company" onClick={() => setOpen(false)}>
+                    <Link to="/company/dashboard" onClick={() => setOpen(false)}>
                       Open my company
                     </Link>
                   </Button>

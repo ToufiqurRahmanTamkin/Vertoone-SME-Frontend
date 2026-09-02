@@ -19,7 +19,7 @@ export function PendingApprovals() {
     <Tooltip>
       <TooltipTrigger asChild>
         <Link
-          to="/companies?status=PENDING"
+          to="/platform/companies?status=PENDING"
           className={cn(
             NAV_CHIP,
             "border-amber-500/40 bg-amber-500/10 text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"

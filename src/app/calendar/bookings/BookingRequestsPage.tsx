@@ -10,14 +10,14 @@ export default function BookingRequestsPage() {
     <RegistrationsPage
       resourceType="BOOKING"
       resourceId={id}
-      modulePath="/calendar/bookings"
+      modulePath="/company/calendar/bookings"
       heading={booking ? `${booking.title} · Requests` : "Booking requests"}
       description={
         booking?.payment.isPaid
           ? "Every slot people booked. Check each transaction ID against your wallet before you hold the slot."
           : "Every slot people booked through the public page."
       }
-      backTo="/calendar/bookings"
+      backTo="/company/calendar/bookings"
       backLabel="All booking pages"
       emptyMessage="This booking page is not available"
       showSlot

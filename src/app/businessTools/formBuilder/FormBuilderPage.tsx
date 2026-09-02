@@ -82,7 +82,7 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 
 export default function FormBuilderPage() {
   const { formId = "" } = useParams<{ formId: string }>();
-  const access = useModulePermission("/business-tools/form-builder");
+  const access = useModulePermission("/company/business-tools/form-builder");
 
   const { data: form, isLoading, isError } = useGetFormQuery(formId, { skip: !formId });
   const { data: catalogue } = useGetFieldCatalogueQuery();
@@ -269,7 +269,7 @@ export default function FormBuilderPage() {
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This form is not available</p>
         <BackLink
-          to="/business-tools/form-builder"
+          to="/company/business-tools/form-builder"
           label="All forms"
           variant="outline"
           className="mt-4"
@@ -308,7 +308,7 @@ export default function FormBuilderPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <BackLink to="/business-tools/form-builder" label="All forms" />
+          <BackLink to="/company/business-tools/form-builder" label="All forms" />
 
           <div className="flex items-center rounded-lg border p-0.5">
             {DEVICES.map((entry) => (
@@ -334,7 +334,7 @@ export default function FormBuilderPage() {
           </div>
 
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/business-tools/form-builder/${form._id}/responses`}>
+            <Link to={`/company/business-tools/form-builder/${form._id}/responses`}>
               <Inbox className="size-4" />
               Responses
               {form.submissionCount > 0 && (

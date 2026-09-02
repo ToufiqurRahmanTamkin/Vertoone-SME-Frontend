@@ -39,7 +39,7 @@ export const formColumns = ({
         </span>
         <div className="min-w-0">
           <Link
-            to={`/business-tools/form-builder/${row.original._id}`}
+            to={`/company/business-tools/form-builder/${row.original._id}`}
             className="block truncate text-sm font-semibold hover:underline"
           >
             {row.original.name}
@@ -66,7 +66,7 @@ export const formColumns = ({
     cell: ({ row }) => (
       <div className="flex flex-col">
         <Link
-          to={`/business-tools/form-builder/${row.original._id}/responses`}
+          to={`/company/business-tools/form-builder/${row.original._id}/responses`}
           className="text-sm font-semibold tabular-nums hover:underline"
         >
           {row.original.submissionCount}

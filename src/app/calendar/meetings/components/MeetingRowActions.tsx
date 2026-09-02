@@ -44,7 +44,7 @@ export function MeetingRowActions({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => navigate(`/calendar/meetings/${meeting._id}/registrations`)}
+        onClick={() => navigate(`/company/calendar/meetings/${meeting._id}/registrations`)}
       >
         <Users className="size-3.5" />
         Attendees

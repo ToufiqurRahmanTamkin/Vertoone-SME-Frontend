@@ -59,13 +59,13 @@ const buildRows = (items: NavItem[], currentPath: string): NavRow[] =>
       return {
         item,
         hasChildren: false,
-        isActive: isMenuPathActive(item.url, currentPath, item.exact),
+        isActive: isMenuPathActive(item.url, currentPath),
         activeChildUrl: null,
       };
     }
 
     const activeChild = children.reduce<NavItem | null>((best, child) => {
-      if (!isMenuPathActive(child.url, currentPath, child.exact)) return best;
+      if (!isMenuPathActive(child.url, currentPath)) return best;
       return !best || child.url.length > best.url.length ? child : best;
     }, null);
 

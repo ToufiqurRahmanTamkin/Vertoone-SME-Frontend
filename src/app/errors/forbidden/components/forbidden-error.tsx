@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useHomeRoute } from "@/hooks/use-home-route";
 import { useNavigate } from "react-router-dom";
 
 export function ForbiddenError() {
   const navigate = useNavigate();
+  const home = useHomeRoute();
 
   return (
     <div className="mx-auto flex min-h-dvh flex-col items-center justify-center gap-8 p-8 md:gap-12 md:p-16">
@@ -21,7 +23,7 @@ export function ForbiddenError() {
           this page.
         </p>
         <div className="mt-6 flex items-center justify-center gap-4 md:mt-8">
-          <Button className="cursor-pointer" onClick={() => navigate("/dashboard")}>
+          <Button className="cursor-pointer" onClick={() => navigate(home)}>
             Go Back Home
           </Button>
           <Button

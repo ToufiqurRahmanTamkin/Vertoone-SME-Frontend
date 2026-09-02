@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { useHomeRoute } from "@/hooks/use-home-route";
 import { ShieldX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function PermissionDeniedError() {
   const navigate = useNavigate();
+  const home = useHomeRoute();
 
   return (
     <div className="mx-auto flex min-h-dvh flex-col items-center justify-center gap-8 p-8 md:p-16">
@@ -19,7 +21,7 @@ export function PermissionDeniedError() {
           Contact your administrator if you believe this is a mistake.
         </p>
         <div className="mt-6 flex items-center justify-center md:mt-8">
-          <Button className="cursor-pointer" onClick={() => navigate("/dashboard")}>
+          <Button className="cursor-pointer" onClick={() => navigate(home)}>
             Go Back Home
           </Button>
         </div>

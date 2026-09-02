@@ -216,7 +216,7 @@ export default function DashboardPage() {
         }
         actions={
           <Button asChild variant="outline" className="cursor-pointer">
-            <Link to="/reports/overview">
+            <Link to="/platform/reports/overview">
               View reports
               <ArrowUpRight className="ml-1.5 h-4 w-4" />
             </Link>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
             Needs attention
           </span>
           {pendingCompanies > 0 && (
-            <Link to="/companies" className="text-muted-foreground hover:text-foreground">
+            <Link to="/platform/companies" className="text-muted-foreground hover:text-foreground">
               <span className="font-semibold text-foreground">
                 {formatNumber(pendingCompanies)}
               </span>{" "}
@@ -239,7 +239,7 @@ export default function DashboardPage() {
             </Link>
           )}
           {awaitingApproval > 0 && (
-            <Link to="/sold-subscriptions" className="text-muted-foreground hover:text-foreground">
+            <Link to="/platform/sold-subscriptions" className="text-muted-foreground hover:text-foreground">
               <span className="font-semibold text-foreground">
                 {formatNumber(awaitingApproval)}
               </span>{" "}
@@ -402,7 +402,7 @@ export default function DashboardPage() {
           description="Companies waiting for approval before their owner can sign in."
           action={
             <Button asChild size="sm" variant="outline" className="cursor-pointer">
-              <Link to="/companies">Review</Link>
+              <Link to="/platform/companies">Review</Link>
             </Button>
           }
         >
@@ -494,7 +494,7 @@ export default function DashboardPage() {
         description="The eight most recently recorded subscriptions."
         action={
           <Button asChild size="sm" variant="outline" className="cursor-pointer">
-            <Link to="/sold-subscriptions">Open</Link>
+            <Link to="/platform/sold-subscriptions">Open</Link>
           </Button>
         }
       >
@@ -598,7 +598,7 @@ export default function DashboardPage() {
           description="The most recent authentication attempts."
           action={
             <Button asChild size="sm" variant="outline" className="cursor-pointer">
-              <Link to="/reports/sign-in-activity">Details</Link>
+              <Link to="/platform/reports/sign-in-activity">Details</Link>
             </Button>
           }
         >

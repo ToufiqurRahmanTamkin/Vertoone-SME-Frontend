@@ -36,7 +36,7 @@ import { noteColumns } from "./notes.columns";
 
 export default function NotesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/tasks-and-goals/notes");
+  const access = useModulePermission("/company/tasks-and-goals/notes");
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
   const { data: tagOptions = [] } = useGetTagOptionsQuery();

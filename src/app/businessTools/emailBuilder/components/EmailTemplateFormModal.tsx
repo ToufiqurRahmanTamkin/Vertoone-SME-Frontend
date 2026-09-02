@@ -83,7 +83,7 @@ export function EmailTemplateFormModal({ open, onOpenChange }: EmailTemplateForm
 
       toast.success("Email created");
       onOpenChange(false);
-      navigate(`/business-tools/email-builder/${template._id}`);
+      navigate(`/company/business-tools/email-builder/${template._id}`);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not create the email");

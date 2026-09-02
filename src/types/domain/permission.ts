@@ -4,6 +4,17 @@ export type ModuleAction = (typeof MODULE_ACTIONS)[number];
 export const MODULE_SCOPES = ["SUPER_ADMIN", "COMPANY", "SHARED"] as const;
 export type ModuleScope = (typeof MODULE_SCOPES)[number];
 
+export const MODULE_PRODUCTS = ["PLATFORM", "CORE", "SME", "CRM", "HRMS"] as const;
+export type ModuleProduct = (typeof MODULE_PRODUCTS)[number];
+
+export const PRODUCT_LABELS: Record<ModuleProduct, string> = {
+  PLATFORM: "Platform",
+  CORE: "Core",
+  SME: "SME",
+  CRM: "CRM",
+  HRMS: "HRMS",
+};
+
 export interface ModulePermission {
   canView: boolean;
   canCreate: boolean;
@@ -19,6 +30,8 @@ export interface ModuleDefinition {
   path: string;
   label: string;
   group: string;
+  workspace: string;
+  product: ModuleProduct;
   scope: ModuleScope;
   supportsLimit: boolean;
   ownerOnly: boolean;

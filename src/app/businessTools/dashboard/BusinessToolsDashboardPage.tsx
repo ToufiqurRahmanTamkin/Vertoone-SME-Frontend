@@ -46,7 +46,7 @@ const LIST_SKELETON = Array.from({ length: 5 });
 
 export default function BusinessToolsDashboardPage() {
   const { data, isLoading } = useGetBusinessToolsDashboardQuery();
-  const settingsAccess = useModulePermission("/business-tools/settings");
+  const settingsAccess = useModulePermission("/company/business-tools/settings");
 
   const overview = data?.kpis.overview;
   const email = data?.kpis.email;
@@ -188,7 +188,7 @@ export default function BusinessToolsDashboardPage() {
         actions={
           settingsAccess.canView && (
             <Button asChild variant="outline" className="cursor-pointer">
-              <Link to="/business-tools/settings">
+              <Link to="/company/business-tools/settings">
                 <SlidersHorizontal className="mr-1.5 h-4 w-4" />
                 Shared defaults
               </Link>
@@ -210,7 +210,7 @@ export default function BusinessToolsDashboardPage() {
           )}
           {unread > 0 && (
             <Link
-              to="/business-tools/form-builder"
+              to="/company/business-tools/form-builder"
               className="text-muted-foreground hover:text-foreground"
             >
               <span className="font-semibold text-foreground">{formatNumber(unread)}</span> form
@@ -227,7 +227,7 @@ export default function BusinessToolsDashboardPage() {
           )}
           {failed > 0 && (
             <Link
-              to="/business-tools/email-builder/deliveries?status=FAILED"
+              to="/company/business-tools/email-builder/deliveries?status=FAILED"
               className="text-muted-foreground hover:text-foreground"
             >
               <span className="font-semibold text-foreground">{formatNumber(failed)}</span> email(s)
@@ -353,7 +353,7 @@ export default function BusinessToolsDashboardPage() {
           contentClassName="p-0 md:p-0"
           action={
             <Button asChild variant="ghost" size="sm" className="cursor-pointer">
-              <Link to="/business-tools/web-builder">
+              <Link to="/company/business-tools/web-builder">
                 All sites
                 <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
               </Link>
@@ -379,7 +379,7 @@ export default function BusinessToolsDashboardPage() {
                 >
                   <div className="min-w-0">
                     <Link
-                      to={`/business-tools/web-builder/${site._id}`}
+                      to={`/company/business-tools/web-builder/${site._id}`}
                       className="block truncate text-sm font-medium hover:underline"
                     >
                       {site.name}
@@ -416,7 +416,7 @@ export default function BusinessToolsDashboardPage() {
           contentClassName="p-0 md:p-0"
           action={
             <Button asChild variant="ghost" size="sm" className="cursor-pointer">
-              <Link to="/business-tools/form-builder">
+              <Link to="/company/business-tools/form-builder">
                 All forms
                 <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
               </Link>
@@ -448,7 +448,7 @@ export default function BusinessToolsDashboardPage() {
                       {response.summary || "No answer preview"}
                     </p>
                     <Link
-                      to={`/business-tools/form-builder/${response.formId}/responses`}
+                      to={`/company/business-tools/form-builder/${response.formId}/responses`}
                       className="truncate text-[11px] text-muted-foreground hover:underline"
                     >
                       {response.formName}
@@ -478,7 +478,7 @@ export default function BusinessToolsDashboardPage() {
         contentClassName="p-0 md:p-0"
         action={
           <Button asChild variant="ghost" size="sm" className="cursor-pointer">
-            <Link to="/business-tools/email-builder/deliveries">
+            <Link to="/company/business-tools/email-builder/deliveries">
               Full history
               <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
             </Link>

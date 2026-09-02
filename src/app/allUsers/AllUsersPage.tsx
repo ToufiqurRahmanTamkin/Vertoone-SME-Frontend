@@ -27,7 +27,7 @@ const STATUS_OPTIONS = (Object.keys(USER_STATUS_LABELS) as UserStatus[]).map((st
 
 export default function AllUsersPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/all-users");
+  const access = useModulePermission("/platform/users");
 
   const { data: companyOptions } = useGetAllUserCompaniesQuery();
   const { data, isLoading, isFetching } = useGetAllUsersQuery({

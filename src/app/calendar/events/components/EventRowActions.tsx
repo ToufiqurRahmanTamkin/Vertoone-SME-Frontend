@@ -52,7 +52,7 @@ export function EventRowActions({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => navigate(`/calendar/events/${event._id}/registrations`)}
+        onClick={() => navigate(`/company/calendar/events/${event._id}/registrations`)}
       >
         <Users className="size-3.5" />
         Registrations

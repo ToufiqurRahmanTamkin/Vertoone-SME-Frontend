@@ -10,14 +10,14 @@ export default function EventRegistrationsPage() {
     <RegistrationsPage
       resourceType="EVENT"
       resourceId={id}
-      modulePath="/calendar/events"
+      modulePath="/company/calendar/events"
       heading={event ? `${event.title} · Registrations` : "Registrations"}
       description={
         event?.payment.isPaid
           ? "Everyone who signed up. Check each transaction ID against your wallet before you confirm the place."
           : "Everyone who signed up through the public page."
       }
-      backTo="/calendar/events"
+      backTo="/company/calendar/events"
       backLabel="All events"
       emptyMessage="This event is not available"
       isLoadingResource={isLoading}

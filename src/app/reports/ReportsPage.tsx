@@ -19,12 +19,12 @@ import { describePeriod } from "./report-period";
 import { useReportRange } from "./use-report-range";
 
 const REPORT_ROUTES: Record<ReportKey, string> = {
-  revenue: "/reports/revenue",
-  subscriptions: "/reports/subscriptions",
-  plans: "/reports/plans",
-  finance: "/reports/finance",
-  customers: "/reports/customers",
-  security: "/reports/security",
+  revenue: "/platform/reports/revenue",
+  subscriptions: "/platform/reports/subscriptions",
+  plans: "/platform/reports/plan-performance",
+  finance: "/platform/reports/income-and-expense",
+  customers: "/platform/reports/customers",
+  security: "/platform/reports/sign-in-activity",
 };
 
 const REPORT_ICONS: Record<ReportKey, LucideIcon> = {
@@ -88,7 +88,7 @@ export default function ReportsPage() {
         {reports.map((report) => {
           const Icon = REPORT_ICONS[report.key] ?? BarChart3;
           return (
-            <Link key={report.key} to={REPORT_ROUTES[report.key] ?? "/reports"} className="group">
+            <Link key={report.key} to={REPORT_ROUTES[report.key] ?? "/platform/reports/overview"} className="group">
               <Card className="h-full transition-colors group-hover:border-primary/40 group-hover:bg-accent/40">
                 <CardHeader>
                   <div className="flex items-start gap-3">

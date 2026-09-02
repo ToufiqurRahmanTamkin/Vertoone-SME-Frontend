@@ -38,7 +38,7 @@ export const meetingColumns = (
         </span>
         <div className="min-w-0">
           <Link
-            to={`/calendar/meetings/${row.original._id}/registrations`}
+            to={`/company/calendar/meetings/${row.original._id}/registrations`}
             className="block truncate text-sm font-semibold hover:underline"
           >
             {row.original.title}
@@ -81,7 +81,7 @@ export const meetingColumns = (
     cell: ({ row }) => (
       <div className="flex flex-col">
         <Link
-          to={`/calendar/meetings/${row.original._id}/registrations`}
+          to={`/company/calendar/meetings/${row.original._id}/registrations`}
           className="text-sm font-semibold tabular-nums hover:underline"
         >
           {row.original.registrationCount}

@@ -7,6 +7,7 @@ import {
   MODULE_ACTIONS,
   permissionFor,
   type ModuleDefinition,
+  PRODUCT_LABELS,
   type ModulePermissionMap,
 } from "@/types/domain/permission";
 import { LayoutGrid } from "lucide-react";
@@ -20,7 +21,8 @@ interface PlanEntitlementCardProps {
 const byGroup = (definitions: ModuleDefinition[]): [string, ModuleDefinition[]][] => {
   const groups = new Map<string, ModuleDefinition[]>();
   definitions.forEach((definition) => {
-    groups.set(definition.group, [...(groups.get(definition.group) ?? []), definition]);
+    const label = `${PRODUCT_LABELS[definition.product]} · ${definition.group}`;
+    groups.set(label, [...(groups.get(label) ?? []), definition]);
   });
   return [...groups.entries()];
 };

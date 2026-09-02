@@ -72,7 +72,7 @@ export default function MyCompanyPage() {
   if (isError) {
     return (
       <>
-        <PageHeader title="My company" description="Your company workspace." />
+        <PageHeader title="Dashboard" description="How your company is doing today, at a glance." />
         <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-muted-foreground">

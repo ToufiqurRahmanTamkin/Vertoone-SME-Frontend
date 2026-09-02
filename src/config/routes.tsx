@@ -1,17 +1,18 @@
 import { PrivateLayout } from "@/components/router/private-layout";
-import { RoleDashboard } from "@/components/router/role-dashboard";
 import { RootRedirect } from "@/components/router/root-redirect";
+import { WorkspaceRedirect } from "@/components/router/workspace-redirect";
 import { ProtectedRoute, PublicRoute } from "@/components/router/protected-route";
-import { getMenuLeafPaths } from "@/config/navigation";
+import { MENU_BRANCH_PATHS, MENU_WORKSPACES, getMenuLeafPaths } from "@/config/navigation";
 import { Navigate } from "react-router-dom";
 import { lazy } from "react";
 
 const Login = lazy(() => import("@/app/auth/login/LoginPage"));
 const Register = lazy(() => import("@/app/auth/register/RegisterPage"));
 const ForgotPassword = lazy(() => import("@/app/auth/forgot-password/ForgotPasswordPage"));
+const PlatformDashboard = lazy(() => import("@/app/dashboard/page"));
 const Companies = lazy(() => import("@/app/companies/CompaniesPage"));
 const AllUsers = lazy(() => import("@/app/allUsers/AllUsersPage"));
-const MyCompany = lazy(() => import("@/app/myCompany/MyCompanyPage"));
+const CompanyDashboard = lazy(() => import("@/app/myCompany/MyCompanyPage"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
 const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscriptionsPage"));
@@ -56,9 +57,7 @@ const Pipelines = lazy(() => import("@/app/crm/pipelines/PipelinesPage"));
 const PipelineDetail = lazy(() => import("@/app/crm/pipelines/PipelineDetailPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
 const Events = lazy(() => import("@/app/calendar/events/EventsPage"));
-const EventRegistrations = lazy(
-  () => import("@/app/calendar/events/EventRegistrationsPage")
-);
+const EventRegistrations = lazy(() => import("@/app/calendar/events/EventRegistrationsPage"));
 const Meetings = lazy(() => import("@/app/calendar/meetings/MeetingsPage"));
 const MeetingRegistrations = lazy(
   () => import("@/app/calendar/meetings/MeetingRegistrationsPage")
@@ -88,17 +87,13 @@ const SalesOrders = lazy(() => import("@/app/sme/sales/orders/SalesOrdersPage"))
 const SalesInvoices = lazy(() => import("@/app/sme/sales/invoices/SalesInvoicesPage"));
 const SalesReturns = lazy(() => import("@/app/sme/sales/returns/SalesReturnsPage"));
 const Pos = lazy(() => import("@/app/sme/pos/PosPage"));
-const SmeEmailConfig = lazy(() => import("@/app/sme/configuration/email/EmailConfigPage"));
-const SmePaymentConfig = lazy(
-  () => import("@/app/sme/configuration/payment/PaymentConfigPage")
-);
+const EmailConfig = lazy(() => import("@/app/settings/system/EmailConfigPage"));
+const PaymentConfig = lazy(() => import("@/app/settings/system/PaymentConfigPage"));
 const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
 const BusinessToolsDashboard = lazy(
   () => import("@/app/businessTools/dashboard/BusinessToolsDashboardPage")
 );
-const EmailTemplates = lazy(
-  () => import("@/app/businessTools/emailBuilder/EmailTemplatesPage")
-);
+const EmailTemplates = lazy(() => import("@/app/businessTools/emailBuilder/EmailTemplatesPage"));
 const EmailTemplateBuilder = lazy(
   () => import("@/app/businessTools/emailBuilder/EmailTemplateBuilderPage")
 );
@@ -110,9 +105,7 @@ const SitePages = lazy(() => import("@/app/businessTools/webBuilder/SitePagesPag
 const PageBuilder = lazy(() => import("@/app/businessTools/webBuilder/PageBuilderPage"));
 const Forms = lazy(() => import("@/app/businessTools/formBuilder/FormsPage"));
 const FormBuilder = lazy(() => import("@/app/businessTools/formBuilder/FormBuilderPage"));
-const FormResponses = lazy(
-  () => import("@/app/businessTools/formBuilder/FormResponsesPage")
-);
+const FormResponses = lazy(() => import("@/app/businessTools/formBuilder/FormResponsesPage"));
 const BusinessToolsSettings = lazy(
   () => import("@/app/businessTools/settings/BusinessToolsSettingsPage")
 );
@@ -132,50 +125,68 @@ export interface RouteConfig {
 }
 
 const builtRoutes: RouteConfig[] = [
-  { path: "dashboard", element: <RoleDashboard /> },
-  { path: "companies", element: <Companies /> },
-  { path: "all-users", element: <AllUsers /> },
-  { path: "my-company", element: <MyCompany /> },
-  { path: "subscription-plans", element: <SubscriptionPlans /> },
-  { path: "sold-subscriptions", element: <SoldSubscriptions /> },
-  { path: "user-guides", element: <UserGuides /> },
-  { path: "finance/dashboard", element: <FinanceDashboard /> },
-  { path: "finance/income", element: <FinanceIncome /> },
-  { path: "finance/expense", element: <FinanceExpense /> },
-  { path: "finance/invoices", element: <FinanceInvoices /> },
-  { path: "finance/categories", element: <FinanceCategories /> },
-  { path: "company-finance/dashboard", element: <FinanceDashboard /> },
-  { path: "company-finance/income", element: <FinanceIncome /> },
-  { path: "company-finance/expenses", element: <FinanceExpense /> },
-  { path: "company-finance/invoices", element: <FinanceInvoices /> },
-  { path: "company-finance/categories", element: <FinanceCategories /> },
-  { path: "reports/overview", element: <Reports /> },
-  { path: "reports/revenue", element: <RevenueReport /> },
-  { path: "reports/subscriptions", element: <SubscriptionsReport /> },
-  { path: "reports/plan-performance", element: <PlansReport /> },
-  { path: "reports/income-and-expense", element: <FinanceReport /> },
-  { path: "reports/customers", element: <CustomersReport /> },
-  { path: "reports/sign-in-activity", element: <SecurityReport /> },
-  { path: "emails", element: <Emails /> },
-  { path: "system-config", element: <SystemConfig /> },
-  { path: "system-activity", element: <SystemActivity /> },
-  { path: "wipe-data", element: <DataWipe /> },
-  { path: "settings/company/profile", element: <CompanyProfile /> },
-  { path: "settings/company/concerns", element: <Concerns /> },
-  { path: "my-concern", element: <MyConcern /> },
-  { path: "my-profile", element: <MyProfile /> },
-  { path: "settings/users-and-roles/users", element: <TeamMembers /> },
-  { path: "settings/users-and-roles/roles-and-permissions", element: <Roles /> },
-  { path: "hrms/directory/employees", element: <Employees /> },
-  { path: "hrms/directory/teams", element: <Teams /> },
-  { path: "hrms/directory/departments", element: <Departments /> },
-  { path: "hrms/directory/designations", element: <Designations /> },
-  { path: "hrms/payroll/salaries", element: <Salaries /> },
+  { path: "platform/dashboard", element: <PlatformDashboard /> },
+  { path: "platform/companies", element: <Companies /> },
+  { path: "platform/users", element: <AllUsers /> },
+  { path: "platform/subscription-plans", element: <SubscriptionPlans /> },
+  { path: "platform/sold-subscriptions", element: <SoldSubscriptions /> },
+  { path: "platform/finance/overview", element: <FinanceDashboard /> },
+  { path: "platform/finance/income", element: <FinanceIncome /> },
+  { path: "platform/finance/expense", element: <FinanceExpense /> },
+  { path: "platform/finance/invoices", element: <FinanceInvoices /> },
+  { path: "platform/finance/categories", element: <FinanceCategories /> },
+  { path: "platform/reports/overview", element: <Reports /> },
+  { path: "platform/reports/revenue", element: <RevenueReport /> },
+  { path: "platform/reports/subscriptions", element: <SubscriptionsReport /> },
+  { path: "platform/reports/plan-performance", element: <PlansReport /> },
+  { path: "platform/reports/income-and-expense", element: <FinanceReport /> },
+  { path: "platform/reports/customers", element: <CustomersReport /> },
+  { path: "platform/reports/sign-in-activity", element: <SecurityReport /> },
+  { path: "platform/user-guides", element: <UserGuides /> },
+  { path: "platform/emails", element: <Emails /> },
+  { path: "platform/system/configuration", element: <SystemConfig /> },
+  { path: "platform/system/activity-log", element: <SystemActivity /> },
+  { path: "platform/system/wipe-data", element: <DataWipe /> },
+
+  { path: "company/dashboard", element: <CompanyDashboard /> },
+  { path: "company/my-concern", element: <MyConcern /> },
+  { path: "company/my-profile", element: <MyProfile /> },
+  { path: "company/finance/overview", element: <FinanceDashboard /> },
+  { path: "company/finance/income", element: <FinanceIncome /> },
+  { path: "company/finance/expenses", element: <FinanceExpense /> },
+  { path: "company/finance/invoices", element: <FinanceInvoices /> },
+  { path: "company/finance/categories", element: <FinanceCategories /> },
+  { path: "company/tasks-and-goals/tasks", element: <Tasks /> },
+  { path: "company/tasks-and-goals/tasks/:id", element: <TaskBoard /> },
+  { path: "company/tasks-and-goals/goals", element: <Goals /> },
+  { path: "company/tasks-and-goals/notes", element: <Notes /> },
+  { path: "company/calendar/events", element: <Events /> },
+  { path: "company/calendar/events/:id/registrations", element: <EventRegistrations /> },
+  { path: "company/calendar/meetings", element: <Meetings /> },
+  { path: "company/calendar/meetings/:id/registrations", element: <MeetingRegistrations /> },
+  { path: "company/calendar/bookings", element: <Bookings /> },
+  { path: "company/calendar/bookings/:id/requests", element: <BookingRequests /> },
+  { path: "company/calendar/settings", element: <CalendarSettings /> },
+  { path: "company/business-tools/overview", element: <BusinessToolsDashboard /> },
+  { path: "company/business-tools/email-builder", element: <EmailTemplates /> },
+  { path: "company/business-tools/email-builder/deliveries", element: <EmailDeliveries /> },
+  { path: "company/business-tools/email-builder/:templateId", element: <EmailTemplateBuilder /> },
+  { path: "company/business-tools/web-builder", element: <Websites /> },
+  { path: "company/business-tools/web-builder/:siteId", element: <SitePages /> },
+  {
+    path: "company/business-tools/web-builder/:siteId/pages/:pageId",
+    element: <PageBuilder />,
+  },
+  { path: "company/business-tools/form-builder", element: <Forms /> },
+  { path: "company/business-tools/form-builder/:formId", element: <FormBuilder /> },
+  { path: "company/business-tools/form-builder/:formId/responses", element: <FormResponses /> },
+  { path: "company/business-tools/settings", element: <BusinessToolsSettings /> },
+
   { path: "sme/products/all-products", element: <Products /> },
   { path: "sme/products/categories", element: <ProductCategories /> },
   { path: "sme/products/subcategories", element: <ProductSubCategories /> },
   { path: "sme/products/brands", element: <Brands /> },
-  { path: "sme/inventory/stock-overview", element: <Stock /> },
+  { path: "sme/inventory/stock", element: <Stock /> },
   { path: "sme/inventory/warehouses", element: <Warehouses /> },
   { path: "sme/inventory/stock-transfers", element: <StockTransfers /> },
   { path: "sme/inventory/stock-adjustments", element: <StockAdjustments /> },
@@ -188,111 +199,194 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/sales/returns", element: <SalesReturns /> },
   { path: "sme/point-of-sale", element: <Pos /> },
   { path: "sme/online-shop", element: <Shop /> },
-  { path: "business-tools/overview", element: <BusinessToolsDashboard /> },
-  { path: "business-tools/email-builder", element: <EmailTemplates /> },
-  { path: "business-tools/email-builder/deliveries", element: <EmailDeliveries /> },
-  { path: "business-tools/email-builder/:templateId", element: <EmailTemplateBuilder /> },
-  { path: "business-tools/web-builder", element: <Websites /> },
-  { path: "business-tools/web-builder/:siteId", element: <SitePages /> },
-  { path: "business-tools/web-builder/:siteId/pages/:pageId", element: <PageBuilder /> },
-  { path: "business-tools/form-builder", element: <Forms /> },
-  { path: "business-tools/form-builder/:formId", element: <FormBuilder /> },
-  { path: "business-tools/form-builder/:formId/responses", element: <FormResponses /> },
-  { path: "business-tools/settings", element: <BusinessToolsSettings /> },
-  { path: "settings/sales-and-billing/email-sending", element: <SmeEmailConfig /> },
-  { path: "settings/sales-and-billing/payment-gateways", element: <SmePaymentConfig /> },
-  { path: "settings/customers/tags", element: <Tags /> },
-  { path: "settings/customers/lead-sources", element: <LeadSources /> },
-  { path: "settings/customers/contact-types", element: <ContactTypes /> },
-  { path: "crm/contacts", element: <Contacts /> },
+
   { path: "crm/leads", element: <Leads /> },
   { path: "crm/deals", element: <Deals /> },
-  { path: "tasks-and-goals/tasks", element: <Tasks /> },
-  { path: "tasks-and-goals/tasks/:id", element: <TaskBoard /> },
-  { path: "tasks-and-goals/goals", element: <Goals /> },
-  { path: "tasks-and-goals/notes", element: <Notes /> },
   { path: "crm/pipelines", element: <Pipelines /> },
   { path: "crm/pipelines/:id", element: <PipelineDetail /> },
-  { path: "calendar/events", element: <Events /> },
-  { path: "calendar/events/:id/registrations", element: <EventRegistrations /> },
-  { path: "calendar/meetings", element: <Meetings /> },
-  { path: "calendar/meetings/:id/registrations", element: <MeetingRegistrations /> },
-  { path: "calendar/bookings", element: <Bookings /> },
-  { path: "calendar/bookings/:id/requests", element: <BookingRequests /> },
-  { path: "settings/workspace/calendar", element: <CalendarSettings /> },
+  { path: "crm/contacts", element: <Contacts /> },
+  { path: "crm/settings/lead-sources", element: <LeadSources /> },
+  { path: "crm/settings/contact-types", element: <ContactTypes /> },
+  { path: "crm/settings/tags", element: <Tags /> },
+
+  { path: "hrms/directory/employees", element: <Employees /> },
+  { path: "hrms/directory/teams", element: <Teams /> },
+  { path: "hrms/directory/departments", element: <Departments /> },
+  { path: "hrms/directory/designations", element: <Designations /> },
+  { path: "hrms/payroll/salaries", element: <Salaries /> },
+
+  { path: "settings/company/profile", element: <CompanyProfile /> },
+  { path: "settings/company/concerns", element: <Concerns /> },
+  { path: "settings/users-and-roles/users", element: <TeamMembers /> },
+  { path: "settings/users-and-roles/roles-and-permissions", element: <Roles /> },
+  { path: "settings/system/email", element: <EmailConfig /> },
+  { path: "settings/system/payments", element: <PaymentConfig /> },
   { path: "settings/my-account", element: <AccountSettings /> },
 ];
 
 const legacyRedirects: RouteConfig[] = [
-  { path: "crm/my-social/facebook", element: <Navigate to="/crm/social-accounts/facebook" replace /> },
-  { path: "crm/my-social/instagram", element: <Navigate to="/crm/social-accounts/instagram" replace /> },
-  { path: "crm/my-social/whatsapp", element: <Navigate to="/crm/social-accounts/whatsapp" replace /> },
-  { path: "crm/my-social/tiktok", element: <Navigate to="/crm/social-accounts/tiktok" replace /> },
-  { path: "company-finance/invoice", element: <Navigate to="/company-finance/invoices" replace /> },
-  { path: "configuration/team/dashboard", element: <Navigate to="/hrms/directory/overview" replace /> },
-  { path: "calendar", element: <Navigate to="/calendar/schedule" replace /> },
-  { path: "reports/sales/summary", element: <Navigate to="/insights/sales-and-purchases/sales" replace /> },
-  { path: "reports/sales/products", element: <Navigate to="/insights/sales-and-purchases/sales-by-product" replace /> },
-  { path: "reports/purchases/summary", element: <Navigate to="/insights/sales-and-purchases/purchases" replace /> },
-  { path: "reports/inventory/stock", element: <Navigate to="/insights/inventory/stock" replace /> },
-  { path: "reports/inventory/movement", element: <Navigate to="/insights/inventory/stock-movement" replace /> },
-  { path: "reports/finance/profit-loss", element: <Navigate to="/insights/finance/profit-and-loss" replace /> },
-  { path: "reports/finance/cash-flow", element: <Navigate to="/insights/finance/cash-flow" replace /> },
-  { path: "reports/finance/receivables", element: <Navigate to="/insights/finance/receivables" replace /> },
-  { path: "reports/hr/headcount", element: <Navigate to="/insights/people/headcount" replace /> },
-  { path: "reports/hr/attendance", element: <Navigate to="/insights/people/attendance" replace /> },
-  { path: "reports/hr/leave", element: <Navigate to="/insights/people/leave" replace /> },
-  { path: "reports/hr/payroll", element: <Navigate to="/insights/people/payroll" replace /> },
-  { path: "reports/hr/recruitment", element: <Navigate to="/insights/people/recruitment" replace /> },
-  { path: "reports/hr/performance", element: <Navigate to="/insights/people/performance" replace /> },
-  { path: "reports/crm/pipeline", element: <Navigate to="/insights/customers/pipeline" replace /> },
-  { path: "reports/crm/leads", element: <Navigate to="/insights/customers/leads" replace /> },
-  { path: "reports/crm/deals", element: <Navigate to="/insights/customers/deals" replace /> },
-  { path: "reports/crm/campaigns", element: <Navigate to="/insights/customers/campaigns" replace /> },
-  { path: "reports/tasks/summary", element: <Navigate to="/insights/tasks-and-goals" replace /> },
-  { path: "organization/profile", element: <Navigate to="/settings/company/profile" replace /> },
+  { path: "dashboard", element: <RootRedirect /> },
+  { path: "ads-manager/google-ads", element: <Navigate to="/crm/ads-manager/google-ads" replace /> },
+  { path: "ads-manager/meta-ads", element: <Navigate to="/crm/ads-manager/meta-ads" replace /> },
+  { path: "ads-manager/overview", element: <Navigate to="/crm/ads-manager/overview" replace /> },
+  { path: "all-users", element: <Navigate to="/platform/users" replace /> },
+  { path: "automation/overview", element: <Navigate to="/company/automation/overview" replace /> },
+  { path: "automation/settings", element: <Navigate to="/company/automation/settings" replace /> },
+  { path: "automation/workflows", element: <Navigate to="/company/automation/workflows" replace /> },
+  { path: "automation/workspace", element: <Navigate to="/company/automation/workspaces" replace /> },
+  { path: "business-tools/email-builder", element: <Navigate to="/company/business-tools/email-builder" replace /> },
+  { path: "business-tools/form-builder", element: <Navigate to="/company/business-tools/form-builder" replace /> },
+  { path: "business-tools/overview", element: <Navigate to="/company/business-tools/overview" replace /> },
+  { path: "business-tools/settings", element: <Navigate to="/company/business-tools/settings" replace /> },
+  { path: "business-tools/web-builder", element: <Navigate to="/company/business-tools/web-builder" replace /> },
+  { path: "calendar", element: <Navigate to="/company/calendar/schedule" replace /> },
+  { path: "calendar/bookings", element: <Navigate to="/company/calendar/bookings" replace /> },
+  { path: "calendar/events", element: <Navigate to="/company/calendar/events" replace /> },
+  { path: "calendar/meetings", element: <Navigate to="/company/calendar/meetings" replace /> },
+  { path: "calendar/overview", element: <Navigate to="/company/calendar/overview" replace /> },
+  { path: "calendar/schedule", element: <Navigate to="/company/calendar/schedule" replace /> },
+  { path: "calendar/settings", element: <Navigate to="/company/calendar/settings" replace /> },
+  { path: "companies", element: <Navigate to="/platform/companies" replace /> },
+  { path: "company-finance/categories", element: <Navigate to="/company/finance/categories" replace /> },
+  { path: "company-finance/dashboard", element: <Navigate to="/company/finance/overview" replace /> },
+  { path: "company-finance/expenses", element: <Navigate to="/company/finance/expenses" replace /> },
+  { path: "company-finance/income", element: <Navigate to="/company/finance/income" replace /> },
+  { path: "company-finance/invoice", element: <Navigate to="/company/finance/invoices" replace /> },
+  { path: "company-finance/invoices", element: <Navigate to="/company/finance/invoices" replace /> },
   { path: "concerns", element: <Navigate to="/settings/company/concerns" replace /> },
   { path: "concerns/dashboard", element: <Navigate to="/settings/company/concerns-overview" replace /> },
-  { path: "configuration/team", element: <Navigate to="/settings/users-and-roles/users" replace /> },
   { path: "configuration/roles", element: <Navigate to="/settings/users-and-roles/roles-and-permissions" replace /> },
-  { path: "sme/configuration/email", element: <Navigate to="/settings/sales-and-billing/email-sending" replace /> },
-  { path: "sme/configuration/payment", element: <Navigate to="/settings/sales-and-billing/payment-gateways" replace /> },
-  { path: "hrms/settings/leave", element: <Navigate to="/settings/people/leave" replace /> },
-  { path: "hrms/settings/overtime", element: <Navigate to="/settings/people/overtime" replace /> },
-  { path: "hrms/settings/attendance-rules", element: <Navigate to="/settings/people/attendance-rules" replace /> },
-  { path: "hrms/settings/late-fine-rules", element: <Navigate to="/settings/people/late-fine-rules" replace /> },
-  { path: "hrms/settings/holiday-calendar", element: <Navigate to="/settings/people/holiday-calendar" replace /> },
-  { path: "hrms/settings/payroll-settings", element: <Navigate to="/settings/people/payroll" replace /> },
-  { path: "crm/lead-sources", element: <Navigate to="/settings/customers/lead-sources" replace /> },
-  { path: "crm/contact-types", element: <Navigate to="/settings/customers/contact-types" replace /> },
-  { path: "crm/tags", element: <Navigate to="/settings/customers/tags" replace /> },
-  { path: "crm/campaigns/settings", element: <Navigate to="/settings/customers/campaigns" replace /> },
-  { path: "calendar/settings", element: <Navigate to="/settings/workspace/calendar" replace /> },
-  { path: "automation/settings", element: <Navigate to="/settings/workspace/automation" replace /> },
+  { path: "configuration/team", element: <Navigate to="/settings/users-and-roles/users" replace /> },
+  { path: "configuration/team/dashboard", element: <Navigate to="/hrms/directory/overview" replace /> },
+  { path: "crm/campaigns/settings", element: <Navigate to="/crm/settings/campaigns" replace /> },
+  { path: "crm/contact-types", element: <Navigate to="/crm/settings/contact-types" replace /> },
+  { path: "crm/lead-sources", element: <Navigate to="/crm/settings/lead-sources" replace /> },
+  { path: "crm/my-social/facebook", element: <Navigate to="/crm/social-accounts/facebook" replace /> },
+  { path: "crm/my-social/instagram", element: <Navigate to="/crm/social-accounts/instagram" replace /> },
+  { path: "crm/my-social/tiktok", element: <Navigate to="/crm/social-accounts/tiktok" replace /> },
+  { path: "crm/my-social/whatsapp", element: <Navigate to="/crm/social-accounts/whatsapp" replace /> },
+  { path: "crm/tags", element: <Navigate to="/crm/settings/tags" replace /> },
+  { path: "documents/all-documents", element: <Navigate to="/company/documents/all-documents" replace /> },
+  { path: "documents/digital-contracts", element: <Navigate to="/company/documents/digital-contracts" replace /> },
+  { path: "documents/overview", element: <Navigate to="/company/documents/overview" replace /> },
+  { path: "emails", element: <Navigate to="/platform/emails" replace /> },
+  { path: "finance/categories", element: <Navigate to="/platform/finance/categories" replace /> },
+  { path: "finance/dashboard", element: <Navigate to="/platform/finance/overview" replace /> },
+  { path: "finance/expense", element: <Navigate to="/platform/finance/expense" replace /> },
+  { path: "finance/income", element: <Navigate to="/platform/finance/income" replace /> },
+  { path: "finance/invoices", element: <Navigate to="/platform/finance/invoices" replace /> },
+  { path: "hrms/settings/payroll-settings", element: <Navigate to="/hrms/settings/payroll" replace /> },
+  { path: "insights/customers/campaigns", element: <Navigate to="/crm/insights/campaigns" replace /> },
+  { path: "insights/customers/deals", element: <Navigate to="/crm/insights/deals" replace /> },
+  { path: "insights/customers/leads", element: <Navigate to="/crm/insights/leads" replace /> },
+  { path: "insights/customers/pipeline", element: <Navigate to="/crm/insights/pipeline" replace /> },
+  { path: "insights/finance/cash-flow", element: <Navigate to="/company/insights/cash-flow" replace /> },
+  { path: "insights/finance/profit-and-loss", element: <Navigate to="/company/insights/profit-and-loss" replace /> },
+  { path: "insights/finance/receivables", element: <Navigate to="/company/insights/receivables" replace /> },
+  { path: "insights/inventory/stock", element: <Navigate to="/sme/insights/stock" replace /> },
+  { path: "insights/inventory/stock-movement", element: <Navigate to="/sme/insights/stock-movement" replace /> },
+  { path: "insights/overview", element: <Navigate to="/company/insights/overview" replace /> },
+  { path: "insights/people/attendance", element: <Navigate to="/hrms/insights/attendance" replace /> },
+  { path: "insights/people/headcount", element: <Navigate to="/hrms/insights/headcount" replace /> },
+  { path: "insights/people/leave", element: <Navigate to="/hrms/insights/leave" replace /> },
+  { path: "insights/people/payroll", element: <Navigate to="/hrms/insights/payroll" replace /> },
+  { path: "insights/people/performance", element: <Navigate to="/hrms/insights/performance" replace /> },
+  { path: "insights/people/recruitment", element: <Navigate to="/hrms/insights/recruitment" replace /> },
+  { path: "insights/sales-and-purchases/purchases", element: <Navigate to="/sme/insights/purchases" replace /> },
+  { path: "insights/sales-and-purchases/sales", element: <Navigate to="/sme/insights/sales" replace /> },
+  { path: "insights/sales-and-purchases/sales-by-product", element: <Navigate to="/sme/insights/sales-by-product" replace /> },
+  { path: "insights/tasks-and-goals", element: <Navigate to="/company/insights/tasks-and-goals" replace /> },
+  { path: "my-company", element: <Navigate to="/company/dashboard" replace /> },
+  { path: "my-concern", element: <Navigate to="/company/my-concern" replace /> },
+  { path: "my-profile", element: <Navigate to="/company/my-profile" replace /> },
+  { path: "organization/profile", element: <Navigate to="/settings/company/profile" replace /> },
+  { path: "reports/crm/campaigns", element: <Navigate to="/crm/insights/campaigns" replace /> },
+  { path: "reports/crm/deals", element: <Navigate to="/crm/insights/deals" replace /> },
+  { path: "reports/crm/leads", element: <Navigate to="/crm/insights/leads" replace /> },
+  { path: "reports/crm/pipeline", element: <Navigate to="/crm/insights/pipeline" replace /> },
+  { path: "reports/customers", element: <Navigate to="/platform/reports/customers" replace /> },
+  { path: "reports/finance/cash-flow", element: <Navigate to="/company/insights/cash-flow" replace /> },
+  { path: "reports/finance/profit-loss", element: <Navigate to="/company/insights/profit-and-loss" replace /> },
+  { path: "reports/finance/receivables", element: <Navigate to="/company/insights/receivables" replace /> },
+  { path: "reports/hr/attendance", element: <Navigate to="/hrms/insights/attendance" replace /> },
+  { path: "reports/hr/headcount", element: <Navigate to="/hrms/insights/headcount" replace /> },
+  { path: "reports/hr/leave", element: <Navigate to="/hrms/insights/leave" replace /> },
+  { path: "reports/hr/payroll", element: <Navigate to="/hrms/insights/payroll" replace /> },
+  { path: "reports/hr/performance", element: <Navigate to="/hrms/insights/performance" replace /> },
+  { path: "reports/hr/recruitment", element: <Navigate to="/hrms/insights/recruitment" replace /> },
+  { path: "reports/income-and-expense", element: <Navigate to="/platform/reports/income-and-expense" replace /> },
+  { path: "reports/inventory/movement", element: <Navigate to="/sme/insights/stock-movement" replace /> },
+  { path: "reports/inventory/stock", element: <Navigate to="/sme/insights/stock" replace /> },
+  { path: "reports/overview", element: <Navigate to="/platform/reports/overview" replace /> },
+  { path: "reports/plan-performance", element: <Navigate to="/platform/reports/plan-performance" replace /> },
+  { path: "reports/purchases/summary", element: <Navigate to="/sme/insights/purchases" replace /> },
+  { path: "reports/revenue", element: <Navigate to="/platform/reports/revenue" replace /> },
+  { path: "reports/sales/products", element: <Navigate to="/sme/insights/sales-by-product" replace /> },
+  { path: "reports/sales/summary", element: <Navigate to="/sme/insights/sales" replace /> },
+  { path: "reports/sign-in-activity", element: <Navigate to="/platform/reports/sign-in-activity" replace /> },
+  { path: "reports/subscriptions", element: <Navigate to="/platform/reports/subscriptions" replace /> },
+  { path: "reports/tasks/summary", element: <Navigate to="/company/insights/tasks-and-goals" replace /> },
+  { path: "settings/customers/campaigns", element: <Navigate to="/crm/settings/campaigns" replace /> },
+  { path: "settings/customers/contact-types", element: <Navigate to="/crm/settings/contact-types" replace /> },
+  { path: "settings/customers/lead-sources", element: <Navigate to="/crm/settings/lead-sources" replace /> },
+  { path: "settings/customers/tags", element: <Navigate to="/crm/settings/tags" replace /> },
+  { path: "settings/people/attendance-rules", element: <Navigate to="/hrms/settings/attendance-rules" replace /> },
+  { path: "settings/people/holiday-calendar", element: <Navigate to="/hrms/settings/holiday-calendar" replace /> },
+  { path: "settings/people/late-fine-rules", element: <Navigate to="/hrms/settings/late-fine-rules" replace /> },
+  { path: "settings/people/leave", element: <Navigate to="/hrms/settings/leave" replace /> },
+  { path: "settings/people/overtime", element: <Navigate to="/hrms/settings/overtime" replace /> },
+  { path: "settings/people/payroll", element: <Navigate to="/hrms/settings/payroll" replace /> },
+  { path: "settings/sales-and-billing/email-sending", element: <Navigate to="/settings/system/email" replace /> },
+  { path: "settings/sales-and-billing/payment-gateways", element: <Navigate to="/settings/system/payments" replace /> },
+  { path: "settings/workspace/automation", element: <Navigate to="/company/automation/settings" replace /> },
+  { path: "settings/workspace/business-tools", element: <Navigate to="/company/business-tools/settings" replace /> },
+  { path: "settings/workspace/calendar", element: <Navigate to="/company/calendar/settings" replace /> },
+  { path: "sme/configuration/email", element: <Navigate to="/settings/system/email" replace /> },
+  { path: "sme/configuration/payment", element: <Navigate to="/settings/system/payments" replace /> },
+  { path: "sme/inventory/stock-overview", element: <Navigate to="/sme/inventory/stock" replace /> },
+  { path: "sold-subscriptions", element: <Navigate to="/platform/sold-subscriptions" replace /> },
+  { path: "subscription-plans", element: <Navigate to="/platform/subscription-plans" replace /> },
+  { path: "system-activity", element: <Navigate to="/platform/system/activity-log" replace /> },
+  { path: "system-config", element: <Navigate to="/platform/system/configuration" replace /> },
+  { path: "tasks-and-goals/goals", element: <Navigate to="/company/tasks-and-goals/goals" replace /> },
+  { path: "tasks-and-goals/notes", element: <Navigate to="/company/tasks-and-goals/notes" replace /> },
+  { path: "tasks-and-goals/tasks", element: <Navigate to="/company/tasks-and-goals/tasks" replace /> },
+  { path: "user-guides", element: <Navigate to="/platform/user-guides" replace /> },
+  { path: "wipe-data", element: <Navigate to="/platform/system/wipe-data" replace /> },
+];
+
+const branchRedirects: RouteConfig[] = [
+  ...MENU_WORKSPACES.map((workspace) => ({
+    path: workspace.id,
+    element: <WorkspaceRedirect workspaceId={workspace.id} />,
+  })),
+  ...MENU_BRANCH_PATHS.map((path) => ({
+    path: path.slice(1),
+    element: <Navigate to={`${path}/overview`} replace />,
+  })),
 ];
 
 const placeholderRoutes: RouteConfig[] = getMenuLeafPaths()
-  .map((path) => path.replace(/^\//, ""))
-  .filter((path) => path && !builtRoutes.some((route) => route.path === path))
+  .map((path) => path.slice(1))
+  .filter((path) => !builtRoutes.some((route) => route.path === path))
   .map((path) => ({ path, element: <ModulePlaceholder /> }));
 
 const ROUTES_WITHOUT_MENU = new Set([
-  "my-company",
-  "business-tools/email-builder/deliveries",
-  "business-tools/email-builder/:templateId",
-  "business-tools/web-builder/:siteId",
-  "business-tools/web-builder/:siteId/pages/:pageId",
-  "business-tools/form-builder/:formId",
-  "business-tools/form-builder/:formId/responses",
+  "company/business-tools/email-builder/deliveries",
+  "company/business-tools/email-builder/:templateId",
+  "company/business-tools/web-builder/:siteId",
+  "company/business-tools/web-builder/:siteId/pages/:pageId",
+  "company/business-tools/form-builder/:formId",
+  "company/business-tools/form-builder/:formId/responses",
+  "company/calendar/events/:id/registrations",
+  "company/calendar/meetings/:id/registrations",
+  "company/calendar/bookings/:id/requests",
+  "company/tasks-and-goals/tasks/:id",
   "crm/pipelines/:id",
-  "tasks-and-goals/tasks/:id",
-  "calendar/events/:id/registrations",
-  "calendar/meetings/:id/registrations",
-  "calendar/bookings/:id/requests",
 ]);
 
 const assertRouteCoverage = (): void => {
-  const menuPaths = new Set(getMenuLeafPaths().map((path) => path.replace(/^\//, "")));
+  const menuPaths = new Set(getMenuLeafPaths().map((path) => path.slice(1)));
 
   const orphans = builtRoutes
     .map((route) => route.path)
@@ -303,21 +397,20 @@ const assertRouteCoverage = (): void => {
   }
 
   const seen = new Set<string>();
-  [...builtRoutes, ...placeholderRoutes, ...legacyRedirects].forEach((route) => {
-    if (seen.has(route.path)) {
-      throw new Error(`Duplicate route path: ${route.path}`);
+  [...builtRoutes, ...placeholderRoutes, ...branchRedirects, ...legacyRedirects].forEach(
+    (route) => {
+      if (seen.has(route.path)) {
+        throw new Error(`Duplicate route path: ${route.path}`);
+      }
+      seen.add(route.path);
     }
-    seen.add(route.path);
-  });
+  );
 };
 
 if (import.meta.env.DEV) assertRouteCoverage();
 
 export const routes: RouteConfig[] = [
-  {
-    path: "/",
-    element: <RootRedirect />,
-  },
+  { path: "/", element: <RootRedirect /> },
 
   { path: "shop/:slug", element: <PublicShop /> },
 
@@ -343,7 +436,7 @@ export const routes: RouteConfig[] = [
       {
         path: "/",
         element: <PrivateLayout />,
-        children: [...builtRoutes, ...placeholderRoutes],
+        children: [...builtRoutes, ...placeholderRoutes, ...branchRedirects],
       },
     ],
   },
@@ -351,8 +444,5 @@ export const routes: RouteConfig[] = [
   { path: "403", element: <Forbidden /> },
   { path: "500", element: <InternalServerError /> },
 
-  {
-    path: "*",
-    element: <NotFound />,
-  },
+  { path: "*", element: <NotFound /> },
 ];

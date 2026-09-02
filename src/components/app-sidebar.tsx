@@ -6,20 +6,33 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { APP_NAME, APP_TAGLINE, BRAND_MARK } from "@/config/branding";
-import { getNavigation } from "@/config/navigation";
+import { getNavigation, getWorkspaceOptions, workspaceIdFromPath } from "@/config/navigation";
 import { usePermissions } from "@/hooks/use-permission";
 import { selectCurrentUser } from "@/redux/authSlice";
+import { HOME_ROUTE_BY_ROLE } from "@/types/domain/auth";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const user = useSelector(selectCurrentUser);
   const role = user?.role ?? "";
   const { modules } = usePermissions();
+  const { pathname } = useLocation();
 
-  const navGroups = React.useMemo(() => getNavigation(role, modules), [role, modules]);
+  const workspaces = React.useMemo(
+    () => getWorkspaceOptions(role, modules),
+    [role, modules]
+  );
+
+  const activeId = workspaceIdFromPath(pathname) ?? workspaces[0]?.id ?? null;
+
+  const navGroups = React.useMemo(
+    () => (activeId ? getNavigation(activeId, role, modules) : []),
+    [activeId, role, modules]
+  );
 
   return (
     <Sidebar {...props}>
@@ -27,7 +40,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <Link
-              to="/dashboard"
+              to={HOME_ROUTE_BY_ROLE[user?.role ?? "EMPLOYEE"] ?? "/"}
               className="flex h-9 items-center gap-2.5 rounded-lg px-1.5 transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
               <img
@@ -48,9 +61,16 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="gap-0 py-2">
-        {navGroups.map((group, index) => (
+        {workspaces.length > 1 && (
+          <SidebarMenu className="px-2.5 pb-1">
+            <SidebarMenuItem>
+              <WorkspaceSwitcher options={workspaces} activeId={activeId} />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+        {navGroups.map((group) => (
           <NavMain
-            key={`${group.label}-${index}`}
+            key={`${activeId}-${group.label}`}
             label={group.label}
             items={group.items}
             collapsible={props.collapsible}

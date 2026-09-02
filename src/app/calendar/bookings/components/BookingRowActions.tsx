@@ -52,7 +52,7 @@ export function BookingRowActions({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => navigate(`/calendar/bookings/${booking._id}/requests`)}
+        onClick={() => navigate(`/company/calendar/bookings/${booking._id}/requests`)}
       >
         <CalendarCheck className="size-3.5" />
         Requests

@@ -35,7 +35,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function LeadSourcesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/settings/customers/lead-sources");
+  const access = useModulePermission("/crm/settings/lead-sources");
 
   const { data, isLoading, isFetching } = useGetLeadSourcesQuery({
     page: filters.page,

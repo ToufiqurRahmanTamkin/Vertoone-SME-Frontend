@@ -33,7 +33,7 @@ import {
   type BookingRowActionHandlers,
 } from "./components/BookingRowActions";
 
-const MODULE_PATH = "/calendar/bookings";
+const MODULE_PATH = "/company/calendar/bookings";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -227,7 +227,7 @@ export default function BookingsPage() {
                   </span>
                   <div className="min-w-0">
                     <Link
-                      to={`/calendar/bookings/${booking._id}/requests`}
+                      to={`/company/calendar/bookings/${booking._id}/requests`}
                       className="block truncate text-sm font-semibold hover:underline"
                     >
                       {booking.title}

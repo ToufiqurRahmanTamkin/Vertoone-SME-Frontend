@@ -19,7 +19,7 @@ export function PageIdentity({ className }: { className?: string }) {
 
   const current = trail.length > 0 ? trail[trail.length - 1].title : "Dashboard";
   const parents = trail.slice(0, -1);
-  const section = lookup?.section;
+  const section = lookup && `${lookup.workspaceLabel} · ${lookup.section}`;
 
   return (
     <nav

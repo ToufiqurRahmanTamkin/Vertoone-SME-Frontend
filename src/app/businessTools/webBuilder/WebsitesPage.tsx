@@ -43,7 +43,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function WebsitesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/business-tools/web-builder");
+  const access = useModulePermission("/company/business-tools/web-builder");
 
   const { data, isLoading, isFetching } = useGetWebSitesQuery({
     page: filters.page,
@@ -188,7 +188,7 @@ export default function WebsitesPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <Link
-                  to={`/business-tools/web-builder/${site._id}`}
+                  to={`/company/business-tools/web-builder/${site._id}`}
                   className="block truncate text-sm font-semibold hover:underline"
                 >
                   {site.name}

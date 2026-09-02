@@ -14,7 +14,7 @@ export default function ModulePlaceholderPage() {
 
   const view = useMemo(() => {
     const match = findMenuItemByPath(pathname);
-    const section = match?.section ?? "Workspace";
+    const section = match ? `${match.workspaceLabel} · ${match.section}` : "Workspace";
     return {
       title: match?.item.title ?? "Module",
       section,

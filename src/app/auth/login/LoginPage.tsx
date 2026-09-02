@@ -31,7 +31,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginValues) => {
     try {
       const session = await login(data).unwrap();
-      const home = HOME_ROUTE_BY_ROLE[session.user.role] ?? "/dashboard";
+      const home = HOME_ROUTE_BY_ROLE[session.user.role] ?? "/platform/dashboard";
       navigate(home, { replace: true });
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;

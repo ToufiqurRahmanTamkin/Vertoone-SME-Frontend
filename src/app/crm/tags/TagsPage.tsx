@@ -31,7 +31,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function TagsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/settings/customers/tags");
+  const access = useModulePermission("/crm/settings/tags");
 
   const { data, isLoading, isFetching } = useGetTagsQuery({
     page: filters.page,

@@ -44,7 +44,7 @@ import { goalColumns } from "./goals.columns";
 
 export default function GoalsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/tasks-and-goals/goals");
+  const access = useModulePermission("/company/tasks-and-goals/goals");
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();

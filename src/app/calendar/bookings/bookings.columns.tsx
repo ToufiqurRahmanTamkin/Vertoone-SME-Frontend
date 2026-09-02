@@ -36,7 +36,7 @@ export const bookingColumns = (
         </span>
         <div className="min-w-0">
           <Link
-            to={`/calendar/bookings/${row.original._id}/requests`}
+            to={`/company/calendar/bookings/${row.original._id}/requests`}
             className="block truncate text-sm font-semibold hover:underline"
           >
             {row.original.title}
@@ -80,7 +80,7 @@ export const bookingColumns = (
     header: "Requests",
     cell: ({ row }) => (
       <Link
-        to={`/calendar/bookings/${row.original._id}/requests`}
+        to={`/company/calendar/bookings/${row.original._id}/requests`}
         className="text-sm font-semibold tabular-nums hover:underline"
       >
         {row.original.registrationCount}

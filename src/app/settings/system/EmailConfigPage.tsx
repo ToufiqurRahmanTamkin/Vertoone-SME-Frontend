@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Hammer, KeyRound, Mail, MailCheck, Send, Server } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { ConfigActions } from "../components/ConfigActions";
+import { ConfigActions } from "./components/ConfigActions";
 
 const PROVIDERS = [
   { label: "SMTP server", value: "smtp" },
@@ -95,7 +95,7 @@ export default function EmailConfigPage() {
     <>
       <PageHeader
         title="Email configuration"
-        description="The mailbox invoices, quotations and system alerts are sent from."
+        description="The mailbox every module sends invoices, campaigns and alerts from."
         actions={
           <div className="flex items-center gap-2">
             <Badge variant={enabled ? "success" : "outline"} className="px-2.5 py-1">

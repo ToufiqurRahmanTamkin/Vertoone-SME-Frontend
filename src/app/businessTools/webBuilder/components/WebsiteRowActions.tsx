@@ -36,7 +36,7 @@ export function WebsiteRowActions({
   return (
     <div className="flex items-center justify-end gap-1">
       <Button variant="outline" size="sm" asChild>
-        <Link to={`/business-tools/web-builder/${site._id}`}>
+        <Link to={`/company/business-tools/web-builder/${site._id}`}>
           <Files className="size-3.5" />
           Pages
         </Link>

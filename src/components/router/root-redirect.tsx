@@ -11,5 +11,5 @@ export function RootRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Navigate to={HOME_ROUTE_BY_ROLE[user.role] ?? "/dashboard"} replace />;
+  return <Navigate to={HOME_ROUTE_BY_ROLE[user.role] ?? "/platform/dashboard"} replace />;
 }

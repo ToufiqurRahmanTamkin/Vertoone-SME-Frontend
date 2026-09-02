@@ -85,9 +85,9 @@ export interface ResetPasswordInput {
 }
 
 export const HOME_ROUTE_BY_ROLE: Record<UserRole, string> = {
-  SUPER_ADMIN: "/dashboard",
-  COMPANY_OWNER: "/dashboard",
-  COMPANY_USER: "/my-company",
-  CONCERN_HEAD: "/my-concern",
-  EMPLOYEE: "/my-profile",
+  SUPER_ADMIN: "/platform/dashboard",
+  COMPANY_OWNER: "/company/dashboard",
+  COMPANY_USER: "/company/dashboard",
+  CONCERN_HEAD: "/company/my-concern",
+  EMPLOYEE: "/company/my-profile",
 };

@@ -34,7 +34,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const categoryRows = (
   entries: CategoryBreakdownEntry[],
@@ -50,6 +50,8 @@ const categoryRows = (
   }));
 
 export default function FinanceDashboardPage() {
+  const { pathname } = useLocation();
+  const invoicesPath = `${pathname.slice(0, pathname.lastIndexOf("/"))}/invoices`;
   const { data, isLoading } = useGetFinanceDashboardQuery();
 
   const currency = data?.currency ?? "BDT";
@@ -155,7 +157,7 @@ export default function FinanceDashboardPage() {
         }
         actions={
           <Button asChild variant="outline" className="cursor-pointer">
-            <Link to="/finance/invoices">
+            <Link to={invoicesPath}>
               All invoices
               <ArrowUpRight className="ml-1.5 h-4 w-4" />
             </Link>
@@ -171,7 +173,7 @@ export default function FinanceDashboardPage() {
           </span>
           {overdueCount > 0 && (
             <Link
-              to="/finance/invoices?overdue=true"
+              to={`${invoicesPath}?overdue=true`}
               className="text-muted-foreground hover:text-foreground"
             >
               <span className="font-semibold text-foreground">{formatNumber(overdueCount)}</span>{" "}
@@ -180,7 +182,7 @@ export default function FinanceDashboardPage() {
           )}
           {draftCount > 0 && (
             <Link
-              to="/finance/invoices?status=DRAFT"
+              to={`${invoicesPath}?status=DRAFT`}
               className="text-muted-foreground hover:text-foreground"
             >
               <span className="font-semibold text-foreground">{formatNumber(draftCount)}</span>{" "}

@@ -39,7 +39,7 @@ import {
 } from "./components/MeetingRowActions";
 import { meetingColumns, meetingSeatsLabel } from "./meetings.columns";
 
-const MODULE_PATH = "/calendar/meetings";
+const MODULE_PATH = "/company/calendar/meetings";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -242,7 +242,7 @@ export default function MeetingsPage() {
                   </span>
                   <div className="min-w-0">
                     <Link
-                      to={`/calendar/meetings/${meeting._id}/registrations`}
+                      to={`/company/calendar/meetings/${meeting._id}/registrations`}
                       className="block truncate text-sm font-semibold hover:underline"
                     >
                       {meeting.title}

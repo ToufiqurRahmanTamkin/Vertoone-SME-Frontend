@@ -83,7 +83,7 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 
 export default function EmailTemplateBuilderPage() {
   const { templateId = "" } = useParams<{ templateId: string }>();
-  const access = useModulePermission("/business-tools/email-builder");
+  const access = useModulePermission("/company/business-tools/email-builder");
 
   const {
     data: template,
@@ -277,7 +277,7 @@ export default function EmailTemplateBuilderPage() {
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This email is not available</p>
         <BackLink
-          to="/business-tools/email-builder"
+          to="/company/business-tools/email-builder"
           label="All emails"
           variant="outline"
           className="mt-4"
@@ -314,7 +314,7 @@ export default function EmailTemplateBuilderPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <BackLink to="/business-tools/email-builder" label="All emails" />
+          <BackLink to="/company/business-tools/email-builder" label="All emails" />
 
           <div className="flex items-center rounded-lg border p-0.5">
             {DEVICES.map((entry) => (

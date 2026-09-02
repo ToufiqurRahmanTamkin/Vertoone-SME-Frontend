@@ -42,7 +42,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function FormsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/business-tools/form-builder");
+  const access = useModulePermission("/company/business-tools/form-builder");
 
   const { data, isLoading, isFetching } = useGetFormsQuery({
     page: filters.page,
@@ -207,7 +207,7 @@ export default function FormsPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <Link
-                  to={`/business-tools/form-builder/${form._id}`}
+                  to={`/company/business-tools/form-builder/${form._id}`}
                   className="block truncate text-sm font-semibold hover:underline"
                 >
                   {form.name}
