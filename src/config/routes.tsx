@@ -16,6 +16,9 @@ const CompanyDashboard = lazy(() => import("@/app/myCompany/MyCompanyPage"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
 const SoldSubscriptions = lazy(() => import("@/app/soldSubscriptions/SoldSubscriptionsPage"));
+const SubscriptionRequests = lazy(
+  () => import("@/app/subscriptionRequests/SubscriptionRequestsPage")
+);
 const UserGuides = lazy(() => import("@/app/guides/GuidesPage"));
 const FinanceDashboard = lazy(() => import("@/app/finance/dashboard/FinanceDashboardPage"));
 const FinanceIncome = lazy(() => import("@/app/finance/income/IncomePage"));
@@ -130,6 +133,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "platform/users", element: <AllUsers /> },
   { path: "platform/subscription-plans", element: <SubscriptionPlans /> },
   { path: "platform/sold-subscriptions", element: <SoldSubscriptions /> },
+  { path: "platform/subscription-requests", element: <SubscriptionRequests /> },
   { path: "platform/finance/overview", element: <FinanceDashboard /> },
   { path: "platform/finance/income", element: <FinanceIncome /> },
   { path: "platform/finance/expense", element: <FinanceExpense /> },

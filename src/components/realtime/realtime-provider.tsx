@@ -23,7 +23,12 @@ import { toast } from "sonner";
 const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
   DASHBOARD: ["Dashboard"],
   COMPANIES: ["Companies", "CompanySummary", "MyCompany"],
-  SOLD_SUBSCRIPTIONS: ["SoldSubscriptions"],
+  SOLD_SUBSCRIPTIONS: ["SoldSubscriptions", "MyCompany"],
+  SUBSCRIPTION_REQUESTS: [
+    "SubscriptionRequests",
+    "SubscriptionRequestSummary",
+    "MySubscriptionRequests",
+  ],
   SUBSCRIPTION_PLANS: ["SubscriptionPlans"],
   NOTIFICATIONS: ["Notifications", "NotificationsUnread"],
   EMAILS: ["Emails"],

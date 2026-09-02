@@ -6,6 +6,7 @@ import type {
   SoldSubscriptionListQuery,
   SoldSubscriptionSummary,
   SoldSubscriptionUpdatePayload,
+  SuspendSubscriptionPayload,
 } from "@/types/domain/soldSubscription";
 import { baseApi } from "../baseApi";
 import { buildQuery } from "./queryString";
@@ -73,6 +74,25 @@ const soldSubscriptionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["SoldSubscriptions", "Incomes", "Dashboard"],
     }),
+    suspendSubscription: builder.mutation<
+      SoldSubscription,
+      { id: string; body: SuspendSubscriptionPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/sold-subscriptions/${id}/suspend`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [
+        "SoldSubscriptions",
+        "Companies",
+        "CompanySummary",
+        "Incomes",
+        "Expenses",
+        "Invoices",
+        "Dashboard",
+      ],
+    }),
     deleteSoldSubscription: builder.mutation<null, string>({
       query: (id) => ({ url: `/sold-subscriptions/${id}`, method: "DELETE" }),
       invalidatesTags: ["SoldSubscriptions", "SubscriptionPlans", "Dashboard"],
@@ -89,5 +109,6 @@ export const {
   useApprovePaymentMutation,
   useRejectPaymentMutation,
   useRefundPaymentMutation,
+  useSuspendSubscriptionMutation,
   useDeleteSoldSubscriptionMutation,
 } = soldSubscriptionApi;

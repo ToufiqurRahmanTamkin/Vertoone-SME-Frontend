@@ -23,6 +23,7 @@ export * from "./plan";
 export * from "./report";
 export * from "./role";
 export * from "./soldSubscription";
+export * from "./subscriptionRequest";
 export * from "./systemConfig";
 export * from "./tag";
 export * from "./teamMember";

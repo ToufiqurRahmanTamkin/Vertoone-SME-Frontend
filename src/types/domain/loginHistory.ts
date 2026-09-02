@@ -7,7 +7,8 @@ export type LoginFailureReason =
   | "ACCOUNT_INACTIVE"
   | "ACCOUNT_PENDING_APPROVAL"
   | "ACCOUNT_REJECTED"
-  | "UNKNOWN_ACCOUNT";
+  | "UNKNOWN_ACCOUNT"
+  | "SUBSCRIPTION_INACTIVE";
 
 export interface LoginHistoryEntry {
   _id: string;

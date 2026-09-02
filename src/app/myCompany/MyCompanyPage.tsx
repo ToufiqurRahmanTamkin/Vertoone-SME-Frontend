@@ -24,7 +24,7 @@ import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useGetMyCompanyQuery } from "@/redux/apis/companyApis";
 import { selectCurrentUser } from "@/redux/authSlice";
-import { companyPlanName, type CompanyInvoice } from "@/types/domain/company";
+import { companyPlanName, type Company, type CompanyInvoice } from "@/types/domain/company";
 import type {
   PaymentMethod,
   PaymentStatus,
@@ -34,6 +34,14 @@ import { AlertTriangle, Building2, Receipt, ShieldCheck, Wallet } from "lucide-r
 import { useSelector } from "react-redux";
 import { AiAllowanceCard } from "./components/AiAllowanceCard";
 import { PlanEntitlementCard } from "./components/PlanEntitlementCard";
+import { SubscriptionManagementCard } from "./components/SubscriptionManagementCard";
+
+const RUNNING_INVOICE_STATUSES: SubscriptionStatus[] = ["TRIALING", "ACTIVE"];
+
+const companyPlanId = (planId: Company["planId"]): string | null => {
+  if (!planId) return null;
+  return typeof planId === "string" ? planId : planId._id;
+};
 
 const InvoiceRow = ({ invoice }: { invoice: CompanyInvoice }) => (
   <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-sm">
@@ -68,7 +76,11 @@ export default function MyCompanyPage() {
 
   const company = data?.company;
   const currency = data?.invoices[0]?.currency ?? "BDT";
-  const activeInvoice = data?.invoices.find((invoice) => invoice.status === "ACTIVE");
+  const activeInvoice = data?.invoices.find((invoice) =>
+    RUNNING_INVOICE_STATUSES.includes(invoice.status as SubscriptionStatus)
+  );
+  const currentSubscription = activeInvoice ?? data?.invoices[0] ?? null;
+  const isOwner = user?.role === "COMPANY_OWNER";
 
   if (isError) {
     return (
@@ -89,7 +101,9 @@ export default function MyCompanyPage() {
       label: "Plan",
       value: company ? companyPlanName(company) : "—",
       description: activeInvoice
-        ? `Renews ${formatDate(activeInvoice.endDate)}`
+        ? activeInvoice.status === "TRIALING"
+          ? `Trial bills on ${formatDate(activeInvoice.endDate)}`
+          : `Renews ${formatDate(activeInvoice.endDate)}`
         : "No active billing period",
       icon: ShieldCheck,
       color: "info" as const,
@@ -227,6 +241,15 @@ export default function MyCompanyPage() {
           )}
         </SectionCard>
       </div>
+
+      {isOwner && (
+        <SubscriptionManagementCard
+          currentPlanId={company ? companyPlanId(company.planId) : null}
+          currentPlanName={company ? companyPlanName(company) : "—"}
+          subscription={currentSubscription}
+          isLoading={isLoading}
+        />
+      )}
 
       <AiAllowanceCard />
 

@@ -27,7 +27,12 @@ import { useGetPublicPlansQuery } from "@/redux/apis/planApis";
 import { useGetPublicSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { RegisterCompanyPayload, RegisterCompanyResult } from "@/types/domain/company";
-import { requiresTransactionId, type PaymentMethod } from "@/types/domain/soldSubscription";
+import {
+  CASH_PAYMENT_METHOD,
+  requiresTransactionId,
+  type PaymentMethod,
+} from "@/types/domain/soldSubscription";
+import type { SubscriptionPlan } from "@/types/domain/plan";
 import {
   RegisterAdminStepSchema,
   RegisterCompanyStepSchema,
@@ -105,7 +110,17 @@ export default function RegisterPage() {
     [plans, selectedPlanId]
   );
 
-  const needsTransactionId = Boolean(selectedMethod) && requiresTransactionId(selectedMethod);
+  const startsOnTrial = (selectedPlan?.trialDays ?? 0) > 0;
+
+  const needsTransactionId =
+    !startsOnTrial && Boolean(selectedMethod) && requiresTransactionId(selectedMethod);
+
+  const handlePlanSelected = (plan: SubscriptionPlan) => {
+    if (plan.trialDays <= 0) return;
+    paymentForm.setValue("paymentMethod", CASH_PAYMENT_METHOD);
+    paymentForm.setValue("transactionId", "");
+    paymentForm.clearErrors("transactionId");
+  };
 
   const submitCompanyStep = async (values: RegisterCompanyStepValues) => {
     try {
@@ -369,25 +384,39 @@ export default function RegisterPage() {
                       name="planId"
                       plans={plans}
                       isLoading={isLoadingPlans}
+                      onPlanSelected={handlePlanSelected}
                     />
 
-                    <div className="grid gap-5 sm:grid-cols-2">
-                      <FormSelect
-                        control={paymentForm.control}
-                        name="paymentMethod"
-                        label="Payment method"
-                        options={PAYMENT_METHOD_OPTIONS}
-                      />
-                      {needsTransactionId && (
-                        <FormInput
+                    {startsOnTrial ? (
+                      <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm">
+                        <p className="font-medium">
+                          Nothing to pay today — your {selectedPlan?.trialDays}-day trial starts as
+                          soon as we approve your registration.
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Your first invoice is raised the day the trial ends. Cancel before then
+                          and you will never be billed.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <FormSelect
                           control={paymentForm.control}
-                          name="transactionId"
-                          label="Transaction ID"
-                          placeholder="e.g. TXN8842019"
-                          description="Required for every non-cash payment."
+                          name="paymentMethod"
+                          label="Payment method"
+                          options={PAYMENT_METHOD_OPTIONS}
                         />
-                      )}
-                    </div>
+                        {needsTransactionId && (
+                          <FormInput
+                            control={paymentForm.control}
+                            name="transactionId"
+                            label="Transaction ID"
+                            placeholder="e.g. TXN8842019"
+                            description="Required for every non-cash payment."
+                          />
+                        )}
+                      </div>
+                    )}
 
                     {needsTransactionId && (
                       <div className="rounded-lg border bg-muted/30 p-4">
@@ -424,11 +453,16 @@ export default function RegisterPage() {
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                           <span className="text-sm font-medium">Total due today</span>
                           <span className="text-lg font-bold tabular-nums">
-                            {formatAmount(selectedPlan.price, selectedPlan.currency)}
+                            {startsOnTrial
+                              ? formatAmount(0, selectedPlan.currency)
+                              : formatAmount(selectedPlan.price, selectedPlan.currency)}
                           </span>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {selectedPlan.name} · billed {selectedPlan.billingCycle.toLowerCase().replace("_", " ")}
+                          {startsOnTrial
+                            ? ` · first bill of ${formatAmount(selectedPlan.price, selectedPlan.currency)} after the trial`
+                            : ""}
                         </p>
                       </div>
                     )}

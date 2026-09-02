@@ -61,6 +61,8 @@ export interface Company {
   reviewedBy: string | null;
   reviewedAt: string | null;
   reviewNote: string;
+  accessBlockedAt: string | null;
+  accessBlockReason: string;
   createdAt: string;
   updatedAt: string;
 }

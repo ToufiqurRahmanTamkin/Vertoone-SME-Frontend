@@ -1,4 +1,8 @@
-import type { PaymentStatus, SoldSubscription } from "@/types/domain/soldSubscription";
+import type {
+  PaymentStatus,
+  SoldSubscription,
+  SubscriptionStatus,
+} from "@/types/domain/soldSubscription";
 
 const REVIEWABLE_PAYMENT_STATUSES: PaymentStatus[] = ["UNPAID", "PENDING", "FAILED"];
 
@@ -10,3 +14,8 @@ export const canRejectPayment = (record: SoldSubscription): boolean =>
 
 export const canRefundPayment = (record: SoldSubscription): boolean =>
   record.paymentStatus === "PAID";
+
+const RUNNING_SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ["TRIALING", "ACTIVE"];
+
+export const canSuspendSubscription = (record: SoldSubscription): boolean =>
+  RUNNING_SUBSCRIPTION_STATUSES.includes(record.status);

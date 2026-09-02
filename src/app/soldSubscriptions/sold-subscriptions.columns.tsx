@@ -10,8 +10,13 @@ import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle2, Pencil, RefreshCcw, RotateCcw, Trash2, XCircle } from "lucide-react";
-import { canApprovePayment, canRefundPayment, canRejectPayment } from "./payment-actions";
+import { Ban, CheckCircle2, Pencil, RefreshCcw, RotateCcw, Trash2, XCircle } from "lucide-react";
+import {
+  canApprovePayment,
+  canRefundPayment,
+  canRejectPayment,
+  canSuspendSubscription,
+} from "./payment-actions";
 
 interface SoldSubscriptionColumnActions {
   onEdit: (record: SoldSubscription) => void;
@@ -19,6 +24,7 @@ interface SoldSubscriptionColumnActions {
   onApprove: (record: SoldSubscription) => void;
   onReject: (record: SoldSubscription) => void;
   onRefund: (record: SoldSubscription) => void;
+  onSuspend: (record: SoldSubscription) => void;
 }
 
 export const soldSubscriptionColumns = ({
@@ -27,6 +33,7 @@ export const soldSubscriptionColumns = ({
   onApprove,
   onReject,
   onRefund,
+  onSuspend,
 }: SoldSubscriptionColumnActions): ColumnDef<SoldSubscription>[] => [
   {
     accessorKey: "invoiceNumber",
@@ -130,6 +137,18 @@ export const soldSubscriptionColumns = ({
             title="Reject payment"
           >
             <XCircle className="h-4 w-4" />
+          </Button>
+        )}
+        {canSuspendSubscription(row.original) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 cursor-pointer text-orange-600 hover:text-orange-600"
+            onClick={() => onSuspend(row.original)}
+            aria-label={`Suspend ${row.original.invoiceNumber}`}
+            title="Suspend subscription"
+          >
+            <Ban className="h-4 w-4" />
           </Button>
         )}
         {canRefundPayment(row.original) && (

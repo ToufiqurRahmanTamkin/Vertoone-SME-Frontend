@@ -123,6 +123,14 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
   const planId = useWatch({ control: form.control, name: "planId" });
   const selectedPlan = plans.find((plan) => plan._id === planId);
 
+  const handlePlanChange = (value: string) => {
+    const plan = plans.find((entry) => entry._id === value);
+    if (!plan || plan.trialDays <= 0) return;
+    form.setValue("paymentMethod", "CASH");
+    form.setValue("transactionId", "");
+    form.clearErrors("transactionId");
+  };
+
   const onDraft = async () => {
     if (aiPrompt.trim().length < 3) return;
     try {
@@ -349,6 +357,7 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                     options={planOptions}
                     description="Private plans are assignable here but hidden from public signup."
                     className="col-span-6 sm:col-span-4"
+                    onValueChange={handlePlanChange}
                   />
                   <FormInput
                     control={form.control}
@@ -377,12 +386,20 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                     </div>
                   )}
 
-                  <FormPayment
-                    control={form.control}
-                    methodName="paymentMethod"
-                    transactionIdName="transactionId"
-                    className="col-span-6"
-                  />
+                  {(selectedPlan?.trialDays ?? 0) > 0 ? (
+                    <div className="col-span-6 rounded-lg border border-blue-500/30 bg-blue-500/5 px-3 py-2 text-xs text-muted-foreground">
+                      This plan includes a {selectedPlan?.trialDays}-day trial, so nothing is
+                      billed today. The first invoice, income and expense are raised
+                      automatically the day the trial ends.
+                    </div>
+                  ) : (
+                    <FormPayment
+                      control={form.control}
+                      methodName="paymentMethod"
+                      transactionIdName="transactionId"
+                      className="col-span-6"
+                    />
+                  )}
                   <FormTextarea
                     control={form.control}
                     name="note"

@@ -290,6 +290,12 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
             icon: "Receipt",
             description: "Active and past subscriptions with their billing state.",
           },
+          {
+            title: "Subscription Requests",
+            slug: "subscription-requests",
+            icon: "FileSignature",
+            description: "Cancellations and plan upgrades waiting on your approval.",
+          },
         ],
       },
       {

@@ -2,6 +2,7 @@ import type { BillingCycle } from "./plan";
 
 export const SUBSCRIPTION_STATUSES = [
   "PENDING",
+  "TRIALING",
   "ACTIVE",
   "EXPIRED",
   "CANCELLED",
@@ -20,7 +21,7 @@ export const CASH_PAYMENT_METHOD: PaymentMethod = "CASH";
 export const requiresTransactionId = (method: PaymentMethod): boolean =>
   method !== CASH_PAYMENT_METHOD;
 
-export const BILLING_ORIGINS = ["MANUAL", "AUTO_RENEWAL", "SELF_SERVICE"] as const;
+export const BILLING_ORIGINS = ["MANUAL", "AUTO_RENEWAL", "SELF_SERVICE", "UPGRADE"] as const;
 export type BillingOrigin = (typeof BILLING_ORIGINS)[number];
 
 export const PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED", "REFUNDED"] as const;
@@ -56,6 +57,8 @@ export interface SoldSubscription {
   startDate: string;
   endDate: string;
   trialDays: number;
+  trialEndsAt: string | null;
+  billedAt: string | null;
   autoRenew: boolean;
   notes: string;
   paymentReviewAction: PaymentReviewAction | null;
@@ -66,8 +69,28 @@ export interface SoldSubscription {
   renewedFromId: string | null;
   renewalCycle: number;
   renewedAt: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string;
+  suspendedAt: string | null;
+  refundAmount: number;
+  systemChargeAmount: number;
+  refundedAt: string | null;
+  upgradedFromId: string | null;
+  upgradedToId: string | null;
+  supersededAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RefundBreakdown {
+  totalDays: number;
+  usedDays: number;
+  unusedDays: number;
+  paidAmount: number;
+  unusedAmount: number;
+  systemChargeAmount: number;
+  refundAmount: number;
+  currency: string;
 }
 
 export interface SoldSubscriptionSummary {
@@ -78,6 +101,7 @@ export interface SoldSubscriptionSummary {
   totalRevenue: number;
   awaitingApprovalCount: number;
   autoRenewedCount: number;
+  trialingCount: number;
 }
 
 export interface SoldSubscriptionListQuery {
@@ -121,6 +145,10 @@ export interface PaymentReviewPayload {
   note?: string;
   paymentMethod?: PaymentMethod;
   transactionId?: string;
+}
+
+export interface SuspendSubscriptionPayload {
+  note: string;
 }
 
 export const planRefId = (planId: SoldSubscriptionPlanRef): string =>

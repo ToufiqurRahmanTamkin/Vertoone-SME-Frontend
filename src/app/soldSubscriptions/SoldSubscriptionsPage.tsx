@@ -117,6 +117,7 @@ export default function SoldSubscriptionsPage() {
         onApprove: openReview("APPROVE"),
         onReject: openReview("REJECT"),
         onRefund: openReview("REFUND"),
+        onSuspend: openReview("SUSPEND"),
       }),
     []
   );
@@ -137,6 +138,12 @@ export default function SoldSubscriptionsPage() {
       value: formatNumber(summary?.activeCount),
       icon: CircleCheck,
       color: "success" as const,
+    },
+    {
+      label: "On trial",
+      value: formatNumber(summary?.trialingCount),
+      icon: Clock,
+      color: "info" as const,
     },
     {
       label: "Pending",
@@ -240,6 +247,29 @@ export default function SoldSubscriptionsPage() {
               <span className="font-medium">{record.trialDays || "—"}</span>
             </div>
             <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Trial ends</span>
+              <span className="font-medium">
+                {record.trialEndsAt ? formatDate(record.trialEndsAt) : "—"}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Bill generated</span>
+              <span className="font-medium">
+                {record.billedAt ? formatDate(record.billedAt) : "Not yet"}
+              </span>
+            </div>
+            {record.refundAmount > 0 && (
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Refunded</span>
+                <span className="font-medium tabular-nums">
+                  {formatAmount(record.refundAmount, record.currency)}
+                  {record.systemChargeAmount > 0
+                    ? ` (after ${formatAmount(record.systemChargeAmount, record.currency)} system charge)`
+                    : ""}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Billing origin</span>
               <span className="font-medium">
                 {BILLING_ORIGIN_LABELS[record.billingOrigin] ?? record.billingOrigin}
@@ -277,6 +307,7 @@ export default function SoldSubscriptionsPage() {
             onApprove={openReview("APPROVE")}
             onReject={openReview("REJECT")}
             onRefund={openReview("REFUND")}
+            onSuspend={openReview("SUSPEND")}
           />
         )}
       />

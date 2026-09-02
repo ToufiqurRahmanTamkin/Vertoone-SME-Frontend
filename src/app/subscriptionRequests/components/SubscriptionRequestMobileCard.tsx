@@ -1,0 +1,109 @@
+import { CardActionButton } from "@/components/shared/action-button";
+import { StatusBadge } from "@/components/shared/status-badge";
+import {
+  SUBSCRIPTION_REQUEST_STATUS_COLORS,
+  SUBSCRIPTION_REQUEST_STATUS_LABELS,
+  SUBSCRIPTION_REQUEST_TYPE_COLORS,
+  SUBSCRIPTION_REQUEST_TYPE_LABELS,
+} from "@/constant";
+import { formatAmount } from "@/lib/amount";
+import { formatDate } from "@/lib/date";
+import type { SubscriptionRequest } from "@/types/domain/subscriptionRequest";
+import { CheckCircle2, Flame, XCircle } from "lucide-react";
+import { canReviewRequest, wipesDataOnApproval } from "../request-actions";
+
+interface SubscriptionRequestMobileCardProps {
+  record: SubscriptionRequest;
+  onApprove: (record: SubscriptionRequest) => void;
+  onReject: (record: SubscriptionRequest) => void;
+}
+
+export function SubscriptionRequestMobileCard({
+  record,
+  onApprove,
+  onReject,
+}: SubscriptionRequestMobileCardProps) {
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-semibold">{record.companyName}</p>
+          <p className="truncate text-xs text-muted-foreground">{record.requestedByEmail}</p>
+        </div>
+        <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+          {record.targetInvoiceNumber || record.subscriptionInvoiceNumber}
+        </span>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <StatusBadge
+          color={SUBSCRIPTION_REQUEST_TYPE_COLORS[record.type]}
+          label={SUBSCRIPTION_REQUEST_TYPE_LABELS[record.type]}
+        />
+        <StatusBadge
+          color={SUBSCRIPTION_REQUEST_STATUS_COLORS[record.status]}
+          label={SUBSCRIPTION_REQUEST_STATUS_LABELS[record.status]}
+        />
+      </div>
+
+      {wipesDataOnApproval(record) && (
+        <p className="mt-2 flex items-center gap-1 text-[11px] font-semibold uppercase text-destructive">
+          <Flame className="size-3" />
+          Approving erases all of their data
+        </p>
+      )}
+
+      <dl className="mt-3 space-y-1 text-xs">
+        <div className="flex justify-between gap-4">
+          <dt className="text-muted-foreground">Plan</dt>
+          <dd className="min-w-0 truncate font-medium">
+            {record.type === "UPGRADE"
+              ? `${record.currentPlanName} → ${record.targetPlanName}`
+              : record.currentPlanName}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-4">
+          <dt className="text-muted-foreground">Amount</dt>
+          <dd className="font-medium tabular-nums">
+            {formatAmount(record.amount, record.currency)}
+          </dd>
+        </div>
+        {record.type === "CANCELLATION" && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Refund</dt>
+            <dd className="font-medium tabular-nums">
+              {formatAmount(record.refundAmount, record.currency)}
+            </dd>
+          </div>
+        )}
+        <div className="flex justify-between gap-4">
+          <dt className="text-muted-foreground">Requested</dt>
+          <dd className="font-medium">{formatDate(record.requestedAt)}</dd>
+        </div>
+      </dl>
+
+      {record.reason && (
+        <p className="mt-3 whitespace-pre-wrap border-t pt-3 text-xs text-muted-foreground">
+          {record.reason}
+        </p>
+      )}
+
+      {canReviewRequest(record) && (
+        <div className="mt-3 flex flex-wrap justify-end gap-2 border-t pt-3">
+          <CardActionButton
+            icon={CheckCircle2}
+            label="Approve"
+            className="text-emerald-600 hover:text-emerald-600"
+            onClick={() => onApprove(record)}
+          />
+          <CardActionButton
+            icon={XCircle}
+            label="Reject"
+            className="text-destructive hover:text-destructive"
+            onClick={() => onReject(record)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}

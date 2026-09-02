@@ -15,6 +15,7 @@ import {
   useApprovePaymentMutation,
   useRefundPaymentMutation,
   useRejectPaymentMutation,
+  useSuspendSubscriptionMutation,
 } from "@/redux/apis/soldSubscriptionApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
@@ -29,7 +30,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export type PaymentReviewMode = "APPROVE" | "REJECT" | "REFUND";
+export type PaymentReviewMode = "APPROVE" | "REJECT" | "REFUND" | "SUSPEND";
 
 interface PaymentReviewModalProps {
   open: boolean;
@@ -87,6 +88,18 @@ const MODE_COPY: Record<
     successToast: "Payment refunded",
     errorToast: "Could not refund the payment",
   },
+  SUSPEND: {
+    title: "Suspend subscription",
+    description:
+      "Stops access for the company straight away and works out a partial refund for the unused days, less a 30% system charge.",
+    submitLabel: "Suspend subscription",
+    noteLabel: "Reason",
+    notePlaceholder: "Why is this subscription being suspended?",
+    destructive: true,
+    requiresNote: true,
+    successToast: "Subscription suspended and the refund worked out",
+    errorToast: "Could not suspend the subscription",
+  },
 };
 
 export function PaymentReviewModal({
@@ -101,7 +114,12 @@ export function PaymentReviewModal({
   const [approvePayment, approveState] = useApprovePaymentMutation();
   const [rejectPayment, rejectState] = useRejectPaymentMutation();
   const [refundPayment, refundState] = useRefundPaymentMutation();
-  const isSaving = approveState.isLoading || rejectState.isLoading || refundState.isLoading;
+  const [suspendSubscription, suspendState] = useSuspendSubscriptionMutation();
+  const isSaving =
+    approveState.isLoading ||
+    rejectState.isLoading ||
+    refundState.isLoading ||
+    suspendState.isLoading;
 
   const form = useForm<PaymentReviewFormValues>({
     resolver: zodResolver(copy.requiresNote ? PaymentReviewReasonSchema : PaymentReviewSchema),
@@ -131,6 +149,8 @@ export function PaymentReviewModal({
         }).unwrap();
       } else if (mode === "REJECT") {
         await rejectPayment({ id: record._id, body: { note: values.note } }).unwrap();
+      } else if (mode === "SUSPEND") {
+        await suspendSubscription({ id: record._id, body: { note: values.note } }).unwrap();
       } else {
         await refundPayment({ id: record._id, body: { note: values.note } }).unwrap();
       }

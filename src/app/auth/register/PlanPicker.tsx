@@ -16,6 +16,7 @@ interface PlanPickerProps<TFieldValues extends FieldValues> {
   name: Path<TFieldValues>;
   plans: SubscriptionPlan[];
   isLoading: boolean;
+  onPlanSelected?: (plan: SubscriptionPlan) => void;
 }
 
 export function PlanPicker<TFieldValues extends FieldValues>({
@@ -23,6 +24,7 @@ export function PlanPicker<TFieldValues extends FieldValues>({
   name,
   plans,
   isLoading,
+  onPlanSelected,
 }: PlanPickerProps<TFieldValues>) {
   const [previewPlan, setPreviewPlan] = useState<SubscriptionPlan | null>(null);
 
@@ -56,11 +58,15 @@ export function PlanPicker<TFieldValues extends FieldValues>({
                       role="radio"
                       tabIndex={0}
                       aria-checked={isSelected}
-                      onClick={() => field.onChange(plan._id)}
+                      onClick={() => {
+                        field.onChange(plan._id);
+                        onPlanSelected?.(plan);
+                      }}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
                           field.onChange(plan._id);
+                          onPlanSelected?.(plan);
                         }
                       }}
                       className={cn(

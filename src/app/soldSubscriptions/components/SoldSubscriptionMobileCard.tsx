@@ -9,8 +9,13 @@ import {
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
-import { CheckCircle2, Pencil, RotateCcw, Trash2, XCircle } from "lucide-react";
-import { canApprovePayment, canRefundPayment, canRejectPayment } from "../payment-actions";
+import { Ban, CheckCircle2, Pencil, RotateCcw, Trash2, XCircle } from "lucide-react";
+import {
+  canApprovePayment,
+  canRefundPayment,
+  canRejectPayment,
+  canSuspendSubscription,
+} from "../payment-actions";
 
 interface SoldSubscriptionMobileCardProps {
   record: SoldSubscription;
@@ -19,6 +24,7 @@ interface SoldSubscriptionMobileCardProps {
   onApprove: (record: SoldSubscription) => void;
   onReject: (record: SoldSubscription) => void;
   onRefund: (record: SoldSubscription) => void;
+  onSuspend: (record: SoldSubscription) => void;
 }
 
 export function SoldSubscriptionMobileCard({
@@ -28,6 +34,7 @@ export function SoldSubscriptionMobileCard({
   onApprove,
   onReject,
   onRefund,
+  onSuspend,
 }: SoldSubscriptionMobileCardProps) {
   return (
     <div className="rounded-xl border bg-card p-4">
@@ -86,6 +93,14 @@ export function SoldSubscriptionMobileCard({
             label="Reject"
             className="text-destructive hover:text-destructive"
             onClick={() => onReject(record)}
+          />
+        )}
+        {canSuspendSubscription(record) && (
+          <CardActionButton
+            icon={Ban}
+            label="Suspend"
+            className="text-orange-600 hover:text-orange-600"
+            onClick={() => onSuspend(record)}
           />
         )}
         {canRefundPayment(record) && (

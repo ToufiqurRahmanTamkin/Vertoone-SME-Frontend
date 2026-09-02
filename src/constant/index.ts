@@ -19,6 +19,10 @@ import type {
   PaymentStatus,
   SubscriptionStatus,
 } from "@/types/domain/soldSubscription";
+import type {
+  SubscriptionRequestStatus,
+  SubscriptionRequestType,
+} from "@/types/domain/subscriptionRequest";
 import type { EmailStatus, EmailTemplateKey } from "@/types/domain/email";
 import type { BusinessTool } from "@/types/domain/businessToolsDashboard";
 import type { EmailTemplateCategory } from "@/types/domain/emailBuilder";
@@ -63,6 +67,7 @@ export const BILLING_CYCLE_MONTHS: Record<BillingCycle, number> = {
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
   PENDING: "Pending",
+  TRIALING: "On trial",
   ACTIVE: "Active",
   EXPIRED: "Expired",
   CANCELLED: "Cancelled",
@@ -71,6 +76,7 @@ export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
 
 export const SUBSCRIPTION_STATUS_COLORS: Record<SubscriptionStatus, StatusColor> = {
   PENDING: "amber",
+  TRIALING: "blue",
   ACTIVE: "green",
   EXPIRED: "zinc",
   CANCELLED: "red",
@@ -116,12 +122,39 @@ export const BILLING_ORIGIN_LABELS: Record<BillingOrigin, string> = {
   MANUAL: "Manual",
   AUTO_RENEWAL: "Auto renewal",
   SELF_SERVICE: "Self sign-up",
+  UPGRADE: "Plan upgrade",
+};
+
+export const SUBSCRIPTION_REQUEST_TYPE_LABELS: Record<SubscriptionRequestType, string> = {
+  CANCELLATION: "Cancellation",
+  UPGRADE: "Plan upgrade",
+};
+
+export const SUBSCRIPTION_REQUEST_TYPE_COLORS: Record<SubscriptionRequestType, StatusColor> = {
+  CANCELLATION: "red",
+  UPGRADE: "violet",
+};
+
+export const SUBSCRIPTION_REQUEST_STATUS_LABELS: Record<SubscriptionRequestStatus, string> = {
+  PENDING: "Awaiting review",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+};
+
+export const SUBSCRIPTION_REQUEST_STATUS_COLORS: Record<
+  SubscriptionRequestStatus,
+  StatusColor
+> = {
+  PENDING: "amber",
+  APPROVED: "green",
+  REJECTED: "red",
 };
 
 export const BILLING_ORIGIN_COLORS: Record<BillingOrigin, StatusColor> = {
   MANUAL: "zinc",
   AUTO_RENEWAL: "violet",
   SELF_SERVICE: "blue",
+  UPGRADE: "orange",
 };
 
 export const COMPANY_STATUS_LABELS: Record<CompanyStatus, string> = {
@@ -183,6 +216,7 @@ export const FINANCE_CATEGORY_TYPE_COLORS: Record<FinanceCategoryType, StatusCol
 export const INCOME_SOURCE_TYPE_LABELS: Record<IncomeSourceType, string> = {
   MANUAL: "Manual",
   SOLD_SUBSCRIPTION: "Subscription",
+  SUBSCRIPTION_REFUND: "Subscription refund",
 };
 
 export const INVOICE_TYPE_LABELS: Record<InvoiceType, string> = {
@@ -258,6 +292,13 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   PAYMENT_REJECTED: "Payment rejected",
   PAYMENT_REFUNDED: "Payment refunded",
   SUBSCRIPTION_EXPIRING: "Expiring soon",
+  SUBSCRIPTION_TRIAL_BILLED: "Trial ended",
+  SUBSCRIPTION_CANCELLATION_REQUESTED: "Cancellation requested",
+  SUBSCRIPTION_CANCELLED: "Subscription cancelled",
+  SUBSCRIPTION_SUSPENDED: "Subscription suspended",
+  SUBSCRIPTION_UPGRADE_REQUESTED: "Upgrade requested",
+  SUBSCRIPTION_UPGRADED: "Plan upgraded",
+  COMPANY_DATA_PURGED: "Company data erased",
   FINANCE_ENTRY: "Finance",
   SECURITY_LOGIN: "Security",
   SYSTEM: "System",
@@ -301,6 +342,7 @@ export const LOGIN_FAILURE_REASON_LABELS: Record<LoginFailureReason, string> = {
   ACCOUNT_PENDING_APPROVAL: "Awaiting approval",
   ACCOUNT_REJECTED: "Registration rejected",
   UNKNOWN_ACCOUNT: "Unknown email",
+  SUBSCRIPTION_INACTIVE: "Subscription inactive",
 };
 
 export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
@@ -316,6 +358,14 @@ export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
   PASSWORD_RESET_SUCCESS: "Password reset confirmed",
   PASSWORD_RESET_BY_ADMIN: "Password reset by admin",
   RENEWAL_BILL_GENERATED: "Renewal bill generated",
+  TRIAL_BILL_GENERATED: "Trial bill generated",
+  SUBSCRIPTION_CANCELLATION_RECEIVED: "Cancellation received",
+  SUBSCRIPTION_CANCELLATION_APPROVED: "Cancellation approved",
+  SUBSCRIPTION_CANCELLATION_REJECTED: "Cancellation rejected",
+  SUBSCRIPTION_SUSPENDED: "Subscription suspended",
+  SUBSCRIPTION_UPGRADE_REQUESTED: "Upgrade invoice raised",
+  SUBSCRIPTION_UPGRADED: "Plan upgraded",
+  COMPANY_DATA_WIPED: "Company data erased",
   PAYMENT_APPROVED: "Payment approved",
   PAYMENT_REJECTED: "Payment rejected",
   PAYMENT_REFUNDED: "Payment refunded",
@@ -424,6 +474,16 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   SUBSCRIPTION_DELETED: "Subscription deleted",
   SUBSCRIPTION_RENEWED: "Subscription renewed",
   SUBSCRIPTION_EXPIRED: "Subscription expired",
+  SUBSCRIPTION_TRIAL_STARTED: "Trial started",
+  SUBSCRIPTION_TRIAL_BILLED: "Trial billed",
+  SUBSCRIPTION_CANCELLATION_REQUESTED: "Cancellation requested",
+  SUBSCRIPTION_CANCELLED: "Subscription cancelled",
+  SUBSCRIPTION_SUSPENDED: "Subscription suspended",
+  SUBSCRIPTION_UPGRADE_REQUESTED: "Upgrade requested",
+  SUBSCRIPTION_UPGRADED: "Plan upgraded",
+  SUBSCRIPTION_REQUEST_REJECTED: "Request rejected",
+  COMPANY_DATA_PURGED: "Company data erased",
+  COMPANY_ACCESS_BLOCKED: "Company access blocked",
   PAYMENT_APPROVED: "Payment approved",
   PAYMENT_REJECTED: "Payment rejected",
   PAYMENT_REFUNDED: "Payment refunded",
@@ -464,6 +524,7 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
 export const ACTIVITY_ENTITY_TYPE_LABELS: Record<ActivityEntityType, string> = {
   COMPANY: "Company",
   SOLD_SUBSCRIPTION: "Sold subscription",
+  SUBSCRIPTION_REQUEST: "Subscription request",
   SUBSCRIPTION_PLAN: "Subscription plan",
   INCOME: "Income",
   EXPENSE: "Expense",
