@@ -21,7 +21,12 @@ export function AvailabilityEditor({ disabled }: { disabled?: boolean }) {
   });
   const weekdays = useWatch({ control: form.control, name: "availability" });
   const error = form.formState.errors.availability;
-  const rootMessage = typeof error?.message === "string" ? error.message : undefined;
+  const rootMessage =
+    typeof error?.root?.message === "string"
+      ? error.root.message
+      : typeof error?.message === "string"
+        ? error.message
+        : undefined;
 
   return (
     <div className="space-y-3">

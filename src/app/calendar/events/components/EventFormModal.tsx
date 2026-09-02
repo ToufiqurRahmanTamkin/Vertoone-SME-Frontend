@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { CALENDAR_STATUS_LABELS, EVENT_CATEGORY_LABELS, toOptions } from "@/constant";
 import {
   useCreateCalendarEventMutation,
@@ -33,9 +33,9 @@ import type {
 } from "@/types/domain/calendarEvent";
 import { CalendarEventSchema, type CalendarEventFormValues } from "@/validations/calendar";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
 
 interface EventFormModalProps {
@@ -43,6 +43,46 @@ interface EventFormModalProps {
   onOpenChange: (open: boolean) => void;
   event?: CalendarEvent | null;
 }
+
+const STEPS: readonly StepperStep[] = [
+  { id: "details", label: "Details" },
+  { id: "schedule", label: "When & where" },
+  { id: "payment", label: "Payment" },
+  { id: "look", label: "Look" },
+];
+
+const STEP_FIELDS: readonly FieldPath<CalendarEventFormValues>[][] = [
+  [
+    "title",
+    "category",
+    "slug",
+    "summary",
+    "description",
+    "organiserName",
+    "contactEmail",
+    "contactPhone",
+  ],
+  [
+    "startAt",
+    "endAt",
+    "registrationClosesAt",
+    "capacity",
+    "place",
+    "isRegistrationOpen",
+    "status",
+  ],
+  ["payment"],
+  ["coverUrl", "coverPublicId", "accentColor"],
+];
+
+const LAST_STEP = STEPS.length - 1;
+
+const stepOf = (field: string): number => {
+  const index = STEP_FIELDS.findIndex((fields) =>
+    fields.includes(field as FieldPath<CalendarEventFormValues>)
+  );
+  return index === -1 ? 0 : index;
+};
 
 const CATEGORY_OPTIONS = toOptions(EVENT_CATEGORY_LABELS);
 
@@ -165,6 +205,26 @@ export function EventFormModal({ open, onOpenChange, event }: EventFormModalProp
     form.reset(event ? toFormValues(event) : emptyValues());
   }, [open, event, form]);
 
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
+  const seedKey = open ? (event?._id ?? "new") : null;
+
+  if (seedKey !== seededFor) {
+    setSeededFor(seedKey);
+    setStep(0);
+    setFurthestStep(seedKey !== null && event ? LAST_STEP : 0);
+  }
+
+  const goNext = async () => {
+    const fields = STEP_FIELDS[step];
+    const isValid = fields.length === 0 || (await form.trigger(fields, { shouldFocus: true }));
+    if (!isValid) return;
+    const next = Math.min(step + 1, LAST_STEP);
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
+
   const onSubmit = async (values: CalendarEventFormValues) => {
     try {
       if (event) {
@@ -181,6 +241,22 @@ export function EventFormModal({ open, onOpenChange, event }: EventFormModalProp
     }
   };
 
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const firstStep = Object.keys(errors)
+      .map(stepOf)
+      .sort((a, b) => a - b)[0];
+    if (firstStep !== undefined) setStep(firstStep);
+  };
+
+  const handleFormSubmit = (event_: React.FormEvent<HTMLFormElement>) => {
+    event_.preventDefault();
+    if (step < LAST_STEP) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event_);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
@@ -193,17 +269,17 @@ export function EventFormModal({ open, onOpenChange, event }: EventFormModalProp
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogBody>
-              <Tabs defaultValue="details">
-                <TabsList className="w-full">
-                  <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="schedule">When & where</TabsTrigger>
-                  <TabsTrigger value="payment">Payment</TabsTrigger>
-                  <TabsTrigger value="look">Look</TabsTrigger>
-                </TabsList>
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleFormSubmit}>
+            <DialogBody className="flex flex-col gap-4">
+              <Stepper
+                steps={STEPS}
+                current={step}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
 
-                <TabsContent value="details" className="mt-4 flex flex-col gap-4">
+              {step === 0 && (
+                <div className="flex flex-col gap-4">
                   <FormInput
                     control={form.control}
                     name="title"
@@ -264,16 +340,13 @@ export function EventFormModal({ open, onOpenChange, event }: EventFormModalProp
                     label="Contact email"
                     placeholder="events@example.com"
                   />
-                </TabsContent>
+                </div>
+              )}
 
-                <TabsContent value="schedule" className="mt-4 flex flex-col gap-4">
+              {step === 1 && (
+                <div className="flex flex-col gap-4">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormDate
-                      control={form.control}
-                      name="startAt"
-                      label="Starts"
-                      includeTime
-                    />
+                    <FormDate control={form.control} name="startAt" label="Starts" includeTime />
                     <FormDate control={form.control} name="endAt" label="Ends" includeTime />
                   </div>
 
@@ -311,31 +384,46 @@ export function EventFormModal({ open, onOpenChange, event }: EventFormModalProp
                     options={STATUS_OPTIONS}
                     description="Only a live event is reachable on its public link."
                   />
-                </TabsContent>
+                </div>
+              )}
 
-                <TabsContent value="payment" className="mt-4">
-                  <CalendarPaymentSection label="event" />
-                </TabsContent>
+              {step === 2 && <CalendarPaymentSection label="event" />}
 
-                <TabsContent value="look" className="mt-4">
-                  <CalendarPresentationSection />
-                </TabsContent>
-              </Tabs>
+              {step === 3 && <CalendarPresentationSection />}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Create event"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}
+                  disabled={isSaving}
+                >
+                  {step === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {step < LAST_STEP ? (
+                  <Button key="wizard-next" type="button" onClick={() => void goNext()}>
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button key="wizard-submit" type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? "Save changes" : "Create event"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>
