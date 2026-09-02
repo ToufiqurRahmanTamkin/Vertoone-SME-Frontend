@@ -32,6 +32,7 @@ import type {
 } from "@/types/domain/soldSubscription";
 import { AlertTriangle, Building2, Receipt, ShieldCheck, Wallet } from "lucide-react";
 import { useSelector } from "react-redux";
+import { AiAllowanceCard } from "./components/AiAllowanceCard";
 import { PlanEntitlementCard } from "./components/PlanEntitlementCard";
 
 const InvoiceRow = ({ invoice }: { invoice: CompanyInvoice }) => (
@@ -226,6 +227,8 @@ export default function MyCompanyPage() {
           )}
         </SectionCard>
       </div>
+
+      <AiAllowanceCard />
 
       <PlanEntitlementCard modulePermissions={data?.modulePermissions} isLoading={isLoading} />
 

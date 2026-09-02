@@ -36,6 +36,7 @@ export interface SubscriptionPlan {
   billingCycle: BillingCycle;
   features: string[];
   limits: PlanLimits;
+  aiTokenLimit: number | null;
   modulePermissions: ModulePermissionMap;
   trialDays: number;
   isActive: boolean;
@@ -66,6 +67,7 @@ export interface PlanPayload {
   billingCycle: BillingCycle;
   features?: string[];
   limits?: Partial<PlanLimits>;
+  aiTokenLimit?: number | null;
   modulePermissions?: ModulePermissionMap;
   trialDays?: number;
   isActive?: boolean;

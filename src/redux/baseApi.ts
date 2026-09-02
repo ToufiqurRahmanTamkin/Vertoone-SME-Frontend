@@ -167,6 +167,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 
 export const ALL_TAG_TYPES = [
   "Me",
+  "AiAllowance",
   "Dashboard",
   "SystemConfig",
   "SubscriptionPlans",

@@ -60,7 +60,7 @@ const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
     "description",
     "features",
   ],
-  ["limitUsers"],
+  ["limitUsers", "aiTokenLimit"],
   ["isActive", "autoRenewEnabled", "isPrivate"],
 ];
 
@@ -85,6 +85,7 @@ const emptyValues = (currency: string): PlanFormValues => ({
   billingCycle: "MONTHLY",
   features: "",
   limitUsers: "",
+  aiTokenLimit: "",
   trialDays: 0,
   isActive: true,
   autoRenewEnabled: false,
@@ -100,6 +101,7 @@ const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   billingCycle: plan.billingCycle,
   features: (plan.features ?? []).join("\n"),
   limitUsers: plan.limits?.users ?? "",
+  aiTokenLimit: plan.aiTokenLimit ?? "",
   trialDays: plan.trialDays ?? 0,
   isActive: plan.isActive,
   autoRenewEnabled: plan.autoRenewEnabled ?? false,
@@ -189,6 +191,7 @@ export function PlanFormModal({
       billingCycle: values.billingCycle,
       features: parseFeatures(values.features),
       limits: { users: toLimit(values.limitUsers) },
+      aiTokenLimit: toLimit(values.aiTokenLimit),
       modulePermissions: livePermissions,
       trialDays: values.trialDays,
       isActive: values.isActive,
@@ -331,15 +334,24 @@ export function PlanFormModal({
 
               {step === 1 && (
                 <div className="space-y-3">
-                  <FormInput
-                    control={form.control}
-                    name="limitUsers"
-                    label="Users"
-                    type="number"
-                    placeholder="Unlimited"
-                    description="Leave blank for unlimited."
-                    className="sm:max-w-56"
-                  />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <FormInput
+                      control={form.control}
+                      name="limitUsers"
+                      label="Users"
+                      type="number"
+                      placeholder="Unlimited"
+                      description="Leave blank for unlimited."
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="aiTokenLimit"
+                      label="AI tokens per month"
+                      type="number"
+                      placeholder="Unlimited"
+                      description="0 switches AI off. Blank is unlimited. Resets on the 1st."
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Tick the menus this plan unlocks and set an optional record cap for each. Leave
                     a cap blank for unlimited. Saving applies these menus straight away to every
@@ -399,6 +411,16 @@ export function PlanFormModal({
                     <div>
                       <dt className="text-xs text-muted-foreground">Menus</dt>
                       <dd className="font-medium">{selectedModuleCount} enabled</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">AI tokens</dt>
+                      <dd className="font-medium">
+                        {summary.aiTokenLimit === "" || summary.aiTokenLimit === undefined
+                          ? "Unlimited"
+                          : summary.aiTokenLimit === 0
+                            ? "Off"
+                            : `${summary.aiTokenLimit.toLocaleString()} / month`}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground">Income category</dt>

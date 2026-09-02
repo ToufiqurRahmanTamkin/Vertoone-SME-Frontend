@@ -14,6 +14,7 @@ export const PlanSchema = z.object({
   billingCycle: z.enum(BILLING_CYCLES),
   features: z.string().max(4000).optional(),
   limitUsers: limitField,
+  aiTokenLimit: limitField,
   trialDays: z.number().int().min(0).max(365, "Trial can be at most 365 days"),
   isActive: z.boolean(),
   autoRenewEnabled: z.boolean(),

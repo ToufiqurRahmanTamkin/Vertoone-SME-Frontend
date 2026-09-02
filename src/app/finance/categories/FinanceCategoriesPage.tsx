@@ -10,11 +10,13 @@ import {
   useDeleteFinanceCategoryMutation,
   useGetFinanceCategoriesQuery,
 } from "@/redux/apis/financeApis";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { FinanceCategory, FinanceCategoryType } from "@/types/domain/finance";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiCategoriesModal } from "./components/AiCategoriesModal";
 import { FinanceCategoryFormModal } from "./components/FinanceCategoryFormModal";
 import { financeCategoryColumns } from "./finance-categories.columns";
 
@@ -48,6 +50,8 @@ export default function FinanceCategoriesPage() {
   });
 
   const [formOpen, setFormOpen] = React.useState(false);
+  const [aiOpen, setAiOpen] = React.useState(false);
+  const { data: ai } = useGetAiAllowanceQuery();
   const [editing, setEditing] = React.useState<FinanceCategory | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<FinanceCategory | null>(null);
   const [deleteCategory, { isLoading: isDeleting }] = useDeleteFinanceCategoryMutation();
@@ -99,7 +103,19 @@ export default function FinanceCategoriesPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={<ActionButton icon={Plus} label="New category" onClick={openCreate} />}
+        actions={
+          <>
+            {ai?.isConfigured && (
+              <ActionButton
+                icon={Sparkles}
+                label="Generate with AI"
+                variant="outline"
+                onClick={() => setAiOpen(true)}
+              />
+            )}
+            <ActionButton icon={Plus} label="New category" onClick={openCreate} />
+          </>
+        }
       />
 
       <DataTable
@@ -149,6 +165,8 @@ export default function FinanceCategoriesPage() {
       />
 
       <FinanceCategoryFormModal open={formOpen} onOpenChange={setFormOpen} category={editing} />
+
+      <AiCategoriesModal open={aiOpen} onOpenChange={setAiOpen} />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

@@ -18,16 +18,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { EMPLOYEE_RANGE_LABELS, toOptions } from "@/constant";
 import { formatAmount } from "@/lib/amount";
+import { useGenerateCompanyDraftMutation, useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { useCreateCompanyMutation } from "@/redux/apis/companyApis";
 import { useGetPlansQuery } from "@/redux/apis/planApis";
 import type { ApiErrorResponse } from "@/redux/baseApi";
 import { EMPLOYEE_RANGES } from "@/types/domain/company";
 import { CreateCompanySchema, type CreateCompanyFormValues } from "@/validations/company";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Lock, Sparkles } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -80,6 +82,9 @@ const emptyValues: CreateCompanyFormValues = {
 export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalProps) {
   const [createCompany, { isLoading }] = useCreateCompanyMutation();
   const { data: planData } = useGetPlansQuery({ limit: 100, isActive: true });
+  const { data: ai } = useGetAiAllowanceQuery();
+  const [draftCompany, { isLoading: isDrafting }] = useGenerateCompanyDraftMutation();
+  const [aiPrompt, setAiPrompt] = React.useState("");
 
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
@@ -117,6 +122,27 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
 
   const planId = useWatch({ control: form.control, name: "planId" });
   const selectedPlan = plans.find((plan) => plan._id === planId);
+
+  const onDraft = async () => {
+    if (aiPrompt.trim().length < 3) return;
+    try {
+      const draft = await draftCompany({ prompt: aiPrompt.trim() }).unwrap();
+      const fill = { shouldDirty: true, shouldValidate: true } as const;
+      form.setValue("companyName", draft.name, fill);
+      form.setValue("companyEmail", draft.email, fill);
+      form.setValue("companyPhone", draft.phone, fill);
+      form.setValue("companyAddress", draft.address, fill);
+      form.setValue("employeeRange", draft.employeeRange, fill);
+      form.setValue("adminName", draft.ownerName, fill);
+      form.setValue("adminEmail", draft.ownerEmail, fill);
+      toast.success(`Drafted ${draft.name}`, {
+        description: "Review every field, then set a password and pick a plan.",
+      });
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not draft the company");
+    }
+  };
 
   const goNext = async () => {
     const isValid = await form.trigger(STEP_FIELDS[step], { shouldFocus: true });
@@ -194,6 +220,46 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                 reachable={furthestStep}
                 onStepSelect={setStep}
               />
+
+              {step === 0 && ai?.isConfigured && (
+                <div className="rounded-lg border border-primary/25 bg-primary/5 p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-medium">
+                    <Sparkles className="size-3.5 text-primary" />
+                    Draft with AI
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Describe the business and the company and owner fields are filled in for you.
+                    Everything stays editable.
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <Input
+                      value={aiPrompt}
+                      maxLength={500}
+                      placeholder="A mid-sized textile exporter in Dhaka"
+                      onChange={(event) => setAiPrompt(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") return;
+                        event.preventDefault();
+                        void onDraft();
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="shrink-0 cursor-pointer"
+                      disabled={isDrafting || aiPrompt.trim().length < 3}
+                      onClick={onDraft}
+                    >
+                      {isDrafting ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="size-4" />
+                      )}
+                      Draft
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {step === 0 && (
                 <div className="grid grid-cols-6 gap-x-3 gap-y-3">
