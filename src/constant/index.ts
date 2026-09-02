@@ -29,6 +29,15 @@ import type {
   ActivityEntityType,
   ActivitySeverity,
 } from "@/types/domain/activity";
+import type {
+  CalendarLocationMode,
+  CalendarStatus,
+  PaymentReviewDecision,
+  RegistrationPaymentStatus,
+  RegistrationStatus,
+} from "@/types/domain/calendar";
+import type { EventCategory } from "@/types/domain/calendarEvent";
+import type { MeetingType } from "@/types/domain/calendarMeeting";
 import type { WipeScope } from "@/types/domain/dataWipe";
 import type {
   BloodGroup,
@@ -544,4 +553,81 @@ export const BLOOD_GROUP_LABELS: Record<BloodGroup, string> = {
   "AB-": "AB-",
   "O+": "O+",
   "O-": "O-",
+};
+
+export const CALENDAR_STATUS_LABELS: Record<CalendarStatus, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Live",
+  CANCELLED: "Cancelled",
+  COMPLETED: "Completed",
+};
+
+export const CALENDAR_STATUS_COLORS: Record<CalendarStatus, StatusColor> = {
+  DRAFT: "zinc",
+  PUBLISHED: "green",
+  CANCELLED: "red",
+  COMPLETED: "blue",
+};
+
+export const CALENDAR_LOCATION_MODE_LABELS: Record<CalendarLocationMode, string> = {
+  IN_PERSON: "In person",
+  ONLINE: "Online",
+  HYBRID: "In person & online",
+};
+
+export const REGISTRATION_STATUS_LABELS: Record<RegistrationStatus, string> = {
+  PENDING: "Pending",
+  CONFIRMED: "Confirmed",
+  CANCELLED: "Cancelled",
+  ATTENDED: "Attended",
+  NO_SHOW: "No show",
+};
+
+export const REGISTRATION_STATUS_COLORS: Record<RegistrationStatus, StatusColor> = {
+  PENDING: "amber",
+  CONFIRMED: "green",
+  CANCELLED: "red",
+  ATTENDED: "blue",
+  NO_SHOW: "zinc",
+};
+
+export const REGISTRATION_PAYMENT_STATUS_LABELS: Record<RegistrationPaymentStatus, string> = {
+  NOT_REQUIRED: "Free",
+  AWAITING_VERIFICATION: "Awaiting check",
+  VERIFIED: "Payment received",
+  REJECTED: "Payment rejected",
+  REFUNDED: "Refunded",
+};
+
+export const REGISTRATION_PAYMENT_STATUS_COLORS: Record<RegistrationPaymentStatus, StatusColor> = {
+  NOT_REQUIRED: "zinc",
+  AWAITING_VERIFICATION: "amber",
+  VERIFIED: "green",
+  REJECTED: "red",
+  REFUNDED: "violet",
+};
+
+export const PAYMENT_REVIEW_DECISION_LABELS: Record<PaymentReviewDecision, string> = {
+  VERIFIED: "Payment received",
+  REJECTED: "Payment not received",
+  REFUNDED: "Refunded",
+};
+
+export const EVENT_CATEGORY_LABELS: Record<EventCategory, string> = {
+  CONFERENCE: "Conference",
+  WORKSHOP: "Workshop",
+  WEBINAR: "Webinar",
+  TRAINING: "Training",
+  NETWORKING: "Networking",
+  LAUNCH: "Launch",
+  OTHER: "Other",
+};
+
+export const MEETING_TYPE_LABELS: Record<MeetingType, string> = {
+  INTERNAL: "Internal",
+  CLIENT: "Client",
+  INTERVIEW: "Interview",
+  DEMO: "Demo",
+  CONSULTATION: "Consultation",
+  OTHER: "Other",
 };

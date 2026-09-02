@@ -55,6 +55,16 @@ const Notes = lazy(() => import("@/app/tasksGoals/notes/NotesPage"));
 const Pipelines = lazy(() => import("@/app/crm/pipelines/PipelinesPage"));
 const PipelineDetail = lazy(() => import("@/app/crm/pipelines/PipelineDetailPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
+const Events = lazy(() => import("@/app/calendar/events/EventsPage"));
+const EventRegistrations = lazy(
+  () => import("@/app/calendar/events/EventRegistrationsPage")
+);
+const Meetings = lazy(() => import("@/app/calendar/meetings/MeetingsPage"));
+const MeetingRegistrations = lazy(
+  () => import("@/app/calendar/meetings/MeetingRegistrationsPage")
+);
+const Bookings = lazy(() => import("@/app/calendar/bookings/BookingsPage"));
+const BookingRequests = lazy(() => import("@/app/calendar/bookings/BookingRequestsPage"));
 const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
 const Products = lazy(() => import("@/app/sme/products/list/ProductsPage"));
 const ProductCategories = lazy(
@@ -107,6 +117,9 @@ const BusinessToolsSettings = lazy(
   () => import("@/app/businessTools/settings/BusinessToolsSettingsPage")
 );
 const PublicShop = lazy(() => import("@/app/publicShop/PublicShopPage"));
+const PublicEvent = lazy(() => import("@/app/publicCalendar/PublicEventPage"));
+const PublicMeeting = lazy(() => import("@/app/publicCalendar/PublicMeetingPage"));
+const PublicBooking = lazy(() => import("@/app/publicCalendar/PublicBookingPage"));
 const ModulePlaceholder = lazy(() => import("@/app/placeholder/ModulePlaceholderPage"));
 const NotFound = lazy(() => import("@/app/errors/not-found/page"));
 const Forbidden = lazy(() => import("@/app/errors/forbidden/page"));
@@ -200,6 +213,12 @@ const builtRoutes: RouteConfig[] = [
   { path: "tasks-goals/notes", element: <Notes /> },
   { path: "crm/pipelines", element: <Pipelines /> },
   { path: "crm/pipelines/:id", element: <PipelineDetail /> },
+  { path: "calendar/events", element: <Events /> },
+  { path: "calendar/events/:id/registrations", element: <EventRegistrations /> },
+  { path: "calendar/meetings", element: <Meetings /> },
+  { path: "calendar/meetings/:id/registrations", element: <MeetingRegistrations /> },
+  { path: "calendar/bookings", element: <Bookings /> },
+  { path: "calendar/bookings/:id/requests", element: <BookingRequests /> },
   { path: "settings/workspace/calendar", element: <CalendarSettings /> },
   { path: "settings/account", element: <AccountSettings /> },
 ];
@@ -268,6 +287,9 @@ const ROUTES_WITHOUT_MENU = new Set([
   "business-tools/form-builder/:formId/responses",
   "crm/pipelines/:id",
   "tasks-goals/tasks/:id",
+  "calendar/events/:id/registrations",
+  "calendar/meetings/:id/registrations",
+  "calendar/bookings/:id/requests",
 ]);
 
 const assertRouteCoverage = (): void => {
@@ -299,6 +321,10 @@ export const routes: RouteConfig[] = [
   },
 
   { path: "shop/:slug", element: <PublicShop /> },
+
+  { path: "events/:slug", element: <PublicEvent /> },
+  { path: "meetings/:slug", element: <PublicMeeting /> },
+  { path: "book/:slug", element: <PublicBooking /> },
 
   {
     path: "/",
