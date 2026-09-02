@@ -1,25 +1,22 @@
-import { CardActionButton } from "@/components/shared/action-button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Switch } from "@/components/ui/switch";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
-import { Pencil, RefreshCcw, Trash2 } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
+import { PlanRowActions, type PlanRowActionHandlers } from "./PlanRowActions";
 
-interface PlanMobileCardProps {
+interface PlanMobileCardProps extends PlanRowActionHandlers {
   plan: SubscriptionPlan;
-  onEdit: (plan: SubscriptionPlan) => void;
-  onDelete: (plan: SubscriptionPlan) => void;
   onToggleAutoRenew: (plan: SubscriptionPlan, enabled: boolean) => void;
   isToggling?: boolean;
 }
 
 export function PlanMobileCard({
   plan,
-  onEdit,
-  onDelete,
   onToggleAutoRenew,
   isToggling,
+  ...rowActions
 }: PlanMobileCardProps) {
   return (
     <div className="rounded-xl border bg-card p-4">
@@ -73,14 +70,8 @@ export function PlanMobileCard({
         </div>
       </dl>
 
-      <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-        <CardActionButton icon={Pencil} label="Edit" onClick={() => onEdit(plan)} />
-        <CardActionButton
-          icon={Trash2}
-          label="Delete"
-          className="text-destructive hover:text-destructive"
-          onClick={() => onDelete(plan)}
-        />
+      <div className="mt-3 border-t pt-3">
+        <PlanRowActions plan={plan} {...rowActions} />
       </div>
     </div>
   );

@@ -34,12 +34,12 @@ export const WorkspaceSwitcher = React.memo(function WorkspaceSwitcher({
     <SidebarMenuButton
       size="lg"
       className={cn(
-        "h-11 gap-2.5 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-2.5",
+        "h-11 gap-2.5 rounded-lg border border-primary/25 bg-primary/10 px-2.5",
         options.length > 1 &&
-          "cursor-pointer hover:bg-sidebar-accent data-[state=open]:bg-sidebar-accent"
+          "cursor-pointer hover:bg-primary/15 data-[state=open]:bg-primary/15"
       )}
     >
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
         <ActiveIcon className="size-4" />
       </span>
       <span className="min-w-0 flex-1 text-left group-data-[collapsible=icon]:hidden">
@@ -84,7 +84,9 @@ export const WorkspaceSwitcher = React.memo(function WorkspaceSwitcher({
             <span
               className={cn(
                 "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md",
-                option.id === active.id ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                option.id === active.id
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
               )}
             >
               <option.icon className="size-4" />

@@ -1,25 +1,22 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Lock, Pencil, RefreshCcw, Trash2 } from "lucide-react";
+import { Lock, RefreshCcw } from "lucide-react";
+import { PlanRowActions, type PlanRowActionHandlers } from "./components/PlanRowActions";
 
-interface PlanColumnActions {
-  onEdit: (plan: SubscriptionPlan) => void;
-  onDelete: (plan: SubscriptionPlan) => void;
+interface PlanColumnActions extends PlanRowActionHandlers {
   onToggleAutoRenew: (plan: SubscriptionPlan, enabled: boolean) => void;
   togglingPlanId?: string | null;
 }
 
 export const planColumns = ({
-  onEdit,
-  onDelete,
   onToggleAutoRenew,
   togglingPlanId,
+  ...rowActions
 }: PlanColumnActions): ColumnDef<SubscriptionPlan>[] => [
   {
     accessorKey: "name",
@@ -145,27 +142,6 @@ export const planColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <PlanRowActions plan={row.original} {...rowActions} />,
   },
 ];

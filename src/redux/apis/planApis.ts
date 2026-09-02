@@ -32,6 +32,14 @@ const planApi = baseApi.injectEndpoints({
       query: ({ id, body }) => ({ url: `/subscription-plans/${id}`, method: "PATCH", body }),
       invalidatesTags: ["SubscriptionPlans", "Dashboard"],
     }),
+    clonePlan: builder.mutation<SubscriptionPlan, { id: string; name?: string }>({
+      query: ({ id, name }) => ({
+        url: `/subscription-plans/${id}/clone`,
+        method: "POST",
+        body: name ? { name } : {},
+      }),
+      invalidatesTags: ["SubscriptionPlans", "Dashboard"],
+    }),
     deletePlan: builder.mutation<null, string>({
       query: (id) => ({ url: `/subscription-plans/${id}`, method: "DELETE" }),
       invalidatesTags: ["SubscriptionPlans", "Dashboard"],
@@ -45,5 +53,6 @@ export const {
   useGetPlanQuery,
   useCreatePlanMutation,
   useUpdatePlanMutation,
+  useClonePlanMutation,
   useDeletePlanMutation,
 } = planApi;

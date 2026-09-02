@@ -6,6 +6,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { BILLING_CYCLE_LABELS, toOptions } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import {
+  useClonePlanMutation,
   useDeletePlanMutation,
   useGetPlansQuery,
   useUpdatePlanMutation,
@@ -55,7 +56,9 @@ export default function PlansPage() {
   const [pendingDelete, setPendingDelete] = React.useState<SubscriptionPlan | null>(null);
   const [deletePlan, { isLoading: isDeleting }] = useDeletePlanMutation();
   const [updatePlan] = useUpdatePlanMutation();
+  const [clonePlan] = useClonePlanMutation();
   const [togglingPlanId, setTogglingPlanId] = React.useState<string | null>(null);
+  const [cloningPlanId, setCloningPlanId] = React.useState<string | null>(null);
 
   const openCreate = () => {
     setEditing(null);
@@ -80,6 +83,24 @@ export default function PlansPage() {
     }
   };
 
+  const handleClone = React.useCallback(
+    async (plan: SubscriptionPlan) => {
+      setCloningPlanId(plan._id);
+      try {
+        const created = await clonePlan({ id: plan._id }).unwrap();
+        toast.success(`"${created.name}" created as an inactive draft`);
+        setEditing(created);
+        setFormOpen(true);
+      } catch (error: unknown) {
+        const err = error as ApiErrorResponse;
+        toast.error(err?.data?.message || "Could not clone the plan");
+      } finally {
+        setCloningPlanId(null);
+      }
+    },
+    [clonePlan]
+  );
+
   const toggleAutoRenew = React.useCallback(
     async (plan: SubscriptionPlan, enabled: boolean) => {
       setTogglingPlanId(plan._id);
@@ -98,15 +119,19 @@ export default function PlansPage() {
     [updatePlan]
   );
 
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onClone: handleClone,
+      onDelete: setPendingDelete,
+      cloningPlanId,
+    }),
+    [handleClone, cloningPlanId]
+  );
+
   const columns = React.useMemo(
-    () =>
-      planColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        onToggleAutoRenew: toggleAutoRenew,
-        togglingPlanId,
-      }),
-    [toggleAutoRenew, togglingPlanId]
+    () => planColumns({ ...rowActions, onToggleAutoRenew: toggleAutoRenew, togglingPlanId }),
+    [rowActions, toggleAutoRenew, togglingPlanId]
   );
 
   const plans = data?.data ?? [];
@@ -146,8 +171,7 @@ export default function PlansPage() {
         mobileCard={(plan) => (
           <PlanMobileCard
             plan={plan}
-            onEdit={openEdit}
-            onDelete={setPendingDelete}
+            {...rowActions}
             onToggleAutoRenew={toggleAutoRenew}
             isToggling={togglingPlanId === plan._id}
           />
