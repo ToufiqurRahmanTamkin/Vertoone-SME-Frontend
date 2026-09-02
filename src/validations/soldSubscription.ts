@@ -7,6 +7,15 @@ import {
 import { z } from "zod";
 import { optionalPhone } from "./phone";
 
+export const RecordSaleSchema = z.object({
+  companyId: z.string().min(1, "Select a company"),
+  planId: z.string().min(1, "Select a plan"),
+  startDate: z.string().min(1, "Start date is required"),
+  autoRenew: z.boolean(),
+});
+
+export type RecordSaleFormValues = z.infer<typeof RecordSaleSchema>;
+
 export const SoldSubscriptionSchema = z
   .object({
     planId: z.string().min(1, "Select a plan"),

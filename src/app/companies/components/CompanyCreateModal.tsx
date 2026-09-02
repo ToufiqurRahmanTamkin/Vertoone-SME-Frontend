@@ -206,8 +206,9 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
         <DialogHeader>
           <DialogTitle>New company</DialogTitle>
           <DialogDescription>
-            Creating a company here approves it immediately, activates its owner and records the
-            plan price as paid revenue — no separate approval step.
+            Creating a company here approves it immediately, activates its owner, emails them their
+            sign-in credentials and records the plan price as paid revenue — no separate approval
+            step.
           </DialogDescription>
         </DialogHeader>
 
@@ -305,7 +306,7 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                 <div className="grid grid-cols-6 gap-x-3 gap-y-3">
                   <p className="col-span-6 text-xs text-muted-foreground">
                     This becomes the company owner account. They can sign in as soon as you save,
-                    so share these credentials with them directly.
+                    and these credentials are emailed to the admin address below.
                   </p>
                   <FormInput
                     control={form.control}

@@ -31,6 +31,7 @@ import type {
 import { CircleCheck, Clock, HandCoins, Plus, Receipt, RefreshCcw, Wallet } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { RecordSaleModal } from "./components/RecordSaleModal";
 import { SoldSubscriptionFormModal } from "./components/SoldSubscriptionFormModal";
 import { SoldSubscriptionMobileCard } from "./components/SoldSubscriptionMobileCard";
 import { PaymentReviewModal, type PaymentReviewMode } from "./components/PaymentReviewModal";
@@ -74,6 +75,7 @@ export default function SoldSubscriptionsPage() {
     startDateTo: filters.to as string | undefined,
   });
 
+  const [createOpen, setCreateOpen] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<SoldSubscription | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<SoldSubscription | null>(null);
@@ -87,11 +89,6 @@ export default function SoldSubscriptionsPage() {
     setReviewMode(mode);
     setReviewRecord(record);
     setReviewOpen(true);
-  };
-
-  const openCreate = () => {
-    setEditing(null);
-    setFormOpen(true);
   };
 
   const openEdit = (record: SoldSubscription) => {
@@ -199,7 +196,9 @@ export default function SoldSubscriptionsPage() {
         onFilterChange={setFilter}
         onClear={clearFilters}
         isLoading={isFetching}
-        actions={<ActionButton icon={Plus} label="Record sale" onClick={openCreate} />}
+        actions={
+          <ActionButton icon={Plus} label="Record sale" onClick={() => setCreateOpen(true)} />
+        }
       />
 
       <DataTable
@@ -235,6 +234,10 @@ export default function SoldSubscriptionsPage() {
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Auto renew</span>
               <span className="font-medium">{record.autoRenew ? "Yes" : "No"}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Trial days</span>
+              <span className="font-medium">{record.trialDays || "—"}</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Billing origin</span>
@@ -284,6 +287,8 @@ export default function SoldSubscriptionsPage() {
         mode={reviewMode}
         record={reviewRecord}
       />
+
+      <RecordSaleModal open={createOpen} onOpenChange={setCreateOpen} />
 
       <SoldSubscriptionFormModal
         open={formOpen}

@@ -310,6 +310,7 @@ export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
   REGISTRATION_RECEIVED: "Registration received",
   REGISTRATION_SUBMITTED_ADMIN: "Registration submitted (admin)",
   REGISTRATION_APPROVED: "Registration approved",
+  COMPANY_CREDENTIALS: "Company credentials sent",
   REGISTRATION_REJECTED: "Registration rejected",
   PASSWORD_RESET_OTP: "Password reset code",
   PASSWORD_RESET_SUCCESS: "Password reset confirmed",
@@ -318,6 +319,7 @@ export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKey, string> = {
   PAYMENT_APPROVED: "Payment approved",
   PAYMENT_REJECTED: "Payment rejected",
   PAYMENT_REFUNDED: "Payment refunded",
+  SUBSCRIPTION_RENEWAL_REMINDER: "Renewal reminder",
   SUBSCRIPTION_EXPIRING: "Subscription expiring",
   SUBSCRIPTION_EXPIRED: "Subscription expired",
 };

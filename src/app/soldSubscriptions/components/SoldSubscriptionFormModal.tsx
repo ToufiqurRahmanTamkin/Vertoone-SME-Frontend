@@ -18,19 +18,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import {
-  BILLING_CYCLE_LABELS,
-  BILLING_CYCLE_MONTHS,
-  PAYMENT_STATUS_LABELS,
-  SUBSCRIPTION_STATUS_LABELS,
-  toOptions,
-} from "@/constant";
-import { formatAmount } from "@/lib/amount";
-import { useGetPlansQuery } from "@/redux/apis/planApis";
-import {
-  useCreateSoldSubscriptionMutation,
-  useUpdateSoldSubscriptionMutation,
-} from "@/redux/apis/soldSubscriptionApis";
+import { PAYMENT_STATUS_LABELS, SUBSCRIPTION_STATUS_LABELS, toOptions } from "@/constant";
+import { useUpdateSoldSubscriptionMutation } from "@/redux/apis/soldSubscriptionApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
 import { planRefId } from "@/types/domain/soldSubscription";
@@ -41,31 +30,18 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface SoldSubscriptionFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  record?: SoldSubscription | null;
+  record: SoldSubscription | null;
   defaultCurrency?: string;
 }
 
 const STATUS_OPTIONS = toOptions(SUBSCRIPTION_STATUS_LABELS);
 const PAYMENT_STATUS_OPTIONS = toOptions(PAYMENT_STATUS_LABELS);
-
-const toDateInput = (value: Date): string => {
-  const offset = value.getTimezoneOffset();
-  return new Date(value.getTime() - offset * 60_000).toISOString().slice(0, 10);
-};
-
-const addMonths = (date: Date, months: number): Date => {
-  const result = new Date(date);
-  const targetDay = result.getDate();
-  result.setMonth(result.getMonth() + months);
-  if (result.getDate() < targetDay) result.setDate(0);
-  return result;
-};
 
 const emptyValues = (currency: string): SoldSubscriptionFormValues => ({
   planId: "",
@@ -79,8 +55,8 @@ const emptyValues = (currency: string): SoldSubscriptionFormValues => ({
   paymentStatus: "UNPAID",
   paymentMethod: "CASH",
   transactionId: "",
-  startDate: toDateInput(new Date()),
-  endDate: toDateInput(addMonths(new Date(), 1)),
+  startDate: "",
+  endDate: "",
   autoRenew: false,
   notes: "",
 });
@@ -109,13 +85,7 @@ export function SoldSubscriptionFormModal({
   record,
   defaultCurrency = "BDT",
 }: SoldSubscriptionFormModalProps) {
-  const isEdit = Boolean(record);
-  const { data: planData } = useGetPlansQuery({ limit: 100, isActive: true as never });
-  const [createSale, { isLoading: isCreating }] = useCreateSoldSubscriptionMutation();
-  const [updateSale, { isLoading: isUpdating }] = useUpdateSoldSubscriptionMutation();
-  const isSaving = isCreating || isUpdating;
-
-  const plans = React.useMemo(() => planData?.data ?? [], [planData]);
+  const [updateSale, { isLoading: isSaving }] = useUpdateSoldSubscriptionMutation();
 
   const form = useForm<SoldSubscriptionFormValues>({
     resolver: zodResolver(SoldSubscriptionSchema),
@@ -127,59 +97,28 @@ export function SoldSubscriptionFormModal({
     form.reset(record ? toFormValues(record) : emptyValues(defaultCurrency));
   }, [open, record, defaultCurrency, form]);
 
-  const onPlanChange = (planId: string) => {
-    const plan = plans.find((p) => p._id === planId);
-    if (!plan) return;
-    form.setValue("amount", plan.price, { shouldValidate: true, shouldDirty: true });
-    form.setValue("currency", plan.currency, { shouldValidate: true, shouldDirty: true });
-    const start = form.getValues("startDate");
-    const startDate = start ? new Date(start) : new Date();
-    form.setValue(
-      "endDate",
-      toDateInput(addMonths(startDate, BILLING_CYCLE_MONTHS[plan.billingCycle])),
-      {
-        shouldValidate: true,
-      }
-    );
-  };
-
-  const selectedPlanId = useWatch({ control: form.control, name: "planId" });
-  const amountDescription =
-    isEdit || selectedPlanId ? "Taken from the plan." : "Select a plan to fill this in.";
-
-  const planOptions = plans.map((plan) => ({
-    value: plan._id,
-    label: `${plan.name} — ${formatAmount(plan.price, plan.currency)} / ${
-      BILLING_CYCLE_LABELS[plan.billingCycle]
-    }`,
-  }));
-
   const onSubmit = async (values: SoldSubscriptionFormValues) => {
-    const shared = {
-      customerName: values.customerName,
-      customerEmail: values.customerEmail,
-      customerPhone: values.customerPhone,
-      companyName: values.companyName,
-      amount: values.amount,
-      currency: values.currency.toUpperCase(),
-      status: values.status,
-      paymentStatus: values.paymentStatus,
-      paymentMethod: values.paymentMethod,
-      transactionId: values.transactionId,
-      startDate: new Date(values.startDate).toISOString(),
-      endDate: new Date(values.endDate).toISOString(),
-      autoRenew: values.autoRenew,
-      notes: values.notes,
-    };
+    if (!record) return;
 
     try {
-      if (record) {
-        await updateSale({ id: record._id, body: shared }).unwrap();
-        toast.success("Subscription updated");
-      } else {
-        await createSale({ ...shared, planId: values.planId }).unwrap();
-        toast.success("Sale recorded");
-      }
+      await updateSale({
+        id: record._id,
+        body: {
+          customerName: values.customerName,
+          customerEmail: values.customerEmail,
+          customerPhone: values.customerPhone,
+          companyName: values.companyName,
+          status: values.status,
+          paymentStatus: values.paymentStatus,
+          paymentMethod: values.paymentMethod,
+          transactionId: values.transactionId,
+          startDate: new Date(values.startDate).toISOString(),
+          endDate: new Date(values.endDate).toISOString(),
+          autoRenew: values.autoRenew,
+          notes: values.notes,
+        },
+      }).unwrap();
+      toast.success("Subscription updated");
       onOpenChange(false);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
@@ -191,11 +130,9 @@ export function SoldSubscriptionFormModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit subscription" : "Record a sale"}</DialogTitle>
+          <DialogTitle>Edit subscription</DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? "The plan and invoice number are fixed once a sale is recorded."
-              : "Selecting a plan sets the price and currency. The end date follows the billing cycle and can be changed."}
+            The plan, invoice number and amount are fixed once a sale is recorded.
           </DialogDescription>
         </DialogHeader>
 
@@ -206,16 +143,11 @@ export function SoldSubscriptionFormModal({
                 control={form.control}
                 name="planId"
                 label="Plan"
-                placeholder="Select a plan"
                 options={
-                  isEdit && record
-                    ? [{ value: planRefId(record.planId), label: record.planName }]
-                    : planOptions
+                  record ? [{ value: planRefId(record.planId), label: record.planName }] : []
                 }
-                onValueChange={onPlanChange}
-                disabled={isEdit}
-                description={isEdit ? "A sale cannot be moved to another plan." : undefined}
-                searchable
+                disabled
+                description="A sale cannot be moved to another plan."
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -247,14 +179,14 @@ export function SoldSubscriptionFormModal({
                   label="Amount"
                   type="number"
                   disabled
-                  description={amountDescription}
+                  description="Taken from the plan."
                 />
                 <FormInput
                   control={form.control}
                   name="currency"
                   label="Currency"
                   disabled
-                  description={amountDescription}
+                  description="Taken from the plan."
                 />
                 <FormDate control={form.control} name="startDate" label="Start date" dateOnly />
                 <FormDate control={form.control} name="endDate" label="End date" dateOnly />
@@ -308,7 +240,7 @@ export function SoldSubscriptionFormModal({
               </Button>
               <Button type="submit" disabled={isSaving}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Record sale"}
+                Save changes
               </Button>
             </DialogFooter>
           </form>

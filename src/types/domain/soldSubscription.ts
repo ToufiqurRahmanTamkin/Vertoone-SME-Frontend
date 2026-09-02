@@ -46,6 +46,7 @@ export interface SoldSubscription {
   customerEmail: string;
   customerPhone: string;
   companyName: string;
+  companyId: string | null;
   amount: number;
   currency: string;
   status: SubscriptionStatus;
@@ -54,6 +55,7 @@ export interface SoldSubscription {
   transactionId: string;
   startDate: string;
   endDate: string;
+  trialDays: number;
   autoRenew: boolean;
   notes: string;
   paymentReviewAction: PaymentReviewAction | null;
@@ -87,19 +89,24 @@ export interface SoldSubscriptionListQuery {
   status?: SubscriptionStatus;
   paymentStatus?: PaymentStatus;
   planId?: string;
+  companyId?: string;
   billingOrigin?: BillingOrigin;
   startDateFrom?: string;
   startDateTo?: string;
 }
 
 export interface SoldSubscriptionCreatePayload {
+  companyId: string;
   planId: string;
-  customerName: string;
-  customerEmail: string;
+  startDate: string;
+  autoRenew?: boolean;
+}
+
+export interface SoldSubscriptionUpdatePayload {
+  customerName?: string;
+  customerEmail?: string;
   customerPhone?: string;
   companyName?: string;
-  amount?: number;
-  currency?: string;
   status?: SubscriptionStatus;
   paymentStatus?: PaymentStatus;
   paymentMethod?: PaymentMethod;
@@ -109,8 +116,6 @@ export interface SoldSubscriptionCreatePayload {
   autoRenew?: boolean;
   notes?: string;
 }
-
-export type SoldSubscriptionUpdatePayload = Omit<SoldSubscriptionCreatePayload, "planId">;
 
 export interface PaymentReviewPayload {
   note?: string;
