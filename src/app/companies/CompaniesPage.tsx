@@ -104,7 +104,7 @@ export default function CompaniesPage() {
     <>
       <PageHeader
         title="Companies"
-        description="Every registration, self-service or created here. Approving one unlocks sign-in for its owner and marks the registration invoice paid."
+        description="Every registration, self-service or created here. Companies created here start without a plan — sell them a subscription to unlock the paid modules."
       />
 
       <StatGrid className="xl:grid-cols-4">

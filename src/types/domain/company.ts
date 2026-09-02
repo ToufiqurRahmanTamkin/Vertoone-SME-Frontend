@@ -108,10 +108,20 @@ export interface RegisterCompanyPayload {
   autoRenew?: boolean;
 }
 
-export interface CreateCompanyByAdminPayload extends RegisterCompanyPayload {
-  amount?: number;
-  startDate?: string;
+export type CompanyIdentityPayload = Omit<
+  RegisterCompanyPayload,
+  "planId" | "paymentMethod" | "transactionId" | "autoRenew"
+>;
+
+export interface CreateCompanyByAdminPayload extends CompanyIdentityPayload {
   note?: string;
+}
+
+export interface CreateCompanyByAdminResult {
+  companyId: string;
+  companyName: string;
+  companyStatus: CompanyStatus;
+  adminEmail: string;
 }
 
 export interface RegisterCompanyResult {

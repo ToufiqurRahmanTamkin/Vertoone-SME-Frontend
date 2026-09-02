@@ -1,12 +1,10 @@
 import {
   FormInput,
   FormPassword,
-  FormPayment,
   FormPhone,
   FormSelect,
   FormTextarea,
 } from "@/components/shared/form-fields";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,17 +19,15 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { EMPLOYEE_RANGE_LABELS, toOptions } from "@/constant";
-import { formatAmount } from "@/lib/amount";
 import { useGenerateCompanyDraftMutation, useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { useCreateCompanyMutation } from "@/redux/apis/companyApis";
-import { useGetPlansQuery } from "@/redux/apis/planApis";
 import type { ApiErrorResponse } from "@/redux/baseApi";
 import { EMPLOYEE_RANGES } from "@/types/domain/company";
 import { CreateCompanySchema, type CreateCompanyFormValues } from "@/validations/company";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Loader2, Lock, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import * as React from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface CompanyCreateModalProps {
@@ -44,13 +40,11 @@ const EMPLOYEE_RANGE_OPTIONS = toOptions(EMPLOYEE_RANGE_LABELS);
 const STEPS: readonly StepperStep[] = [
   { id: "company", label: "Company" },
   { id: "admin", label: "Admin" },
-  { id: "plan", label: "Plan & payment" },
 ];
 
 const STEP_FIELDS: readonly (keyof CreateCompanyFormValues)[][] = [
-  ["companyName", "employeeRange", "companyEmail", "companyPhone", "companyAddress"],
+  ["companyName", "employeeRange", "companyEmail", "companyPhone", "companyAddress", "note"],
   ["adminName", "adminEmail", "adminPhone", "adminPassword"],
-  ["planId", "amount", "paymentMethod", "transactionId", "note"],
 ];
 
 const LAST_STEP = STEPS.length - 1;
@@ -72,16 +66,11 @@ const emptyValues: CreateCompanyFormValues = {
   adminEmail: "",
   adminPhone: "",
   adminPassword: "",
-  planId: "",
-  paymentMethod: "CASH",
-  transactionId: "",
-  amount: "",
   note: "",
 };
 
 export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalProps) {
   const [createCompany, { isLoading }] = useCreateCompanyMutation();
-  const { data: planData } = useGetPlansQuery({ limit: 100, isActive: true });
   const { data: ai } = useGetAiAllowanceQuery();
   const [draftCompany, { isLoading: isDrafting }] = useGenerateCompanyDraftMutation();
   const [aiPrompt, setAiPrompt] = React.useState("");
@@ -106,31 +95,6 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
     setFurthestStep(0);
   }
 
-  const plans = React.useMemo(() => planData?.data ?? [], [planData]);
-
-  const planOptions = React.useMemo(
-    () =>
-      plans.map((plan) => ({
-        label: `${plan.name}${plan.isPrivate ? " (private)" : ""} — ${formatAmount(
-          plan.price,
-          plan.currency
-        )}`,
-        value: plan._id,
-      })),
-    [plans]
-  );
-
-  const planId = useWatch({ control: form.control, name: "planId" });
-  const selectedPlan = plans.find((plan) => plan._id === planId);
-
-  const handlePlanChange = (value: string) => {
-    const plan = plans.find((entry) => entry._id === value);
-    if (!plan || plan.trialDays <= 0) return;
-    form.setValue("paymentMethod", "CASH");
-    form.setValue("transactionId", "");
-    form.clearErrors("transactionId");
-  };
-
   const onDraft = async () => {
     if (aiPrompt.trim().length < 3) return;
     try {
@@ -144,7 +108,7 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
       form.setValue("adminName", draft.ownerName, fill);
       form.setValue("adminEmail", draft.ownerEmail, fill);
       toast.success(`Drafted ${draft.name}`, {
-        description: "Review every field, then set a password and pick a plan.",
+        description: "Review every field, then set a password for the owner.",
       });
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
@@ -172,18 +136,11 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
         adminEmail: values.adminEmail,
         adminPhone: values.adminPhone,
         adminPassword: values.adminPassword,
-        planId: values.planId,
-        paymentMethod: values.paymentMethod,
-        transactionId: values.transactionId || undefined,
-        amount: values.amount === "" ? undefined : values.amount,
         note: values.note || undefined,
       }).unwrap();
 
       toast.success(`${result.companyName} is live`, {
-        description: `Invoice ${result.invoiceNumber} was recorded as paid for ${formatAmount(
-          result.amount,
-          result.currency
-        )}.`,
+        description: `${result.adminEmail} can sign in now. Record a sale from Sold subscriptions to put this company on a plan.`,
       });
       onOpenChange(false);
     } catch (error: unknown) {
@@ -214,9 +171,9 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
         <DialogHeader>
           <DialogTitle>New company</DialogTitle>
           <DialogDescription>
-            Creating a company here approves it immediately, activates its owner, emails them their
-            sign-in credentials and records the plan price as paid revenue — no separate approval
-            step.
+            Creating a company here approves it immediately, activates its owner and emails them
+            their sign-in credentials. It starts without a plan — sell it a subscription from Sold
+            subscriptions to unlock the paid modules.
           </DialogDescription>
         </DialogHeader>
 
@@ -307,6 +264,13 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                     placeholder="Street, city, country"
                     className="col-span-6"
                   />
+                  <FormTextarea
+                    control={form.control}
+                    name="note"
+                    label="Internal note"
+                    placeholder="Optional — why this company was created here"
+                    className="col-span-6"
+                  />
                 </div>
               )}
 
@@ -343,69 +307,6 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                     label="Temporary password"
                     description="At least 8 characters."
                     className="col-span-6 sm:col-span-3"
-                  />
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="grid grid-cols-6 gap-x-3 gap-y-3">
-                  <FormSelect
-                    control={form.control}
-                    name="planId"
-                    label="Subscription plan"
-                    placeholder="Pick a plan"
-                    options={planOptions}
-                    description="Private plans are assignable here but hidden from public signup."
-                    className="col-span-6 sm:col-span-4"
-                    onValueChange={handlePlanChange}
-                  />
-                  <FormInput
-                    control={form.control}
-                    name="amount"
-                    label="Amount"
-                    type="number"
-                    placeholder={selectedPlan ? String(selectedPlan.price) : "Plan price"}
-                    description="Leave blank to bill the plan price."
-                    className="col-span-6 sm:col-span-2"
-                  />
-
-                  {selectedPlan && (
-                    <div className="col-span-6 flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs">
-                      <span className="font-medium">{selectedPlan.name}</span>
-                      {selectedPlan.isPrivate && <StatusBadge color="amber" label="Private" />}
-                      <span className="text-muted-foreground">
-                        {formatAmount(selectedPlan.price, selectedPlan.currency)} ·{" "}
-                        {selectedPlan.billingCycle.toLowerCase().replace(/_/g, " ")}
-                      </span>
-                      {selectedPlan.isPrivate && (
-                        <span className="ml-auto inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                          <Lock className="size-3" />
-                          Not purchasable from the public signup page
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {(selectedPlan?.trialDays ?? 0) > 0 ? (
-                    <div className="col-span-6 rounded-lg border border-blue-500/30 bg-blue-500/5 px-3 py-2 text-xs text-muted-foreground">
-                      This plan includes a {selectedPlan?.trialDays}-day trial, so nothing is
-                      billed today. The first invoice, income and expense are raised
-                      automatically the day the trial ends.
-                    </div>
-                  ) : (
-                    <FormPayment
-                      control={form.control}
-                      methodName="paymentMethod"
-                      transactionIdName="transactionId"
-                      className="col-span-6"
-                    />
-                  )}
-                  <FormTextarea
-                    control={form.control}
-                    name="note"
-                    label="Internal note"
-                    placeholder="Enterprise deal closed offline"
-                    className="col-span-6"
                   />
                 </div>
               )}

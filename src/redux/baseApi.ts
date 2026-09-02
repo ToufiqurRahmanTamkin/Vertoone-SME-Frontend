@@ -95,13 +95,36 @@ const redirectToLogin = () => {
   window.location.href = loginPath;
 };
 
+interface AuthSnapshot {
+  user: User | null;
+  token: string | null;
+  refreshToken: string | null;
+}
+
+const readAuth = (api: { getState: () => unknown }): AuthSnapshot =>
+  (api.getState() as { auth: AuthSnapshot }).auth;
+
+const SESSION_REJECTED_STATUSES = [401, 403];
+
+const isSessionRejected = (error: FetchBaseQueryError | undefined): boolean =>
+  typeof error?.status === "number" && SESSION_REJECTED_STATUSES.includes(error.status);
+
+const REFRESH_COOLDOWN_MS = 5000;
+
+let refreshBlockedUntil = 0;
+
+const endSession = (dispatch: (action: ReturnType<typeof logOut>) => unknown): void => {
+  refreshBlockedUntil = 0;
+  dispatch(logOut());
+  redirectToLogin();
+};
+
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (rawArgs, api, extraOptions) => {
-  const role = (api.getState() as { auth: { user: User | null } }).auth.user?.role;
-  const args = scopeFinanceUrl(rawArgs, role);
+  const args = scopeFinanceUrl(rawArgs, readAuth(api).user?.role);
 
   await mutex.waitForUnlock();
   let result = await baseQuery(args, api, extraOptions);
@@ -112,27 +135,29 @@ export const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
-  if (mutex.isLocked()) {
-    await mutex.waitForUnlock();
-    result = await baseQuery(args, api, extraOptions);
-    unwrapEnvelope(result);
-    return result;
-  }
-
-  const state = api.getState() as {
-    auth: { refreshToken: string | null; user: User | null };
-  };
-
-  if (!state.auth.refreshToken || !state.auth.user) {
-    api.dispatch(logOut());
-    redirectToLogin();
-    return result;
-  }
+  const staleToken = readAuth(api).token;
 
   const release = await mutex.acquire();
   try {
+    const auth = readAuth(api);
+
+    if (auth.token && auth.token !== staleToken) {
+      result = await baseQuery(args, api, extraOptions);
+      unwrapEnvelope(result);
+      return result;
+    }
+
+    if (!auth.refreshToken || !auth.user) {
+      endSession(api.dispatch);
+      return result;
+    }
+
+    if (Date.now() < refreshBlockedUntil) {
+      return result;
+    }
+
     const refreshResult = await baseQuery(
-      { url: "/auth/refresh", method: "POST", body: { refreshToken: state.auth.refreshToken } },
+      { url: "/auth/refresh", method: "POST", body: { refreshToken: auth.refreshToken } },
       api,
       extraOptions
     );
@@ -141,28 +166,31 @@ export const baseQueryWithReauth: BaseQueryFn<
       | ApiResponse<{ accessToken: string; refreshToken: string }>
       | undefined;
 
-    if (!envelope?.success || !envelope.data?.accessToken) {
-      throw new Error("Refresh rejected");
+    if (envelope?.success && envelope.data?.accessToken) {
+      refreshBlockedUntil = 0;
+      api.dispatch(
+        setCredentials({
+          user: auth.user,
+          accessToken: envelope.data.accessToken,
+          refreshToken: envelope.data.refreshToken,
+        })
+      );
+
+      result = await baseQuery(args, api, extraOptions);
+      unwrapEnvelope(result);
+      return result;
     }
 
-    api.dispatch(
-      setCredentials({
-        user: state.auth.user,
-        accessToken: envelope.data.accessToken,
-        refreshToken: envelope.data.refreshToken,
-      })
-    );
+    if (isSessionRejected(refreshResult.error)) {
+      endSession(api.dispatch);
+      return result;
+    }
 
-    result = await baseQuery(args, api, extraOptions);
-    unwrapEnvelope(result);
-  } catch {
-    api.dispatch(logOut());
-    redirectToLogin();
+    refreshBlockedUntil = Date.now() + REFRESH_COOLDOWN_MS;
+    return refreshResult.error ? { error: refreshResult.error, meta: result.meta } : result;
   } finally {
     release();
   }
-
-  return result;
 };
 
 export const ALL_TAG_TYPES = [

@@ -8,6 +8,7 @@ import type {
   CompanySummary,
   CompanyWorkspace,
   CreateCompanyByAdminPayload,
+  CreateCompanyByAdminResult,
   RegisterCompanyPayload,
   RegisterCompanyResult,
 } from "@/types/domain/company";
@@ -29,14 +30,22 @@ const COMPANY_REVIEW_TAGS = [
   "Emails",
 ] as const;
 
-const COMPANY_CREATE_TAGS = [...COMPANY_REVIEW_TAGS, "Incomes", "Reports"] as const;
+const COMPANY_CREATE_TAGS = [
+  "Companies",
+  "CompanySummary",
+  "Dashboard",
+  "AllUsers",
+  "Notifications",
+  "NotificationsUnread",
+  "Emails",
+] as const;
 
 const companyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     registerCompany: builder.mutation<RegisterCompanyResult, RegisterCompanyPayload>({
       query: (body) => ({ url: "/companies/register", method: "POST", body }),
     }),
-    createCompany: builder.mutation<RegisterCompanyResult, CreateCompanyByAdminPayload>({
+    createCompany: builder.mutation<CreateCompanyByAdminResult, CreateCompanyByAdminPayload>({
       query: (body) => ({ url: "/companies", method: "POST", body }),
       invalidatesTags: [...COMPANY_CREATE_TAGS],
     }),
