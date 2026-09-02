@@ -102,12 +102,12 @@ export interface RegisterCompanyPayload {
   planId: string;
   paymentMethod: PaymentMethod;
   transactionId?: string;
+  autoRenew?: boolean;
 }
 
 export interface CreateCompanyByAdminPayload extends RegisterCompanyPayload {
   amount?: number;
   startDate?: string;
-  autoRenew?: boolean;
   note?: string;
 }
 

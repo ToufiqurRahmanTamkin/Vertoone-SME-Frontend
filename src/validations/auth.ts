@@ -70,6 +70,7 @@ export const RegisterPaymentStepSchema = z
     planId: z.string("Select a plan").min(1, "Select a plan to continue"),
     paymentMethod: z.enum(PAYMENT_METHODS, "Select a payment method"),
     transactionId: z.string().trim().max(120, "Transaction ID is too long").optional(),
+    autoRenew: z.boolean(),
     acceptTerms: z.boolean().refine((value) => value === true, {
       message: "You must accept the terms to continue",
     }),

@@ -15,7 +15,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { APP_NAME, BRAND_LOCKUP } from "@/config/branding";
-import { EMPLOYEE_RANGE_LABELS, PAYMENT_METHOD_LABELS, toOptions } from "@/constant";
+import {
+  BILLING_CYCLE_LABELS,
+  EMPLOYEE_RANGE_LABELS,
+  PAYMENT_METHOD_LABELS,
+  toOptions,
+} from "@/constant";
 import { formatAmount } from "@/lib/amount";
 import { useCheckCompanyAvailabilityMutation, useRegisterCompanyMutation } from "@/redux/apis/companyApis";
 import { useGetPublicPlansQuery } from "@/redux/apis/planApis";
@@ -32,7 +37,7 @@ import {
   type RegisterPaymentStepValues,
 } from "@/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, QrCode, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, QrCode, RefreshCw, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -63,7 +68,7 @@ export default function RegisterPage() {
       companyEmail: "",
       companyPhone: "",
       companyAddress: "",
-      employeeRange: undefined,
+      employeeRange: "1-50",
     },
   });
 
@@ -84,6 +89,7 @@ export default function RegisterPage() {
       planId: "",
       paymentMethod: "BKASH",
       transactionId: "",
+      autoRenew: false,
       acceptTerms: false,
     },
   });
@@ -181,6 +187,7 @@ export default function RegisterPage() {
       planId: values.planId,
       paymentMethod: values.paymentMethod,
       transactionId: values.transactionId?.trim() || undefined,
+      autoRenew: values.autoRenew,
     };
 
     try {
@@ -293,12 +300,17 @@ export default function RegisterPage() {
                     className="mt-6 flex flex-col gap-5"
                     onSubmit={adminForm.handleSubmit(submitAdminStep)}
                   >
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid items-start gap-5 sm:grid-cols-2">
                       <FormInput
                         control={adminForm.control}
                         name="adminName"
                         label="Administrator name"
                         placeholder="Jamie Rahman"
+                      />
+                      <FormPhone
+                        control={adminForm.control}
+                        name="adminPhone"
+                        label="Administrator phone"
                       />
                       <FormInput
                         control={adminForm.control}
@@ -306,13 +318,8 @@ export default function RegisterPage() {
                         label="Administrator email"
                         placeholder="admin@acme.com"
                         description="This is the email you will sign in with."
+                        className="sm:col-span-2"
                       />
-                      <FormPhone
-                        control={adminForm.control}
-                        name="adminPhone"
-                        label="Administrator phone"
-                      />
-                      <div className="hidden sm:block" />
                       <FormPassword
                         control={adminForm.control}
                         name="adminPassword"
@@ -323,6 +330,7 @@ export default function RegisterPage() {
                         control={adminForm.control}
                         name="confirmPassword"
                         label="Confirm password"
+                        description="Re-enter the same password."
                       />
                     </div>
 
@@ -424,6 +432,29 @@ export default function RegisterPage() {
                         </p>
                       </div>
                     )}
+
+                    <div className="rounded-lg border bg-muted/20 px-4 py-3">
+                      <FormCheckbox
+                        control={paymentForm.control}
+                        name="autoRenew"
+                        label={
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <RefreshCw className="size-3.5 shrink-0 text-primary" />
+                            Renew this subscription automatically
+                          </span>
+                        }
+                      />
+                      <p className="mt-1.5 pl-7 text-xs text-muted-foreground">
+                        {selectedPlan
+                          ? `We will bill ${formatAmount(
+                              selectedPlan.price,
+                              selectedPlan.currency
+                            )} every ${BILLING_CYCLE_LABELS[
+                              selectedPlan.billingCycle
+                            ].toLowerCase()} when the current period ends. You can turn this off at any time from your company settings.`
+                          : "We will bill the plan price again when the current period ends. You can turn this off at any time from your company settings."}
+                      </p>
+                    </div>
 
                     <FormCheckbox
                       control={paymentForm.control}

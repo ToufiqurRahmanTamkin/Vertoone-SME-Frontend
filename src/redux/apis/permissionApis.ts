@@ -7,6 +7,9 @@ const permissionApi = baseApi.injectEndpoints({
       query: () => ({ url: "/permissions/modules", method: "GET" }),
       providesTags: ["ModuleCatalogue"],
     }),
+    getPublicModuleCatalogue: builder.query<ModuleDefinition[], void>({
+      query: () => ({ url: "/permissions/modules/public", method: "GET" }),
+    }),
     getMyPermissions: builder.query<EffectivePermissions, void>({
       query: () => ({ url: "/permissions/me", method: "GET" }),
       providesTags: ["Permissions"],
@@ -14,4 +17,8 @@ const permissionApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetModuleCatalogueQuery, useGetMyPermissionsQuery } = permissionApi;
+export const {
+  useGetModuleCatalogueQuery,
+  useGetPublicModuleCatalogueQuery,
+  useGetMyPermissionsQuery,
+} = permissionApi;
