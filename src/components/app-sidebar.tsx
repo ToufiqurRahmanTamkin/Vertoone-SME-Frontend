@@ -8,31 +8,51 @@ import {
 } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { APP_NAME, APP_TAGLINE, BRAND_MARK } from "@/config/branding";
-import { getNavigation, getWorkspaceOptions, workspaceIdFromPath } from "@/config/navigation";
+import {
+  SWITCHABLE_WORKSPACE_IDS,
+  getSidebarBlocks,
+  workspaceIdFromPath,
+} from "@/config/navigation";
+import { useHomeRoute } from "@/hooks/use-home-route";
 import { usePermissions } from "@/hooks/use-permission";
-import { selectCurrentUser } from "@/redux/authSlice";
-import { HOME_ROUTE_BY_ROLE } from "@/types/domain/auth";
 import * as React from "react";
-import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 
+const ACTIVE_MODULE_KEY = "vertoone.activeModule";
+
+const readStoredModule = (): string | null => {
+  const stored = localStorage.getItem(ACTIVE_MODULE_KEY);
+  return stored && SWITCHABLE_WORKSPACE_IDS.includes(stored) ? stored : null;
+};
+
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const user = useSelector(selectCurrentUser);
-  const role = user?.role ?? "";
-  const { modules } = usePermissions();
+  const { modules, role } = usePermissions();
   const { pathname } = useLocation();
+  const home = useHomeRoute();
 
-  const workspaces = React.useMemo(
-    () => getWorkspaceOptions(role, modules),
-    [role, modules]
+  const moduleFromPath = React.useMemo(() => {
+    const id = workspaceIdFromPath(pathname);
+    return id && SWITCHABLE_WORKSPACE_IDS.includes(id) ? id : null;
+  }, [pathname]);
+
+  const [activeModule, setActiveModule] = React.useState(
+    () => moduleFromPath ?? readStoredModule()
   );
 
-  const activeId = workspaceIdFromPath(pathname) ?? workspaces[0]?.id ?? null;
+  if (moduleFromPath && moduleFromPath !== activeModule) {
+    setActiveModule(moduleFromPath);
+    localStorage.setItem(ACTIVE_MODULE_KEY, moduleFromPath);
+  }
 
-  const navGroups = React.useMemo(
-    () => (activeId ? getNavigation(activeId, role, modules) : []),
-    [activeId, role, modules]
+  const blocks = React.useMemo(
+    () => getSidebarBlocks(role, modules, activeModule),
+    [role, modules, activeModule]
   );
+
+  const selectModule = React.useCallback((id: string) => {
+    setActiveModule(id);
+    localStorage.setItem(ACTIVE_MODULE_KEY, id);
+  }, []);
 
   return (
     <Sidebar {...props}>
@@ -40,7 +60,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <Link
-              to={HOME_ROUTE_BY_ROLE[user?.role ?? "EMPLOYEE"] ?? "/"}
+              to={home}
               className="flex h-9 items-center gap-2.5 rounded-lg px-1.5 transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
               <img
@@ -61,20 +81,28 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="gap-0 py-2">
-        {workspaces.length > 1 && (
-          <SidebarMenu className="px-2.5 pb-1">
-            <SidebarMenuItem>
-              <WorkspaceSwitcher options={workspaces} activeId={activeId} />
-            </SidebarMenuItem>
-          </SidebarMenu>
-        )}
-        {navGroups.map((group) => (
-          <NavMain
-            key={`${activeId}-${group.label}`}
-            label={group.label}
-            items={group.items}
-            collapsible={props.collapsible}
-          />
+        {blocks.map((block) => (
+          <React.Fragment key={block.id}>
+            {block.switcher && (
+              <SidebarMenu className="mt-1 border-t border-sidebar-border px-2.5 pb-1 pt-3">
+                <SidebarMenuItem>
+                  <WorkspaceSwitcher
+                    options={block.switcher}
+                    activeId={block.id}
+                    onSelect={selectModule}
+                  />
+                </SidebarMenuItem>
+              </SidebarMenu>
+            )}
+            {block.groups.map((group) => (
+              <NavMain
+                key={`${block.id}-${group.label}`}
+                label={group.label}
+                items={group.items}
+                collapsible={props.collapsible}
+              />
+            ))}
+          </React.Fragment>
         ))}
       </SidebarContent>
     </Sidebar>

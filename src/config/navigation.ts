@@ -186,6 +186,7 @@ export interface MenuWorkspace {
   product: MenuProduct;
   description: string;
   roles: string[];
+  switchable: boolean;
   basePath: string;
   sections: MenuSection[];
 }
@@ -212,6 +213,7 @@ interface WorkspaceInput {
   product: MenuProduct;
   description: string;
   roles: string[];
+  switchable?: boolean;
   sections: SectionInput[];
 }
 
@@ -438,7 +440,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
     roles: COMPANY,
     sections: [
       {
-        label: "Overview",
+        label: "Home",
         items: [
           {
             title: "Dashboard",
@@ -658,7 +660,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
         ],
       },
       {
-        label: "Insights",
+        label: "Company Insights",
         items: [
           {
             title: "Insights",
@@ -704,6 +706,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
     product: "SME",
     description: "Catalogue, stock, buying and selling for a trading business.",
     roles: COMPANY,
+    switchable: true,
     sections: [
       {
         label: "Overview",
@@ -954,6 +957,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
     product: "CRM",
     description: "Leads, deals and every conversation with a customer.",
     roles: COMPANY,
+    switchable: true,
     sections: [
       {
         label: "Overview",
@@ -1172,6 +1176,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
     product: "HRMS",
     description: "Your people, their time, their pay and their growth.",
     roles: COMPANY,
+    switchable: true,
     sections: [
       {
         label: "Overview",
@@ -1668,6 +1673,7 @@ export const MENU_WORKSPACES: MenuWorkspace[] = WORKSPACE_INPUTS.map((workspace)
 
   return {
     ...workspace,
+    switchable: workspace.switchable === true,
     basePath,
     sections: workspace.sections.map((section) => ({
       label: section.label,
@@ -1703,7 +1709,7 @@ const buildNavItem = (
     .map((child) => buildNavItem(child, role, modules)),
 });
 
-export const getNavigation = (
+const getNavigation = (
   workspaceId: string,
   role: string,
   modules: ModulePermissionMap | undefined
@@ -1724,6 +1730,7 @@ export interface WorkspaceOption {
   description: string;
   basePath: string;
   landingPath: string;
+  switchable: boolean;
 }
 
 const firstLeafPath = (
@@ -1770,6 +1777,7 @@ export const getWorkspaceOptions = (
         description: workspace.description,
         basePath: workspace.basePath,
         landingPath,
+        switchable: workspace.switchable,
       },
     ];
   });
@@ -1778,6 +1786,45 @@ export const workspaceIdFromPath = (pathname: string): string | null =>
   MENU_WORKSPACES.find(
     (workspace) => pathname === workspace.basePath || pathname.startsWith(`${workspace.basePath}/`)
   )?.id ?? null;
+
+export const SWITCHABLE_WORKSPACE_IDS = MENU_WORKSPACES.filter(
+  (workspace) => workspace.switchable
+).map((workspace) => workspace.id);
+
+export interface SidebarBlock {
+  id: string;
+  groups: NavGroup[];
+  switcher?: WorkspaceOption[];
+}
+
+export const getSidebarBlocks = (
+  role: string,
+  modules: ModulePermissionMap | undefined,
+  activeModuleId: string | null
+): SidebarBlock[] => {
+  const options = getWorkspaceOptions(role, modules);
+  const switchable = options.filter((option) => option.switchable);
+  const active =
+    switchable.find((option) => option.id === activeModuleId) ?? switchable[0] ?? null;
+
+  return MENU_WORKSPACES.flatMap((workspace) => {
+    if (!options.some((option) => option.id === workspace.id)) return [];
+
+    if (!workspace.switchable) {
+      return [{ id: workspace.id, groups: getNavigation(workspace.id, role, modules) }];
+    }
+
+    if (!active || workspace.id !== switchable[0].id) return [];
+
+    return [
+      {
+        id: active.id,
+        groups: getNavigation(active.id, role, modules),
+        switcher: switchable,
+      },
+    ];
+  });
+};
 
 export interface BreadcrumbEntry {
   title: string;
@@ -1846,13 +1893,27 @@ const assertMenuIntegrity = (): void => {
     );
   });
 
-  MENU_WORKSPACES.forEach((workspace) => {
-    const labels = new Set<string>();
-    workspace.sections.forEach((section) => {
-      if (labels.has(section.label)) {
-        throw new Error(`Section "${section.label}" is defined twice in ${workspace.id}`);
-      }
-      labels.add(section.label);
+  const pinned = MENU_WORKSPACES.filter((workspace) => !workspace.switchable);
+  const switchable = MENU_WORKSPACES.filter((workspace) => workspace.switchable);
+
+  const reachesRole = (item: MenuItem, role: string): boolean =>
+    item.roles.includes(role) &&
+    (!item.items?.length || item.items.some((child) => reachesRole(child, role)));
+
+  [...SUPER_ADMIN, ...COMPANY].forEach((role) => {
+    switchable.forEach((module) => {
+      const labels = new Set<string>();
+      [...pinned, module].forEach((workspace) =>
+        workspace.sections.forEach((section) => {
+          if (!section.items.some((item) => !item.hidden && reachesRole(item, role))) return;
+          if (labels.has(section.label)) {
+            throw new Error(
+              `Section "${section.label}" renders twice for ${role} with ${module.id} active`
+            );
+          }
+          labels.add(section.label);
+        })
+      );
     });
   });
 };

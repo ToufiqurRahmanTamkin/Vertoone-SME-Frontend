@@ -16,9 +16,11 @@ import { useNavigate } from "react-router-dom";
 export const WorkspaceSwitcher = React.memo(function WorkspaceSwitcher({
   options,
   activeId,
+  onSelect,
 }: {
   options: WorkspaceOption[];
   activeId: string | null;
+  onSelect: (id: string) => void;
 }) {
   const navigate = useNavigate();
   const { setOpenMobile, isMobile } = useSidebar();
@@ -28,27 +30,37 @@ export const WorkspaceSwitcher = React.memo(function WorkspaceSwitcher({
 
   const ActiveIcon = active.icon;
 
+  const trigger = (
+    <SidebarMenuButton
+      size="lg"
+      className={cn(
+        "h-11 gap-2.5 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-2.5",
+        options.length > 1 &&
+          "cursor-pointer hover:bg-sidebar-accent data-[state=open]:bg-sidebar-accent"
+      )}
+    >
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+        <ActiveIcon className="size-4" />
+      </span>
+      <span className="min-w-0 flex-1 text-left group-data-[collapsible=icon]:hidden">
+        <span className="block text-[10px] font-medium uppercase tracking-[0.1em] text-sidebar-foreground/55">
+          Module
+        </span>
+        <span className="block truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
+          {active.label}
+        </span>
+      </span>
+      {options.length > 1 && (
+        <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/45 group-data-[collapsible=icon]:hidden" />
+      )}
+    </SidebarMenuButton>
+  );
+
+  if (options.length === 1) return trigger;
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <SidebarMenuButton
-          size="lg"
-          className="h-11 cursor-pointer gap-2.5 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-2.5 hover:bg-sidebar-accent data-[state=open]:bg-sidebar-accent"
-        >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
-            <ActiveIcon className="size-4" />
-          </span>
-          <span className="min-w-0 flex-1 text-left group-data-[collapsible=icon]:hidden">
-            <span className="block text-[10px] font-medium uppercase tracking-[0.1em] text-sidebar-foreground/55">
-              Workspace
-            </span>
-            <span className="block truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
-              {active.label}
-            </span>
-          </span>
-          <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/45 group-data-[collapsible=icon]:hidden" />
-        </SidebarMenuButton>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent
         side="right"
         align="start"
@@ -56,7 +68,7 @@ export const WorkspaceSwitcher = React.memo(function WorkspaceSwitcher({
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Switch workspace
+          Switch module
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {options.map((option) => (
@@ -64,6 +76,7 @@ export const WorkspaceSwitcher = React.memo(function WorkspaceSwitcher({
             key={option.id}
             className="cursor-pointer items-start gap-2.5 py-2"
             onSelect={() => {
+              onSelect(option.id);
               navigate(option.landingPath);
               if (isMobile) setOpenMobile(false);
             }}
