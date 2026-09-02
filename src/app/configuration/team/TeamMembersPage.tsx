@@ -42,7 +42,7 @@ const describeAllowance = (used: number, limit: number | null): string =>
 
 export default function TeamMembersPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/settings/access/users");
+  const access = useModulePermission("/settings/users-and-roles/users");
 
   const { data, isLoading, isFetching } = useGetTeamMembersQuery({
     page: filters.page,

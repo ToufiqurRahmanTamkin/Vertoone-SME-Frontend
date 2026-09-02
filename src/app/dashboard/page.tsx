@@ -216,7 +216,7 @@ export default function DashboardPage() {
         }
         actions={
           <Button asChild variant="outline" className="cursor-pointer">
-            <Link to="/reports">
+            <Link to="/reports/overview">
               View reports
               <ArrowUpRight className="ml-1.5 h-4 w-4" />
             </Link>
@@ -598,7 +598,7 @@ export default function DashboardPage() {
           description="The most recent authentication attempts."
           action={
             <Button asChild size="sm" variant="outline" className="cursor-pointer">
-              <Link to="/reports/security">Details</Link>
+              <Link to="/reports/sign-in-activity">Details</Link>
             </Button>
           }
         >

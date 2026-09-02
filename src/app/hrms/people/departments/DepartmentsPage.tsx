@@ -34,7 +34,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function DepartmentsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/hrms/people/departments");
+  const access = useModulePermission("/hrms/directory/departments");
 
   const { data, isLoading, isFetching } = useGetDepartmentsQuery({
     page: filters.page,

@@ -32,7 +32,7 @@ import { BoardFormModal } from "./components/BoardFormModal";
 
 export default function TasksPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/tasks-goals/tasks");
+  const access = useModulePermission("/tasks-and-goals/tasks");
   const navigate = useNavigate();
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();

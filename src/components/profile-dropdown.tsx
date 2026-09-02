@@ -100,7 +100,7 @@ export default function ProfileDropdown() {
         </DropdownMenuLabel>
 
         <DropdownMenuItem
-          onClick={() => navigate("/settings/account")}
+          onClick={() => navigate("/settings/my-account")}
           className="flex cursor-pointer items-center gap-2 rounded-lg p-2.5 transition-colors hover:bg-accent"
         >
           <Settings className="h-4 w-4 shrink-0 text-primary" />

@@ -28,7 +28,7 @@ import { PosPaymentDialog } from "./components/PosPaymentDialog";
 import { PosReceiptDialog } from "./components/PosReceiptDialog";
 
 export default function PosPage() {
-  const access = useModulePermission("/sme/pos");
+  const access = useModulePermission("/sme/point-of-sale");
 
   const { data: warehouseOptions = [] } = useGetWarehouseOptionsQuery();
 

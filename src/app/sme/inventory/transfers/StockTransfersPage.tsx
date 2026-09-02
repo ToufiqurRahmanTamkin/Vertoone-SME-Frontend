@@ -36,7 +36,7 @@ type PendingAction = { kind: "cancel" | "delete"; transfer: StockTransfer } | nu
 
 export default function StockTransfersPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/sme/inventory/transfers");
+  const access = useModulePermission("/sme/inventory/stock-transfers");
 
   const { data: warehouseOptions = [] } = useGetWarehouseOptionsQuery();
 

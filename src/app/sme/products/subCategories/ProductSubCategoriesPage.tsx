@@ -25,7 +25,7 @@ import { productSubCategoryColumns } from "./product-sub-categories.columns";
 
 export default function ProductSubCategoriesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/sme/products/sub-categories");
+  const access = useModulePermission("/sme/products/subcategories");
 
   const { data: categoryOptions = [] } = useGetProductCategoryOptionsQuery();
 

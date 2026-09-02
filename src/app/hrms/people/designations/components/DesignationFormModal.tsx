@@ -96,7 +96,7 @@ export function DesignationFormModal({
 
   const seedKey = open ? (designation?._id ?? "new") : null;
   const grant = useAccessGrant(seedKey, designation);
-  const canManageAccess = useModulePermission("/settings/access/roles").canEdit;
+  const canManageAccess = useModulePermission("/settings/users-and-roles/roles-and-permissions").canEdit;
 
   const steps = React.useMemo<StepperStep[]>(
     () =>

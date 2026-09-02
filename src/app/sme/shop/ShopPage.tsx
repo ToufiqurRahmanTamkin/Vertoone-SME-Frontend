@@ -17,7 +17,7 @@ import { ShopLinkCard } from "./components/ShopLinkCard";
 import { ShopSettingsForm } from "./components/ShopSettingsForm";
 
 export default function ShopPage() {
-  const access = useModulePermission("/sme/shop");
+  const access = useModulePermission("/sme/online-shop");
 
   const { data: shop, isLoading } = useGetShopSettingsQuery();
   const { data: summary } = useGetShopSummaryQuery();
@@ -102,7 +102,7 @@ export default function ShopPage() {
           </div>
         </div>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/sme/products/list">Manage products</Link>
+          <Link to="/sme/products/all-products">Manage products</Link>
         </Button>
       </div>
 

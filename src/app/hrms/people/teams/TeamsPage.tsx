@@ -26,7 +26,7 @@ import { teamColumns } from "./teams.columns";
 
 export default function TeamsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/hrms/people/teams");
+  const access = useModulePermission("/hrms/directory/teams");
 
   const { data: tagOptions = [] } = useGetTagOptionsQuery();
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();

@@ -295,7 +295,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         title: "Overview",
-        path: "/reports",
+        path: "/reports/overview",
         icon: "BarChart3",
         roles: SUPER_ADMIN,
         exact: true,
@@ -317,14 +317,14 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Plan Performance",
-        path: "/reports/plans",
+        path: "/reports/plan-performance",
         icon: "CreditCard",
         roles: SUPER_ADMIN,
         description: "Which plans sell and which ones stall.",
       },
       {
         title: "Income & Expense",
-        path: "/reports/finance",
+        path: "/reports/income-and-expense",
         icon: "Wallet",
         roles: SUPER_ADMIN,
         description: "Platform income measured against platform expense.",
@@ -338,7 +338,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Sign-in Activity",
-        path: "/reports/security",
+        path: "/reports/sign-in-activity",
         icon: "ShieldCheck",
         roles: SUPER_ADMIN,
         description: "Recent authentication attempts across the platform.",
@@ -369,7 +369,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         title: "System Activity",
-        path: "/activity",
+        path: "/system-activity",
         icon: "Activity",
         roles: SUPER_ADMIN,
         description: "An audit trail of what changed, who changed it and when.",
@@ -383,7 +383,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Wipe Data",
-        path: "/data-wipe",
+        path: "/wipe-data",
         icon: "Trash2",
         roles: SUPER_ADMIN,
         description: "Permanently remove a company and everything under it.",
@@ -402,7 +402,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "All Products",
-            path: "/sme/products/list",
+            path: "/sme/products/all-products",
             icon: "Package",
             roles: COMPANY,
             description: "Everything you buy, stock or sell.",
@@ -416,7 +416,7 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Subcategories",
-            path: "/sme/products/sub-categories",
+            path: "/sme/products/subcategories",
             icon: "Network",
             roles: COMPANY,
             description: "The finer split inside each category.",
@@ -439,7 +439,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Stock Overview",
-            path: "/sme/inventory/stock",
+            path: "/sme/inventory/stock-overview",
             icon: "Boxes",
             roles: COMPANY,
             description: "Live quantity on hand across every location.",
@@ -453,14 +453,14 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Stock Transfers",
-            path: "/sme/inventory/transfers",
+            path: "/sme/inventory/stock-transfers",
             icon: "Truck",
             roles: COMPANY,
             description: "Movement of stock between warehouses.",
           },
           {
             title: "Stock Adjustments",
-            path: "/sme/inventory/adjustments",
+            path: "/sme/inventory/stock-adjustments",
             icon: "ClipboardList",
             roles: COMPANY,
             description: "Corrections from stock counts, damage or loss.",
@@ -536,14 +536,14 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Point of Sale",
-        path: "/sme/pos",
+        path: "/sme/point-of-sale",
         icon: "CreditCard",
         roles: COMPANY,
         description: "Counter-side selling for walk-in customers.",
       },
       {
         title: "Online Shop",
-        path: "/sme/shop",
+        path: "/sme/online-shop",
         icon: "Store",
         roles: COMPANY,
         description: "Your outlets and the counters that sell from them.",
@@ -597,7 +597,7 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "SMS",
-            path: "/crm/campaigns/text",
+            path: "/crm/campaigns/sms",
             icon: "Megaphone",
             roles: COMPANY,
             description: "SMS blasts sent to your contact lists.",
@@ -620,35 +620,35 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Social Accounts",
-        path: "/crm/social",
+        path: "/crm/social-accounts",
         icon: "Hash",
         roles: COMPANY,
         description: "The social pages and inboxes connected to your company.",
         items: [
           {
             title: "Facebook",
-            path: "/crm/social/facebook",
+            path: "/crm/social-accounts/facebook",
             icon: "Facebook",
             roles: COMPANY,
             description: "Pages, posts and messages from your Facebook presence.",
           },
           {
             title: "Instagram",
-            path: "/crm/social/instagram",
+            path: "/crm/social-accounts/instagram",
             icon: "Instagram",
             roles: COMPANY,
             description: "Posts, comments and DMs from your Instagram profiles.",
           },
           {
             title: "WhatsApp",
-            path: "/crm/social/whatsapp",
+            path: "/crm/social-accounts/whatsapp",
             icon: "MessageCircle",
             roles: COMPANY,
             description: "Conversations handled through your WhatsApp numbers.",
           },
           {
             title: "TikTok",
-            path: "/crm/social/tiktok",
+            path: "/crm/social-accounts/tiktok",
             icon: "Music2",
             roles: COMPANY,
             description: "Videos you have published and the engagement they drew.",
@@ -664,7 +664,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Overview",
-            path: "/ads-manager/dashboard",
+            path: "/ads-manager/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "Spend, reach and return across every ad account you run.",
@@ -706,7 +706,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Expenses",
-        path: "/company-finance/expense",
+        path: "/company-finance/expenses",
         icon: "Wallet",
         roles: COMPANY,
         description: "Money spent running the business.",
@@ -732,42 +732,42 @@ export const MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         title: "Directory",
-        path: "/hrms/people",
+        path: "/hrms/directory",
         icon: "Users",
         roles: COMPANY,
         description: "Your people and the structure they sit in.",
         items: [
           {
             title: "Overview",
-            path: "/hrms/people/dashboard",
+            path: "/hrms/directory/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "Team headcount, leads and supervisors at a glance.",
           },
           {
             title: "Employees",
-            path: "/hrms/people/employees",
+            path: "/hrms/directory/employees",
             icon: "Users",
             roles: COMPANY,
             description: "Every employee on the payroll, with their profile and job details.",
           },
           {
             title: "Teams",
-            path: "/hrms/people/teams",
+            path: "/hrms/directory/teams",
             icon: "Users",
             roles: COMPANY,
             description: "Groups of employees, each with a team lead and a supervisor.",
           },
           {
             title: "Departments",
-            path: "/hrms/people/departments",
+            path: "/hrms/directory/departments",
             icon: "Network",
             roles: COMPANY,
             description: "The reporting structure employees are grouped under.",
           },
           {
             title: "Designations",
-            path: "/hrms/people/designations",
+            path: "/hrms/directory/designations",
             icon: "IdCard",
             roles: COMPANY,
             description: "Job titles available when hiring or promoting.",
@@ -783,7 +783,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Daily Attendance",
-            path: "/hrms/attendance/daily",
+            path: "/hrms/attendance/daily-attendance",
             icon: "CalendarCheck",
             roles: COMPANY,
             description: "Check-in and check-out records day by day.",
@@ -820,7 +820,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Overview",
-            path: "/hrms/payroll/dashboard",
+            path: "/hrms/payroll/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "Payroll cost, payslip runs and pending payouts at a glance.",
@@ -834,7 +834,7 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Salary Structures",
-            path: "/hrms/payroll/structures",
+            path: "/hrms/payroll/salary-structures",
             icon: "Calculator",
             roles: COMPANY,
             description: "Basic, allowance and deduction templates used to build pay.",
@@ -848,14 +848,14 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Bonus & Deductions",
-            path: "/hrms/payroll/adjustments",
+            path: "/hrms/payroll/bonus-and-deductions",
             icon: "Coins",
             roles: COMPANY,
             description: "One-off additions and deductions applied to a payroll run.",
           },
           {
             title: "Loans & Advances",
-            path: "/hrms/payroll/loans",
+            path: "/hrms/payroll/loans-and-advances",
             icon: "Wallet",
             roles: COMPANY,
             description: "Money advanced to employees and its repayment schedule.",
@@ -871,7 +871,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Job Openings",
-            path: "/hrms/recruitment/openings",
+            path: "/hrms/recruitment/job-openings",
             icon: "Briefcase",
             roles: COMPANY,
             description: "Roles you are currently hiring for.",
@@ -901,7 +901,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Goals & KPIs",
-            path: "/hrms/performance/goals",
+            path: "/hrms/performance/goals-and-kpis",
             icon: "Target",
             roles: COMPANY,
             description: "Targets set for individuals and teams.",
@@ -931,7 +931,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Leave Requests",
-            path: "/hrms/approvals/leave",
+            path: "/hrms/approvals/leave-requests",
             icon: "Plane",
             roles: COMPANY,
             description: "Time-off waiting on your decision.",
@@ -952,14 +952,14 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Expense Claims",
-            path: "/hrms/approvals/expenses",
+            path: "/hrms/approvals/expense-claims",
             icon: "Receipt",
             roles: COMPANY,
             description: "Money employees spent and want reimbursed.",
           },
           {
             title: "Loans & Advances",
-            path: "/hrms/approvals/loans",
+            path: "/hrms/approvals/loans-and-advances",
             icon: "Wallet",
             roles: COMPANY,
             description: "Requests for money up front, and the repayment terms offered.",
@@ -980,28 +980,28 @@ export const MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         title: "Tasks & Goals",
-        path: "/tasks-goals",
+        path: "/tasks-and-goals",
         icon: "ListChecks",
         roles: COMPANY,
         description: "Work to be done and the targets it rolls up to.",
         items: [
           {
             title: "Tasks",
-            path: "/tasks-goals/tasks",
+            path: "/tasks-and-goals/tasks",
             icon: "ListChecks",
             roles: COMPANY,
             description: "Work items assigned to people in your company.",
           },
           {
             title: "Goals",
-            path: "/tasks-goals/goals",
+            path: "/tasks-and-goals/goals",
             icon: "Target",
             roles: COMPANY,
             description: "Targets your teams are working towards.",
           },
           {
             title: "Notes",
-            path: "/tasks-goals/notes",
+            path: "/tasks-and-goals/notes",
             icon: "StickyNote",
             roles: COMPANY,
             description: "Free-form notes pinned to your work.",
@@ -1017,14 +1017,14 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Overview",
-            path: "/documents/dashboard",
+            path: "/documents/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "What has been uploaded, shared and signed lately.",
           },
           {
             title: "All Documents",
-            path: "/documents/list",
+            path: "/documents/all-documents",
             icon: "FileText",
             roles: COMPANY,
             description: "Every file your company keeps, with who can reach it.",
@@ -1047,14 +1047,14 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Overview",
-            path: "/calendar/dashboard",
+            path: "/calendar/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "Today's schedule and what is coming up next.",
           },
           {
             title: "Schedule",
-            path: "/calendar/view",
+            path: "/calendar/schedule",
             icon: "CalendarDays",
             roles: COMPANY,
             description: "Everything scheduled, in month, week and day views.",
@@ -1091,7 +1091,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Overview",
-            path: "/automation/dashboard",
+            path: "/automation/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "Runs, failures and time saved across your automations.",
@@ -1105,7 +1105,7 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Workflows",
-            path: "/automation/workflow",
+            path: "/automation/workflows",
             icon: "Workflow",
             roles: COMPANY,
             description: "The trigger and step chains that do the work.",
@@ -1121,7 +1121,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Overview",
-            path: "/business-tools/dashboard",
+            path: "/business-tools/overview",
             icon: "LayoutDashboard",
             roles: COMPANY,
             description: "How your emails, sites and forms are performing at a glance.",
@@ -1163,7 +1163,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     items: [
       {
         title: "Overview",
-        path: "/insights",
+        path: "/insights/overview",
         icon: "LayoutGrid",
         roles: COMPANY,
         exact: true,
@@ -1171,28 +1171,28 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Sales & Purchases",
-        path: "/insights/trade",
+        path: "/insights/sales-and-purchases",
         icon: "TrendingUp",
         roles: COMPANY,
         description: "How much you sold and bought over a period.",
         items: [
           {
             title: "Sales",
-            path: "/insights/trade/sales",
+            path: "/insights/sales-and-purchases/sales",
             icon: "ShoppingCart",
             roles: COMPANY,
             description: "Orders, invoices, returns and revenue across every channel.",
           },
           {
             title: "Sales by Product",
-            path: "/insights/trade/products",
+            path: "/insights/sales-and-purchases/sales-by-product",
             icon: "Package",
             roles: COMPANY,
             description: "What sells, at what margin, and what sits still.",
           },
           {
             title: "Purchases",
-            path: "/insights/trade/purchases",
+            path: "/insights/sales-and-purchases/purchases",
             icon: "Truck",
             roles: COMPANY,
             description: "Purchase orders, returns and spend per supplier.",
@@ -1215,7 +1215,7 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Stock Movement",
-            path: "/insights/inventory/movement",
+            path: "/insights/inventory/stock-movement",
             icon: "Warehouse",
             roles: COMPANY,
             description: "Transfers, adjustments and the trail behind every change.",
@@ -1231,7 +1231,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         items: [
           {
             title: "Profit & Loss",
-            path: "/insights/finance/profit-loss",
+            path: "/insights/finance/profit-and-loss",
             icon: "TrendingUp",
             roles: COMPANY,
             description: "Income against expense for any period you pick.",
@@ -1342,7 +1342,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Tasks & Goals",
-        path: "/insights/tasks",
+        path: "/insights/tasks-and-goals",
         icon: "ListChecks",
         roles: COMPANY,
         description: "Workload, completion rate and goal progress per person.",
@@ -1375,7 +1375,7 @@ export const MENU_SECTIONS: MenuSection[] = [
           },
           {
             title: "Concerns Overview",
-            path: "/settings/company/concerns-dashboard",
+            path: "/settings/company/concerns-overview",
             icon: "LayoutDashboard",
             roles: COMPANY_ADMIN,
             description: "How every concern under your company is performing at a glance.",
@@ -1384,21 +1384,21 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Users & Roles",
-        path: "/settings/access",
+        path: "/settings/users-and-roles",
         icon: "ShieldCheck",
         roles: COMPANY,
         description: "Who can sign in, and what each of them may do.",
         items: [
           {
             title: "Users",
-            path: "/settings/access/users",
+            path: "/settings/users-and-roles/users",
             icon: "UserCog",
             roles: USER_ADMIN,
             description: "People who can sign in to this workspace and the menus they reach.",
           },
           {
             title: "Roles & Permissions",
-            path: "/settings/access/roles",
+            path: "/settings/users-and-roles/roles-and-permissions",
             icon: "KeyRound",
             roles: COMPANY_ADMIN,
             description:
@@ -1408,21 +1408,21 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Sales & Billing",
-        path: "/settings/sales",
+        path: "/settings/sales-and-billing",
         icon: "Store",
         roles: COMPANY,
         description: "How invoices are sent and how money is taken.",
         items: [
           {
             title: "Email Sending",
-            path: "/settings/sales/email",
+            path: "/settings/sales-and-billing/email-sending",
             icon: "Mail",
             roles: COMPANY,
             description: "The mailbox your invoices, quotations and alerts are sent from.",
           },
           {
             title: "Payment Gateways",
-            path: "/settings/sales/payment",
+            path: "/settings/sales-and-billing/payment-gateways",
             icon: "CreditCard",
             roles: COMPANY,
             description: "Stripe, NMI and Valor credentials plus the offline ways you take money.",
@@ -1482,35 +1482,35 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "Customers",
-        path: "/settings/crm",
+        path: "/settings/customers",
         icon: "Handshake",
         roles: COMPANY,
         description: "The lists and labels your CRM records pick from.",
         items: [
           {
             title: "Lead Sources",
-            path: "/settings/crm/lead-sources",
+            path: "/settings/customers/lead-sources",
             icon: "Network",
             roles: COMPANY,
             description: "Where your enquiries come from, each with its own colour.",
           },
           {
             title: "Contact Types",
-            path: "/settings/crm/contact-types",
+            path: "/settings/customers/contact-types",
             icon: "IdCard",
             roles: COMPANY,
             description: "How contacts are classified, each with its own colour.",
           },
           {
             title: "Tags",
-            path: "/settings/crm/tags",
+            path: "/settings/customers/tags",
             icon: "Tags",
             roles: COMPANY,
             description: "Colour-coded labels for grouping records.",
           },
           {
             title: "Campaigns",
-            path: "/settings/crm/campaigns",
+            path: "/settings/customers/campaigns",
             icon: "SlidersHorizontal",
             roles: COMPANY,
             description: "Sender identities and sending limits.",
@@ -1549,7 +1549,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       },
       {
         title: "My Account",
-        path: "/settings/account",
+        path: "/settings/my-account",
         icon: "Settings",
         roles: EVERYONE,
         description: "Your own login, password and personal preferences.",

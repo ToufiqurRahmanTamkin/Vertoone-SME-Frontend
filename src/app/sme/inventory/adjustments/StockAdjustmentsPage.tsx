@@ -40,7 +40,7 @@ type PendingAction =
 
 export default function StockAdjustmentsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/sme/inventory/adjustments");
+  const access = useModulePermission("/sme/inventory/stock-adjustments");
 
   const { data: warehouseOptions = [] } = useGetWarehouseOptionsQuery();
 

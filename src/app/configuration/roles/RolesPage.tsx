@@ -40,7 +40,7 @@ const describeAllowance = (used: number, limit: number | null): string =>
 
 export default function RolesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/settings/access/roles");
+  const access = useModulePermission("/settings/users-and-roles/roles-and-permissions");
 
   const { data, isLoading, isFetching } = useGetRolesQuery({
     page: filters.page,

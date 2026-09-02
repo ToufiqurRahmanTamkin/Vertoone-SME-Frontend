@@ -27,7 +27,7 @@ import { employeeColumns } from "./employees.columns";
 
 export default function EmployeesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/hrms/people/employees");
+  const access = useModulePermission("/hrms/directory/employees");
 
   const { data: tagOptions = [] } = useGetTagOptionsQuery();
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();

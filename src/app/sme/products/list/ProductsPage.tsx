@@ -32,7 +32,7 @@ import { productColumns } from "./products.columns";
 
 export default function ProductsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/sme/products/list");
+  const access = useModulePermission("/sme/products/all-products");
 
   const { data: categoryOptions = [] } = useGetProductCategoryOptionsQuery();
   const { data: brandOptions = [] } = useGetBrandOptionsQuery();

@@ -95,7 +95,7 @@ export function DepartmentFormModal({ open, onOpenChange, department }: Departme
 
   const seedKey = open ? (department?._id ?? "new") : null;
   const grant = useAccessGrant(seedKey, department);
-  const canManageAccess = useModulePermission("/settings/access/roles").canEdit;
+  const canManageAccess = useModulePermission("/settings/users-and-roles/roles-and-permissions").canEdit;
 
   const steps = React.useMemo<StepperStep[]>(
     () =>
