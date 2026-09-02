@@ -73,6 +73,8 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "TaskAssigneeOptions",
   ],
   TASK_ACTIVITIES: ["TaskActivities", "TaskActivitySummary", "Tasks", "TaskBoardView"],
+  GOALS: ["Goals", "GoalSummary", "GoalOptions"],
+  NOTES: ["Notes", "NoteSummary"],
   SUPPLIERS: ["Suppliers", "SupplierSummary", "SupplierOptions"],
   PRODUCTS: ["Products", "ProductSummary", "ProductOptions"],
   PRODUCT_CATEGORIES: [

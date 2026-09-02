@@ -50,6 +50,8 @@ const Leads = lazy(() => import("@/app/crm/leads/LeadsPage"));
 const Deals = lazy(() => import("@/app/crm/deals/DealsPage"));
 const Tasks = lazy(() => import("@/app/tasksGoals/tasks/TasksPage"));
 const TaskBoard = lazy(() => import("@/app/tasksGoals/tasks/TaskBoardPage"));
+const Goals = lazy(() => import("@/app/tasksGoals/goals/GoalsPage"));
+const Notes = lazy(() => import("@/app/tasksGoals/notes/NotesPage"));
 const Pipelines = lazy(() => import("@/app/crm/pipelines/PipelinesPage"));
 const PipelineDetail = lazy(() => import("@/app/crm/pipelines/PipelineDetailPage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
@@ -194,6 +196,8 @@ const builtRoutes: RouteConfig[] = [
   { path: "crm/deals", element: <Deals /> },
   { path: "tasks-goals/tasks", element: <Tasks /> },
   { path: "tasks-goals/tasks/:id", element: <TaskBoard /> },
+  { path: "tasks-goals/goals", element: <Goals /> },
+  { path: "tasks-goals/notes", element: <Notes /> },
   { path: "crm/pipelines", element: <Pipelines /> },
   { path: "crm/pipelines/:id", element: <PipelineDetail /> },
   { path: "settings/workspace/calendar", element: <CalendarSettings /> },
