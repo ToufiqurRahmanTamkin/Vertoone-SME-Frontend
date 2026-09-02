@@ -6,11 +6,12 @@ import { RegistrationSteps } from "@/app/auth/register/RegistrationSteps";
 import { RegistrationSuccess } from "@/app/auth/register/RegistrationSuccess";
 import {
   FormCheckbox,
+  FormCitySelect,
+  FormCountrySelect,
   FormInput,
   FormPassword,
   FormPhone,
   FormSelect,
-  FormTextarea,
 } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -21,6 +22,7 @@ import {
   PAYMENT_METHOD_LABELS,
   toOptions,
 } from "@/constant";
+import { currencyForCountry } from "@/constant/locale";
 import { formatAmount } from "@/lib/amount";
 import { useCheckCompanyAvailabilityMutation, useRegisterCompanyMutation } from "@/redux/apis/companyApis";
 import { useGetPublicPlansQuery } from "@/redux/apis/planApis";
@@ -72,7 +74,10 @@ export default function RegisterPage() {
       companyName: "",
       companyEmail: "",
       companyPhone: "",
-      companyAddress: "",
+      companyCountry: "",
+      companyCity: "",
+      companyZipCode: "",
+      companyStreet: "",
       employeeRange: "1-50",
     },
   });
@@ -98,6 +103,11 @@ export default function RegisterPage() {
       acceptTerms: false,
     },
   });
+
+  const registrationCountry = useWatch({ control: companyForm.control, name: "companyCountry" });
+  const registrationCurrency = registrationCountry
+    ? currencyForCountry(registrationCountry)
+    : "";
 
   const selectedPlanId = useWatch({ control: paymentForm.control, name: "planId" });
   const selectedMethod = useWatch({
@@ -193,7 +203,10 @@ export default function RegisterPage() {
       companyName: companyValues.companyName,
       companyEmail: companyValues.companyEmail,
       companyPhone: companyValues.companyPhone,
-      companyAddress: companyValues.companyAddress,
+      companyCountry: companyValues.companyCountry,
+      companyCity: companyValues.companyCity,
+      companyZipCode: companyValues.companyZipCode,
+      companyStreet: companyValues.companyStreet,
       employeeRange: companyValues.employeeRange,
       adminName: adminValues.adminName,
       adminEmail: adminValues.adminEmail,
@@ -289,13 +302,41 @@ export default function RegisterPage() {
                       />
                     </div>
 
-                    <FormTextarea
-                      control={companyForm.control}
-                      name="companyAddress"
-                      label="Company address"
-                      placeholder="Street, city, postal code, country"
-                      showCharCount={false}
-                    />
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <FormCountrySelect
+                        control={companyForm.control}
+                        name="companyCountry"
+                        label="Country"
+                        placeholder="Select your country"
+                        onValueChange={() => companyForm.setValue("companyCity", "")}
+                      />
+                      <FormCitySelect
+                        control={companyForm.control}
+                        name="companyCity"
+                        label="City"
+                        countryName={registrationCountry}
+                      />
+                      <FormInput
+                        control={companyForm.control}
+                        name="companyZipCode"
+                        label="Zip code"
+                        placeholder="1207"
+                      />
+                      <FormInput
+                        control={companyForm.control}
+                        name="companyStreet"
+                        label="Street address"
+                        placeholder="House, road, area"
+                      />
+                    </div>
+
+                    {registrationCurrency && (
+                      <p className="text-muted-foreground text-xs">
+                        Your company and its concerns will be set up in{" "}
+                        <span className="text-foreground font-medium">{registrationCurrency}</span>,
+                        based on {registrationCountry}.
+                      </p>
+                    )}
 
                     <Button
                       type="submit"

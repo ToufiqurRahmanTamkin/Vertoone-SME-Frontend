@@ -50,6 +50,11 @@ export interface Company {
   email: string;
   phone: string;
   address: string;
+  street: string;
+  city: string;
+  zipCode: string;
+  country: string;
+  currency: string;
   employeeRange: EmployeeRange;
   status: CompanyStatus;
   ownerUserId: string | null;
@@ -96,7 +101,10 @@ export interface RegisterCompanyPayload {
   companyName: string;
   companyEmail: string;
   companyPhone: string;
-  companyAddress: string;
+  companyStreet: string;
+  companyCity: string;
+  companyZipCode: string;
+  companyCountry: string;
   employeeRange: EmployeeRange;
   adminName: string;
   adminEmail: string;

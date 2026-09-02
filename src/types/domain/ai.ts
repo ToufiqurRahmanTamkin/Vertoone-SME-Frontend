@@ -40,7 +40,10 @@ export interface AiCompanyDraft {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  street: string;
+  city: string;
+  zipCode: string;
+  country: string;
   employeeRange: EmployeeRange;
   ownerName: string;
   ownerEmail: string;

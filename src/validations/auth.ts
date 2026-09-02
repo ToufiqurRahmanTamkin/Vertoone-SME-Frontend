@@ -37,11 +37,22 @@ export const RegisterCompanyStepSchema = z.object({
     .max(150, "Company name is too long"),
   companyEmail: z.string("Enter your company email").trim().email("Invalid email address"),
   companyPhone: requiredPhone,
-  companyAddress: z
-    .string("Enter your company address")
+  companyCountry: z.string("Select your country").trim().min(1, "Select a country"),
+  companyCity: z
+    .string("Select your city")
     .trim()
-    .min(5, "Address must be at least 5 characters")
-    .max(500, "Address is too long"),
+    .min(1, "Select a city")
+    .max(120, "City name is too long"),
+  companyZipCode: z
+    .string("Enter your zip code")
+    .trim()
+    .min(1, "Zip code is required")
+    .max(20, "Zip code is too long"),
+  companyStreet: z
+    .string("Enter your street address")
+    .trim()
+    .min(3, "Street address must be at least 3 characters")
+    .max(300, "Street address is too long"),
   employeeRange: z.enum(EMPLOYEE_RANGES, "Select an employee range"),
 });
 

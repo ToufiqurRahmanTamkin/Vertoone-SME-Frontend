@@ -1,4 +1,6 @@
 import {
+  FormCitySelect,
+  FormCountrySelect,
   FormInput,
   FormPassword,
   FormPhone,
@@ -19,6 +21,7 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { EMPLOYEE_RANGE_LABELS, toOptions } from "@/constant";
+import { currencyForCountry } from "@/constant/locale";
 import { useGenerateCompanyDraftMutation, useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { useCreateCompanyMutation } from "@/redux/apis/companyApis";
 import type { ApiErrorResponse } from "@/redux/baseApi";
@@ -27,7 +30,7 @@ import { CreateCompanySchema, type CreateCompanyFormValues } from "@/validations
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 interface CompanyCreateModalProps {
@@ -43,7 +46,17 @@ const STEPS: readonly StepperStep[] = [
 ];
 
 const STEP_FIELDS: readonly (keyof CreateCompanyFormValues)[][] = [
-  ["companyName", "employeeRange", "companyEmail", "companyPhone", "companyAddress", "note"],
+  [
+    "companyName",
+    "employeeRange",
+    "companyEmail",
+    "companyPhone",
+    "companyCountry",
+    "companyCity",
+    "companyZipCode",
+    "companyStreet",
+    "note",
+  ],
   ["adminName", "adminEmail", "adminPhone", "adminPassword"],
 ];
 
@@ -60,7 +73,10 @@ const emptyValues: CreateCompanyFormValues = {
   companyName: "",
   companyEmail: "",
   companyPhone: "",
-  companyAddress: "",
+  companyCountry: "",
+  companyCity: "",
+  companyZipCode: "",
+  companyStreet: "",
   employeeRange: EMPLOYEE_RANGES[0],
   adminName: "",
   adminEmail: "",
@@ -95,6 +111,9 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
     setFurthestStep(0);
   }
 
+  const selectedCountry = useWatch({ control: form.control, name: "companyCountry" });
+  const countryCurrency = selectedCountry ? currencyForCountry(selectedCountry) : "";
+
   const onDraft = async () => {
     if (aiPrompt.trim().length < 3) return;
     try {
@@ -103,7 +122,10 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
       form.setValue("companyName", draft.name, fill);
       form.setValue("companyEmail", draft.email, fill);
       form.setValue("companyPhone", draft.phone, fill);
-      form.setValue("companyAddress", draft.address, fill);
+      form.setValue("companyCountry", draft.country, fill);
+      form.setValue("companyCity", draft.city, fill);
+      form.setValue("companyZipCode", draft.zipCode, fill);
+      form.setValue("companyStreet", draft.street, fill);
       form.setValue("employeeRange", draft.employeeRange, fill);
       form.setValue("adminName", draft.ownerName, fill);
       form.setValue("adminEmail", draft.ownerEmail, fill);
@@ -130,7 +152,10 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
         companyName: values.companyName,
         companyEmail: values.companyEmail,
         companyPhone: values.companyPhone,
-        companyAddress: values.companyAddress,
+        companyCountry: values.companyCountry,
+        companyCity: values.companyCity,
+        companyZipCode: values.companyZipCode,
+        companyStreet: values.companyStreet,
         employeeRange: values.employeeRange,
         adminName: values.adminName,
         adminEmail: values.adminEmail,
@@ -257,13 +282,42 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                     label="Company phone"
                     className="col-span-6 sm:col-span-3"
                   />
-                  <FormTextarea
+                  <FormCountrySelect
                     control={form.control}
-                    name="companyAddress"
-                    label="Address"
-                    placeholder="Street, city, country"
-                    className="col-span-6"
+                    name="companyCountry"
+                    label="Country"
+                    placeholder="Select a country"
+                    className="col-span-6 sm:col-span-3"
+                    onValueChange={() => form.setValue("companyCity", "")}
                   />
+                  <FormCitySelect
+                    control={form.control}
+                    name="companyCity"
+                    label="City"
+                    countryName={selectedCountry}
+                    className="col-span-6 sm:col-span-3"
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="companyZipCode"
+                    label="Zip code"
+                    placeholder="1207"
+                    className="col-span-6 sm:col-span-2"
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="companyStreet"
+                    label="Street address"
+                    placeholder="House, road, area"
+                    className="col-span-6 sm:col-span-4"
+                  />
+                  {countryCurrency && (
+                    <p className="col-span-6 text-xs text-muted-foreground">
+                      Billing currency for this company and its concerns:{" "}
+                      <span className="font-medium text-foreground">{countryCurrency}</span>, set
+                      from {selectedCountry}.
+                    </p>
+                  )}
                   <FormTextarea
                     control={form.control}
                     name="note"

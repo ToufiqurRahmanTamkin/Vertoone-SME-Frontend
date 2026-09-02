@@ -1,11 +1,18 @@
 import { FileUploader } from "@/components/shared/file-uploader";
-import { FormInput, FormPhone, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
+import {
+  FormInput,
+  FormPhone,
+  FormSelect,
+  FormSwitch,
+  FormTextarea,
+} from "@/components/shared/form-fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CURRENCY_OPTIONS, TIMEZONE_OPTIONS } from "@/constant/locale";
 import { cn } from "@/lib/utils";
 import {
   useGetSystemConfigQuery,
@@ -100,12 +107,6 @@ export default function SystemConfigPage() {
       <PageHeader
         title="System Config"
         description="Platform-wide defaults and switches. These apply to every part of the console."
-        actions={
-          <Badge variant={maintenanceMode ? "destructive" : "success"} className="px-2.5 py-1">
-            <Power className="size-3" />
-            {maintenanceMode ? "Maintenance mode" : "Platform live"}
-          </Badge>
-        }
       />
 
       <Form {...form}>
@@ -129,11 +130,13 @@ export default function SystemConfigPage() {
               description="Applied wherever a new plan or subscription does not set its own."
             >
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
+                <FormSelect
                   control={form.control}
                   name="defaultCurrency"
                   label="Default currency"
-                  placeholder="BDT"
+                  placeholder="Select a currency"
+                  options={CURRENCY_OPTIONS}
+                  searchable
                 />
                 <FormInput
                   control={form.control}
@@ -142,11 +145,13 @@ export default function SystemConfigPage() {
                   type="number"
                 />
               </div>
-              <FormInput
+              <FormSelect
                 control={form.control}
                 name="defaultTimezone"
                 label="Default timezone"
-                placeholder="Asia/Dhaka"
+                placeholder="Select a timezone"
+                options={TIMEZONE_OPTIONS}
+                searchable
               />
             </SectionCard>
 
