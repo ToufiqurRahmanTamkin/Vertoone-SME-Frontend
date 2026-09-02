@@ -34,7 +34,7 @@ const failure = (error: unknown, fallback: string): string => {
 
 export default function SitePagesPage() {
   const { siteId = "" } = useParams<{ siteId: string }>();
-  const access = useModulePermission("/company/business-tools/web-builder");
+  const access = useModulePermission("/crm/business-tools/web-builder");
 
   const { data: site, isLoading, isError } = useGetWebSiteQuery(siteId, { skip: !siteId });
   const { data: pageList, isLoading: isLoadingPages } = useGetWebPagesQuery(
@@ -74,7 +74,7 @@ export default function SitePagesPage() {
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This website is not available</p>
         <BackLink
-          to="/company/business-tools/web-builder"
+          to="/crm/business-tools/web-builder"
           label="All websites"
           variant="outline"
           className="mt-4"
@@ -90,7 +90,7 @@ export default function SitePagesPage() {
         description="The pages that make up this website. Drag to set the order they appear in the menu."
         actions={
           <>
-            <BackLink to="/company/business-tools/web-builder" label="All websites" />
+            <BackLink to="/crm/business-tools/web-builder" label="All websites" />
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
               <Settings className="size-4" />
               Settings

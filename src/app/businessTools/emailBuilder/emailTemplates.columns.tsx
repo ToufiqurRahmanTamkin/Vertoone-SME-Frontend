@@ -32,7 +32,7 @@ export const emailTemplateColumns = ({
         </span>
         <div className="min-w-0">
           <Link
-            to={`/company/business-tools/email-builder/${row.original._id}`}
+            to={`/crm/business-tools/email-builder/${row.original._id}`}
             className="block truncate text-sm font-semibold hover:underline"
           >
             {row.original.name}

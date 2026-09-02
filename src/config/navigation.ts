@@ -595,7 +595,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
         ],
       },
       {
-        label: "Tools",
+        label: "Automation",
         items: [
           {
             title: "Automation",
@@ -621,39 +621,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 slug: "settings",
                 icon: "SlidersHorizontal",
                 description: "Connections, run limits and error handling defaults.",
-              },
-            ],
-          },
-          {
-            title: "Business Tools",
-            slug: "business-tools",
-            icon: "LayoutGrid",
-            description: "Builders for emails, pages and forms.",
-            items: [
-              overview("How your emails, sites and forms are performing at a glance."),
-              {
-                title: "Email Builder",
-                slug: "email-builder",
-                icon: "Mail",
-                description: "Design the email templates your campaigns send.",
-              },
-              {
-                title: "Web Builder",
-                slug: "web-builder",
-                icon: "Globe",
-                description: "Build and publish the pages your customers land on.",
-              },
-              {
-                title: "Form Builder",
-                slug: "form-builder",
-                icon: "ClipboardList",
-                description: "Forms you embed on your site to capture leads.",
-              },
-              {
-                title: "Settings",
-                slug: "settings",
-                icon: "SlidersHorizontal",
-                description: "Domains, branding and defaults for the builders.",
               },
             ],
           },
@@ -1086,6 +1053,44 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 slug: "google-ads",
                 icon: "Search",
                 description: "Search, display and shopping campaigns on Google.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Content",
+        items: [
+          {
+            title: "Business Tools",
+            slug: "business-tools",
+            icon: "LayoutGrid",
+            description: "The content studio behind your campaigns: emails, pages and forms.",
+            items: [
+              overview("How your emails, sites and forms are performing at a glance."),
+              {
+                title: "Email Builder",
+                slug: "email-builder",
+                icon: "Mail",
+                description: "Design the email templates your campaigns send.",
+              },
+              {
+                title: "Web Builder",
+                slug: "web-builder",
+                icon: "Globe",
+                description: "Build and publish the pages your customers land on.",
+              },
+              {
+                title: "Form Builder",
+                slug: "form-builder",
+                icon: "ClipboardList",
+                description: "Forms you embed on your site to capture leads.",
+              },
+              {
+                title: "Settings",
+                slug: "settings",
+                icon: "SlidersHorizontal",
+                description: "Domains, branding and defaults for the builders.",
               },
             ],
           },
@@ -1637,6 +1642,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
             title: "My Account",
             slug: "my-account",
             icon: "UserCog",
+            hidden: true,
             description: "Your own login, password and personal preferences.",
           },
         ],
@@ -1950,10 +1956,8 @@ export const getSearchableMenuItems = (
   role: string,
   modules: ModulePermissionMap | undefined
 ): { title: string; path: string; group: string; icon?: LucideIcon }[] =>
-  MENU_LEAVES.filter(
-    (node) =>
-      !node.trail.some((item) => item.hidden) &&
-      node.trail.every((item) => isMenuItemVisible(item, role, modules))
+  MENU_LEAVES.filter((node) =>
+    node.trail.every((item) => isMenuItemVisible(item, role, modules))
   ).map((node) => ({
     title: node.parentTitle ? `${node.parentTitle} · ${node.item.title}` : node.item.title,
     path: node.item.path,

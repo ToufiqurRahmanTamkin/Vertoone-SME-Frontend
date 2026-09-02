@@ -50,7 +50,7 @@ export function FormRowActions({
   return (
     <div className="flex items-center justify-end gap-1">
       <Button variant="outline" size="sm" asChild>
-        <Link to={`/company/business-tools/form-builder/${form._id}/responses`}>
+        <Link to={`/crm/business-tools/form-builder/${form._id}/responses`}>
           <Inbox className="size-3.5" />
           Responses
         </Link>
@@ -69,7 +69,7 @@ export function FormRowActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuItem asChild>
-            <Link to={`/company/business-tools/form-builder/${form._id}`}>
+            <Link to={`/crm/business-tools/form-builder/${form._id}`}>
               <Pencil />
               Edit
             </Link>

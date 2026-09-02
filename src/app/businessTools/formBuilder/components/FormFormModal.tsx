@@ -67,7 +67,7 @@ export function FormFormModal({ open, onOpenChange }: FormFormModalProps) {
 
       toast.success("Form created");
       onOpenChange(false);
-      navigate(`/company/business-tools/form-builder/${created._id}`);
+      navigate(`/crm/business-tools/form-builder/${created._id}`);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not create the form");

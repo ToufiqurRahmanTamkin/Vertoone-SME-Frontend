@@ -62,7 +62,7 @@ const toBoolean = (value: string | number | undefined): boolean | undefined =>
 export default function FormResponsesPage() {
   const { formId = "" } = useParams<{ formId: string }>();
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/company/business-tools/form-builder");
+  const access = useModulePermission("/crm/business-tools/form-builder");
   const token = useSelector(selectCurrentToken);
 
   const { data: form, isLoading: isLoadingForm, isError } = useGetFormQuery(formId, {
@@ -233,7 +233,7 @@ export default function FormResponsesPage() {
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This form is not available</p>
         <BackLink
-          to="/company/business-tools/form-builder"
+          to="/crm/business-tools/form-builder"
           label="All forms"
           variant="outline"
           className="mt-4"
@@ -253,7 +253,7 @@ export default function FormResponsesPage() {
         }
         actions={
           <>
-            <BackLink to={`/company/business-tools/form-builder/${formId}`} label="Back to the form" />
+            <BackLink to={`/crm/business-tools/form-builder/${formId}`} label="Back to the form" />
             <Button
               variant="outline"
               size="sm"

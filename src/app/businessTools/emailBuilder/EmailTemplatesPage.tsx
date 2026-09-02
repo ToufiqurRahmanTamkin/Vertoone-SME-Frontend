@@ -60,7 +60,7 @@ const FILTERS: FilterConfig[] = [
 
 export default function EmailTemplatesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/company/business-tools/email-builder");
+  const access = useModulePermission("/crm/business-tools/email-builder");
 
   const { data, isLoading, isFetching } = useGetEmailTemplatesQuery({
     page: filters.page,
@@ -203,7 +203,7 @@ export default function EmailTemplatesPage() {
         actions={
           <>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/company/business-tools/email-builder/deliveries">
+              <Link to="/crm/business-tools/email-builder/deliveries">
                 <History className="size-4" />
                 Sent history
               </Link>
@@ -249,7 +249,7 @@ export default function EmailTemplatesPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <Link
-                  to={`/company/business-tools/email-builder/${template._id}`}
+                  to={`/crm/business-tools/email-builder/${template._id}`}
                   className="block truncate text-sm font-semibold hover:underline"
                 >
                   {template.name}

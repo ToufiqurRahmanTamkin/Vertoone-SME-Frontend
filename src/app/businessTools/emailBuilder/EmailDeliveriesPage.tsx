@@ -98,7 +98,7 @@ function DeliveryPreviewDialog({
 
 export default function EmailDeliveriesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/company/business-tools/email-builder");
+  const access = useModulePermission("/crm/business-tools/email-builder");
 
   const { data, isLoading, isFetching } = useGetEmailDeliveriesQuery({
     page: filters.page,
@@ -206,7 +206,7 @@ export default function EmailDeliveriesPage() {
       <PageHeader
         title="Sent emails"
         description="Every email your team has sent from the Email Builder, with what actually happened to it."
-        actions={<BackLink to="/company/business-tools/email-builder" label="All emails" />}
+        actions={<BackLink to="/crm/business-tools/email-builder" label="All emails" />}
       />
 
       <DataTableToolbar

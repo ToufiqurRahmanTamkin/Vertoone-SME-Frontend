@@ -71,7 +71,7 @@ export function EmailTemplateRowActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuItem asChild>
-            <Link to={`/company/business-tools/email-builder/${template._id}`}>
+            <Link to={`/crm/business-tools/email-builder/${template._id}`}>
               <Pencil />
               Edit
             </Link>

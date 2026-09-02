@@ -79,7 +79,7 @@ function LayersDropZone({ children }: { children: React.ReactNode }) {
 
 export default function PageBuilderPage() {
   const { siteId = "", pageId = "" } = useParams<{ siteId: string; pageId: string }>();
-  const access = useModulePermission("/company/business-tools/web-builder");
+  const access = useModulePermission("/crm/business-tools/web-builder");
 
   const {
     data: page,
@@ -269,7 +269,7 @@ export default function PageBuilderPage() {
       <div className="rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm font-medium">This page is not available</p>
         <BackLink
-          to={`/company/business-tools/web-builder/${siteId}`}
+          to={`/crm/business-tools/web-builder/${siteId}`}
           label="All pages"
           variant="outline"
           className="mt-4"
@@ -305,7 +305,7 @@ export default function PageBuilderPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <BackLink to={`/company/business-tools/web-builder/${siteId}`} label="All pages" />
+          <BackLink to={`/crm/business-tools/web-builder/${siteId}`} label="All pages" />
 
           <div className="flex items-center rounded-lg border p-0.5">
             {DEVICES.map((entry) => (

@@ -109,7 +109,7 @@ export function PageFormModal({
 
       toast.success("Page created");
       onOpenChange(false);
-      navigate(`/company/business-tools/web-builder/${siteId}/pages/${page._id}`);
+      navigate(`/crm/business-tools/web-builder/${siteId}/pages/${page._id}`);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not create the page");

@@ -308,7 +308,7 @@ function SettingsForm({
 }
 
 export default function BusinessToolsSettingsPage() {
-  const access = useModulePermission("/company/business-tools/settings");
+  const access = useModulePermission("/crm/business-tools/settings");
   const { data: settings, isLoading } = useGetBusinessToolsSettingsQuery();
 
   return (
