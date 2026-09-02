@@ -1,6 +1,6 @@
 const rawServerURL = import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
 const NODE_ENV = import.meta.env.VITE_NODE_ENV || "development";
-const APP_NAME = import.meta.env.VITE_APP_NAME || "Vertoone SME";
+const APP_NAME = import.meta.env.VITE_APP_NAME || "Vertoone Omni";
 const APP_SHORT_NAME = import.meta.env.VITE_APP_SHORT_NAME || "Vertoone";
 
 const normalizeUrl = (url: string) => url.replace(/\/+$/, "");

@@ -1,6 +1,6 @@
-# Vertoone SME — Frontend
+# Vertoone Omni — Frontend
 
-React 19 + Vite + TypeScript super admin console for the Vertoone SME platform.
+React 19 + Vite + TypeScript super admin console for the Vertoone Omni platform.
 
 This is the shared Vertoone console template. It ships with the theme system,
 the colour system and super admin authentication wired end to end, plus a

@@ -79,7 +79,10 @@ export default function CompanyProfilePage() {
       name: company.name,
       email: company.email,
       phone: company.phone ?? "",
-      address: company.address ?? "",
+      address: company.street || company.address || "",
+      city: company.city ?? "",
+      postalCode: company.zipCode ?? "",
+      country: company.country || emptyValues.country,
       employeeRange: company.employeeRange,
     });
   }, [company, form]);

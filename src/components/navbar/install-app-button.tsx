@@ -12,7 +12,7 @@ export function InstallAppButton() {
   if (!canInstall && !needsManualInstall) return null;
 
   const showIosInstructions = () => {
-    toast.info("Install Vertoone SME", {
+    toast.info("Install Vertoone Omni", {
       description: "Tap the Share button in Safari, then choose “Add to Home Screen”.",
       duration: 8000,
     });
@@ -25,7 +25,7 @@ export function InstallAppButton() {
     }
     const outcome = await promptInstall();
     if (outcome === "accepted") {
-      toast.success("Vertoone SME installed");
+      toast.success("Vertoone Omni installed");
     }
   };
 

@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Vertoone SME",
+  "name": "Vertoone Omni",
   "short_name": "Vertoone",
-  "description": "Vertoone SME — the super admin console for the SME platform.",
+  "description": "Vertoone Omni — the super admin console for the Vertoone Omni platform.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

@@ -189,6 +189,7 @@ export function CompanyReviewModal({
                     { label: "Owner", value: `${company.ownerName} (${company.ownerEmail})` },
                     { label: "Contact", value: `${company.email} · ${company.phone}` },
                     { label: "Address", value: company.address },
+                    { label: "Currency", value: company.currency || "—" },
                     {
                       label: "Employees",
                       value:

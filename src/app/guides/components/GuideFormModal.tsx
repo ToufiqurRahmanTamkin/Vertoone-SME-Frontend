@@ -117,7 +117,7 @@ export function GuideFormModal({ open, onOpenChange, guide }: GuideFormModalProp
                 control={form.control}
                 name="title"
                 label="Title"
-                placeholder="Getting started with Vertoone SME"
+                placeholder="Getting started with Vertoone Omni"
               />
 
               <div className="grid gap-4 sm:grid-cols-2">

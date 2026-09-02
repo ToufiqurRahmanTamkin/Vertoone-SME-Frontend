@@ -1,8 +1,8 @@
 {
-  "name": "vertoone-sme-frontend",
+  "name": "vertoone-omni-frontend",
   "private": true,
   "version": "1.0.0",
-  "description": "Vertoone SME - Super Admin Console",
+  "description": "Vertoone Omni - Super Admin Console",
   "author": "Vertoone",
   "license": "SEE LICENSE IN LICENSE",
   "homepage": ".",

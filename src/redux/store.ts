@@ -15,7 +15,7 @@ import { baseApi } from "./baseApi";
 import settingsReducer from "./settingsSlice";
 
 const rootPersistConfig = {
-  key: "vertoone-sme",
+  key: "vertoone-omni",
   storage,
   whitelist: ["auth", "settings"],
 };
