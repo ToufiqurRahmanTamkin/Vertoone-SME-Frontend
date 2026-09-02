@@ -63,6 +63,7 @@ export interface Company {
   reviewNote: string;
   accessBlockedAt: string | null;
   accessBlockReason: string;
+  accessExpiresAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
