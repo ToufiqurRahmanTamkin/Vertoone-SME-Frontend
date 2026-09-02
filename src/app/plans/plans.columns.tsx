@@ -1,23 +1,15 @@
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { BILLING_CYCLE_LABELS } from "@/constant";
 import { formatAmount, formatLimit } from "@/lib/amount";
 import type { SubscriptionPlan } from "@/types/domain/plan";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Lock, RefreshCcw } from "lucide-react";
+import { Lock } from "lucide-react";
 import { PlanRowActions, type PlanRowActionHandlers } from "./components/PlanRowActions";
 
-interface PlanColumnActions extends PlanRowActionHandlers {
-  onToggleAutoRenew: (plan: SubscriptionPlan, enabled: boolean) => void;
-  togglingPlanId?: string | null;
-}
-
-export const planColumns = ({
-  onToggleAutoRenew,
-  togglingPlanId,
-  ...rowActions
-}: PlanColumnActions): ColumnDef<SubscriptionPlan>[] => [
+export const planColumns = (
+  rowActions: PlanRowActionHandlers
+): ColumnDef<SubscriptionPlan>[] => [
   {
     accessorKey: "name",
     header: "Plan",
@@ -27,12 +19,6 @@ export const planColumns = ({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="truncate font-medium">{plan.name}</span>
-            {plan.autoRenewEnabled && (
-              <RefreshCcw
-                className="h-3.5 w-3.5 shrink-0 text-violet-500"
-                aria-label="Auto renew enabled"
-              />
-            )}
             {plan.isPrivate && (
               <Lock
                 className="h-3.5 w-3.5 shrink-0 text-amber-500"
@@ -91,27 +77,6 @@ export const planColumns = ({
           {capped > 0 && (
             <span className="text-[11px] text-muted-foreground">{capped} capped</span>
           )}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "autoRenewEnabled",
-    header: "Auto renew",
-    cell: ({ row }) => {
-      const plan = row.original;
-      return (
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={plan.autoRenewEnabled}
-            disabled={togglingPlanId === plan._id}
-            onCheckedChange={(checked) => onToggleAutoRenew(plan, checked)}
-            aria-label={`Auto renew for ${plan.name}`}
-            className="cursor-pointer"
-          />
-          <span className="text-xs text-muted-foreground">
-            {plan.autoRenewEnabled ? "Enabled" : "Off"}
-          </span>
         </div>
       );
     },

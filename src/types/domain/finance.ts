@@ -7,6 +7,8 @@ export type FinanceCategoryType = (typeof FINANCE_CATEGORY_TYPES)[number];
 export const FINANCE_STATUSES = ["DRAFT", "UNPAID", "PAID", "CLOSED"] as const;
 export type FinanceStatus = (typeof FINANCE_STATUSES)[number];
 
+export const SUBSCRIPTION_REVENUE_CATEGORY = "Subscription Revenue";
+
 export const INCOME_SOURCE_TYPES = ["MANUAL", "SOLD_SUBSCRIPTION"] as const;
 export type IncomeSourceType = (typeof INCOME_SOURCE_TYPES)[number];
 

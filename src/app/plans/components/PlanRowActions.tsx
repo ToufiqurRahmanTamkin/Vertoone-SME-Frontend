@@ -24,24 +24,23 @@ export function PlanRowActions({
   cloningPlanId,
 }: PlanRowActionHandlers & { plan: SubscriptionPlan }) {
   return (
-    <div className="flex items-center justify-end gap-1">
-      <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => onEdit(plan)}>
-        <Pencil className="size-3.5" />
-        Edit
-      </Button>
-
+    <div className="flex items-center justify-end">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
             className="size-8 cursor-pointer"
-            aria-label={`More actions for ${plan.name}`}
+            aria-label={`Actions for ${plan.name}`}
           >
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(plan)}>
+            <Pencil />
+            Edit
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer"
             disabled={cloningPlanId === plan._id}

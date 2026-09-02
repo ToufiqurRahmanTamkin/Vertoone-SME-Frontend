@@ -17,7 +17,7 @@ import {
   type ModulePermissionMap,
   type ModuleProduct,
 } from "@/types/domain/permission";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Lock } from "lucide-react";
 import * as React from "react";
 
 interface ModulePermissionMatrixProps {
@@ -26,6 +26,7 @@ interface ModulePermissionMatrixProps {
   onChange: (next: ModulePermissionMap) => void;
   showLimits?: boolean;
   ceiling?: ModulePermissionMap;
+  lockedKeys?: ReadonlySet<string>;
   disabled?: boolean;
   emptyMessage?: string;
 }
@@ -66,11 +67,23 @@ export function ModulePermissionMatrix({
   onChange,
   showLimits = false,
   ceiling,
+  lockedKeys,
   disabled = false,
   emptyMessage = "No modules available.",
 }: ModulePermissionMatrixProps) {
   const blocks = React.useMemo(() => buildBlocks(modules), [modules]);
   const [collapsed, setCollapsed] = React.useState<Record<string, boolean>>({});
+
+  const isLocked = React.useCallback(
+    (key: string): boolean => lockedKeys?.has(key) ?? false,
+    [lockedKeys]
+  );
+
+  const unlocked = React.useCallback(
+    (definitions: ModuleDefinition[]): ModuleDefinition[] =>
+      lockedKeys ? definitions.filter((definition) => !isLocked(definition.key)) : definitions,
+    [lockedKeys, isLocked]
+  );
 
   const allowedFor = React.useCallback(
     (key: string): ModulePermission | null => {
@@ -82,6 +95,7 @@ export function ModulePermissionMatrix({
   );
 
   const writeModule = (key: string, permission: ModulePermission) => {
+    if (isLocked(key)) return;
     const next = { ...value };
     if (isGranted(permission)) next[key] = permission;
     else delete next[key];
@@ -115,7 +129,7 @@ export function ModulePermissionMatrix({
 
   const setMany = (definitions: ModuleDefinition[], on: boolean) => {
     const next = { ...value };
-    definitions.forEach((definition) => {
+    unlocked(definitions).forEach((definition) => {
       const allowed = allowedFor(definition.key);
       if (!allowed) return;
       if (!on) {
@@ -160,7 +174,7 @@ export function ModulePermissionMatrix({
             size="sm"
             variant="outline"
             className="h-7 cursor-pointer text-xs"
-            disabled={disabled}
+            disabled={disabled || unlocked(modules).length === 0}
             onClick={() => setMany(modules, true)}
           >
             Select all
@@ -170,7 +184,7 @@ export function ModulePermissionMatrix({
             size="sm"
             variant="outline"
             className="h-7 cursor-pointer text-xs"
-            disabled={disabled}
+            disabled={disabled || unlocked(modules).length === 0}
             onClick={() => setMany(modules, false)}
           >
             Clear all
@@ -182,6 +196,7 @@ export function ModulePermissionMatrix({
         {blocks.map((block) => {
           const productEnabled = enabledCount(block.modules);
           const isProductCollapsed = collapsed[block.product] ?? false;
+          const productLocked = unlocked(block.modules).length === 0;
 
           return (
             <div key={block.product} className="overflow-hidden rounded-xl border shadow-sm">
@@ -218,18 +233,25 @@ export function ModulePermissionMatrix({
                     </span>
                   </span>
                 </button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={productEnabled < block.modules.length ? "default" : "outline"}
-                  className="h-7 cursor-pointer text-xs"
-                  disabled={disabled}
-                  onClick={() => setMany(block.modules, productEnabled < block.modules.length)}
-                >
-                  {productEnabled < block.modules.length
-                    ? `Sell all ${PRODUCT_LABELS[block.product]}`
-                    : "Remove all"}
-                </Button>
+                {productLocked ? (
+                  <Badge variant="outline" className="gap-1 text-[10px]">
+                    <Lock className="size-3" />
+                    Always included
+                  </Badge>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={productEnabled < block.modules.length ? "default" : "outline"}
+                    className="h-7 cursor-pointer text-xs"
+                    disabled={disabled}
+                    onClick={() => setMany(block.modules, productEnabled < block.modules.length)}
+                  >
+                    {productEnabled < block.modules.length
+                      ? `Sell all ${PRODUCT_LABELS[block.product]}`
+                      : "Remove all"}
+                  </Button>
+                )}
               </div>
 
               {!isProductCollapsed &&
@@ -237,6 +259,7 @@ export function ModulePermissionMatrix({
                   const groupKey = `${block.product}:${group}`;
                   const isGroupCollapsed = collapsed[groupKey] ?? false;
                   const enabled = enabledCount(definitions);
+                  const groupLocked = unlocked(definitions).length === 0;
 
                   return (
                     <div key={groupKey} className="border-b last:border-b-0">
@@ -265,16 +288,18 @@ export function ModulePermissionMatrix({
                             {enabled}/{definitions.length}
                           </Badge>
                         </button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 cursor-pointer text-xs"
-                          disabled={disabled}
-                          onClick={() => setMany(definitions, enabled < definitions.length)}
-                        >
-                          {enabled < definitions.length ? "Enable all" : "Disable all"}
-                        </Button>
+                        {!groupLocked && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 cursor-pointer text-xs"
+                            disabled={disabled}
+                            onClick={() => setMany(definitions, enabled < definitions.length)}
+                          >
+                            {enabled < definitions.length ? "Enable all" : "Disable all"}
+                          </Button>
+                        )}
                       </div>
 
                       {!isGroupCollapsed && (
@@ -282,6 +307,7 @@ export function ModulePermissionMatrix({
                           {definitions.map((definition) => {
                             const allowed = allowedFor(definition.key);
                             const current = permissionFor(value, definition.key);
+                            const locked = isLocked(definition.key);
                             const rowDisabled = disabled || !allowed;
 
                             return (
@@ -293,11 +319,18 @@ export function ModulePermissionMatrix({
                                 )}
                               >
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium">
-                                    {definition.label}
+                                  <p className="flex items-center gap-1.5 text-sm font-medium">
+                                    <span className="truncate">{definition.label}</span>
+                                    {locked && (
+                                      <Lock className="size-3 shrink-0 text-muted-foreground" />
+                                    )}
                                   </p>
                                   <p className="truncate text-[11px] text-muted-foreground">
-                                    {allowed ? definition.path : "Not included in this plan"}
+                                    {locked
+                                      ? "Always included — every company needs this to operate"
+                                      : allowed
+                                        ? definition.path
+                                        : "Not included in this plan"}
                                   </p>
                                 </div>
 
@@ -307,14 +340,14 @@ export function ModulePermissionMatrix({
                                       key={action}
                                       className={cn(
                                         "flex items-center gap-1.5 text-xs",
-                                        rowDisabled || !allowed?.[action]
+                                        rowDisabled || locked || !allowed?.[action]
                                           ? "cursor-not-allowed text-muted-foreground"
                                           : "cursor-pointer"
                                       )}
                                     >
                                       <Checkbox
                                         checked={current[action]}
-                                        disabled={rowDisabled || !allowed?.[action]}
+                                        disabled={rowDisabled || locked || !allowed?.[action]}
                                         onCheckedChange={(checked) =>
                                           toggleAction(definition, action, checked === true)
                                         }

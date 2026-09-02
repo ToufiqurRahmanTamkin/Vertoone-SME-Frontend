@@ -17,8 +17,12 @@ import { useGetFinanceCategoriesQuery } from "@/redux/apis/financeApis";
 import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import { categoryRefId } from "@/types/domain/finance";
-import { prunePermissionMap, type ModulePermissionMap } from "@/types/domain/permission";
+import { categoryRefId, SUBSCRIPTION_REVENUE_CATEGORY } from "@/types/domain/finance";
+import {
+  prunePermissionMap,
+  withGrantedModules,
+  type ModulePermissionMap,
+} from "@/types/domain/permission";
 import {
   DEFAULT_CURRENCY,
   SUPPORTED_CURRENCIES,
@@ -61,7 +65,7 @@ const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
     "features",
   ],
   ["limitUsers", "aiTokenLimit"],
-  ["isActive", "autoRenewEnabled", "isPrivate"],
+  ["isActive", "isPrivate"],
 ];
 
 const LAST_STEP = STEPS.length - 1;
@@ -88,7 +92,6 @@ const emptyValues = (currency: string): PlanFormValues => ({
   aiTokenLimit: "",
   trialDays: 0,
   isActive: true,
-  autoRenewEnabled: false,
   isPrivate: false,
 });
 
@@ -104,7 +107,6 @@ const toFormValues = (plan: SubscriptionPlan): PlanFormValues => ({
   aiTokenLimit: plan.aiTokenLimit ?? "",
   trialDays: plan.trialDays ?? 0,
   isActive: plan.isActive,
-  autoRenewEnabled: plan.autoRenewEnabled ?? false,
   isPrivate: plan.isPrivate ?? false,
 });
 
@@ -130,6 +132,13 @@ export function PlanFormModal({
     [categoryData]
   );
 
+  const defaultCategoryId = React.useMemo(
+    () =>
+      incomeCategoryOptions.find((option) => option.label === SUBSCRIPTION_REVENUE_CATEGORY)?.value ??
+      "",
+    [incomeCategoryOptions]
+  );
+
   const { data: catalogue = [] } = useGetModuleCatalogueQuery();
   const companyModules = React.useMemo(
     () => catalogue.filter((definition) => definition.scope === "COMPANY"),
@@ -141,11 +150,25 @@ export function PlanFormModal({
     [catalogue]
   );
 
+  const coreModuleKeys = React.useMemo(
+    () =>
+      companyModules
+        .filter((definition) => definition.product === "CORE")
+        .map((definition) => definition.key),
+    [companyModules]
+  );
+
+  const lockedModuleKeys = React.useMemo(() => new Set(coreModuleKeys), [coreModuleKeys]);
+
   const [modulePermissions, setModulePermissions] = React.useState<ModulePermissionMap>({});
 
   const livePermissions = React.useMemo(
-    () => prunePermissionMap(modulePermissions, knownModuleKeys),
-    [modulePermissions, knownModuleKeys]
+    () =>
+      withGrantedModules(
+        prunePermissionMap(modulePermissions, knownModuleKeys),
+        coreModuleKeys
+      ),
+    [modulePermissions, knownModuleKeys, coreModuleKeys]
   );
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);
@@ -159,6 +182,11 @@ export function PlanFormModal({
     if (!open) return;
     form.reset(plan ? toFormValues(plan) : emptyValues(defaultCurrency));
   }, [open, plan, defaultCurrency, form]);
+
+  React.useEffect(() => {
+    if (!open || !defaultCategoryId || form.getValues("financeCategoryId")) return;
+    form.setValue("financeCategoryId", defaultCategoryId);
+  }, [open, plan, defaultCategoryId, form]);
 
   const [seededFor, setSeededFor] = React.useState<string | null>(null);
   const seedKey = open ? (plan?._id ?? "new") : null;
@@ -195,7 +223,6 @@ export function PlanFormModal({
       modulePermissions: livePermissions,
       trialDays: values.trialDays,
       isActive: values.isActive,
-      autoRenewEnabled: values.autoRenewEnabled,
       isPrivate: values.isPrivate,
     };
 
@@ -353,14 +380,16 @@ export function PlanFormModal({
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Tick the menus this plan unlocks and set an optional record cap for each. Leave
-                    a cap blank for unlimited. Saving applies these menus straight away to every
+                    Core menus are always included — every company needs them to operate. Tick the
+                    other menus this plan unlocks and set an optional record cap for each. Leave a
+                    cap blank for unlimited. Saving applies these menus straight away to every
                     company on this plan — their sidebar updates without a sign-out.
                   </p>
                   <ModulePermissionMatrix
                     modules={companyModules}
                     value={livePermissions}
                     onChange={setModulePermissions}
+                    lockedKeys={lockedModuleKeys}
                     showLimits
                     emptyMessage="The module catalogue could not be loaded."
                   />
@@ -375,12 +404,6 @@ export function PlanFormModal({
                       name="isActive"
                       label="Active"
                       description="Available to sell"
-                    />
-                    <FormSwitch
-                      control={form.control}
-                      name="autoRenewEnabled"
-                      label="Enable auto renew"
-                      description="Renews when the period ends and raises a bill for approval"
                     />
                     <FormSwitch
                       control={form.control}

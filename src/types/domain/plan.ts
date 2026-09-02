@@ -40,7 +40,6 @@ export interface SubscriptionPlan {
   modulePermissions: ModulePermissionMap;
   trialDays: number;
   isActive: boolean;
-  autoRenewEnabled: boolean;
   isPrivate: boolean;
   createdAt: string;
   updatedAt: string;
@@ -54,7 +53,6 @@ export interface PlanListQuery {
   search?: string;
   billingCycle?: BillingCycle;
   isActive?: boolean;
-  autoRenewEnabled?: boolean;
   isPrivate?: boolean;
 }
 
@@ -71,6 +69,5 @@ export interface PlanPayload {
   modulePermissions?: ModulePermissionMap;
   trialDays?: number;
   isActive?: boolean;
-  autoRenewEnabled?: boolean;
   isPrivate?: boolean;
 }

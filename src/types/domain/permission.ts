@@ -74,6 +74,20 @@ export const permissionFor = (
   moduleKey: string
 ): ModulePermission => modules?.[moduleKey] ?? emptyPermission();
 
+export const withGrantedModules = (
+  map: ModulePermissionMap,
+  keys: readonly string[]
+): ModulePermissionMap => {
+  const missing = keys.filter((key) => !map[key]?.canView);
+  if (missing.length === 0) return map;
+
+  const next = { ...map };
+  missing.forEach((key) => {
+    next[key] = { ...fullPermission(), limit: map[key]?.limit ?? null };
+  });
+  return next;
+};
+
 export const prunePermissionMap = (
   map: ModulePermissionMap,
   knownKeys: ReadonlySet<string>
