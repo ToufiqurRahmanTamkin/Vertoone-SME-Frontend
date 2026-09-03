@@ -16,6 +16,9 @@ import type {
   Invoice,
   InvoiceListQuery,
   InvoicePayload,
+  InvoicePaymentReviewPayload,
+  InvoicePaymentSubmissionPayload,
+  InvoiceStatusPayload,
   InvoiceSummary,
   LinkableEntry,
   LinkableEntryQuery,
@@ -152,6 +155,47 @@ const financeApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/finance/invoices/${id}`, method: "DELETE" }),
       invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
     }),
+    setInvoiceStatus: builder.mutation<Invoice, { id: string; body: InvoiceStatusPayload }>({
+      query: ({ id, body }) => ({
+        url: `/finance/invoices/${id}/status`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports"],
+    }),
+    submitInvoicePayment: builder.mutation<
+      Invoice,
+      { id: string; body: InvoicePaymentSubmissionPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/finance/invoices/${id}/submit-payment`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports", "SoldSubscriptions", "MyCompany", "Notifications", "Activities"],
+    }),
+    approveInvoicePayment: builder.mutation<
+      Invoice,
+      { id: string; body: InvoicePaymentReviewPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/finance/invoices/${id}/approve-payment`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports", "SoldSubscriptions", "MyCompany", "Notifications", "Activities"],
+    }),
+    rejectInvoicePayment: builder.mutation<
+      Invoice,
+      { id: string; body: InvoicePaymentReviewPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/finance/invoices/${id}/reject-payment`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Incomes", "Expenses", "Invoices", "LinkableEntries", "LinkableInvoices", "FinanceDashboard", "Dashboard", "Reports", "SoldSubscriptions", "MyCompany", "Notifications", "Activities"],
+    }),
   }),
 });
 
@@ -178,4 +222,8 @@ export const {
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useDeleteInvoiceMutation,
+  useSetInvoiceStatusMutation,
+  useSubmitInvoicePaymentMutation,
+  useApproveInvoicePaymentMutation,
+  useRejectInvoicePaymentMutation,
 } = financeApi;

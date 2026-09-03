@@ -234,6 +234,7 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   DRAFT: "Draft",
   UNPAID: "Unpaid",
   PAID: "Paid",
+  CANCELLED: "Cancelled",
   CLOSED: "Closed",
 };
 
@@ -241,6 +242,7 @@ export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, StatusColor> = {
   DRAFT: "zinc",
   UNPAID: "amber",
   PAID: "green",
+  CANCELLED: "orange",
   CLOSED: "red",
 };
 
@@ -248,7 +250,16 @@ export const INVOICE_STATUS_DESCRIPTIONS: Record<InvoiceStatus, string> = {
   DRAFT: "Being prepared. Not counted in the books yet.",
   UNPAID: "Issued and awaiting settlement.",
   PAID: "Settled in full. Its ledger entry is paid too.",
-  CLOSED: "Written off or cancelled. Left out of the totals.",
+  CANCELLED: "Voided before it was settled. Left out of the totals.",
+  CLOSED: "Written off after the fact. Left out of the totals.",
+};
+
+export const INVOICE_STATUS_VERBS: Record<InvoiceStatus, string> = {
+  DRAFT: "Move back to draft",
+  UNPAID: "Mark unpaid",
+  PAID: "Mark paid",
+  CANCELLED: "Cancel invoice",
+  CLOSED: "Close invoice",
 };
 
 export const FINANCE_STATUS_LABELS = INVOICE_STATUS_LABELS;
@@ -289,6 +300,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   COMPANY_REGISTERED: "Company registered",
   COMPANY_APPROVED: "Company approved",
   COMPANY_REJECTED: "Company rejected",
+  PAYMENT_SUBMITTED: "Payment submitted",
   PAYMENT_APPROVED: "Payment approved",
   PAYMENT_REJECTED: "Payment rejected",
   PAYMENT_REFUNDED: "Payment refunded",
@@ -501,6 +513,8 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   INVOICE_CREATED: "Invoice raised",
   INVOICE_UPDATED: "Invoice updated",
   INVOICE_DELETED: "Invoice deleted",
+  INVOICE_STATUS_CHANGED: "Invoice status changed",
+  INVOICE_PAYMENT_SUBMITTED: "Invoice payment submitted",
   CATEGORY_CREATED: "Category created",
   CATEGORY_UPDATED: "Category updated",
   CATEGORY_DELETED: "Category deleted",

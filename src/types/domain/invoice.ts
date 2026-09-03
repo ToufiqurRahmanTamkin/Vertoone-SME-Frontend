@@ -4,10 +4,15 @@ import type { PaymentMethod } from "./soldSubscription";
 export const INVOICE_TYPES = ["INCOME", "EXPENSE"] as const;
 export type InvoiceType = (typeof INVOICE_TYPES)[number];
 
-export const INVOICE_STATUSES = ["DRAFT", "UNPAID", "PAID", "CLOSED"] as const;
+export const INVOICE_STATUSES = ["DRAFT", "UNPAID", "PAID", "CANCELLED", "CLOSED"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
 export const OPEN_INVOICE_STATUSES: InvoiceStatus[] = ["DRAFT", "UNPAID"];
+
+export const VOID_INVOICE_STATUSES: InvoiceStatus[] = ["CANCELLED", "CLOSED"];
+
+export const INVOICE_PAYMENT_REVIEW_ACTIONS = ["APPROVED", "REJECTED"] as const;
+export type InvoicePaymentReviewAction = (typeof INVOICE_PAYMENT_REVIEW_ACTIONS)[number];
 
 export const INVOICE_ORIGINS = ["AUTO", "MANUAL"] as const;
 export type InvoiceOrigin = (typeof INVOICE_ORIGINS)[number];
@@ -34,6 +39,17 @@ export interface Invoice {
   reference: string;
   notes: string;
   issuedBy: string | null;
+  subscriptionId: string | null;
+  transactionId: string;
+  paymentNote: string;
+  paymentSubmittedAt: string | null;
+  paymentSubmittedBy: string | null;
+  paymentReviewAction: InvoicePaymentReviewAction | null;
+  paymentReviewedBy: string | null;
+  paymentReviewedAt: string | null;
+  paymentReviewNote: string;
+  cancelledAt: string | null;
+  statusNote: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,6 +78,8 @@ export interface InvoiceListQuery {
   categoryId?: string;
   linked?: boolean;
   overdue?: boolean;
+  awaitingApproval?: boolean;
+  subscriptionOnly?: boolean;
   dateFrom?: string;
   dateTo?: string;
 }
@@ -91,6 +109,29 @@ export interface InvoiceSummary {
   overdueCount: number;
   draftCount: number;
   paidCount: number;
+  cancelledCount: number;
+  awaitingApprovalCount: number;
+}
+
+export interface InvoiceStatusPayload {
+  status: InvoiceStatus;
+  paymentMethod?: PaymentMethod;
+  transactionId?: string;
+  paidAt?: string | null;
+  note?: string;
+}
+
+export interface InvoicePaymentSubmissionPayload {
+  paymentMethod: PaymentMethod;
+  transactionId?: string;
+  paidAt?: string;
+  note?: string;
+}
+
+export interface InvoicePaymentReviewPayload {
+  note?: string;
+  paymentMethod?: PaymentMethod;
+  transactionId?: string;
 }
 
 export interface LinkableEntry {
@@ -147,3 +188,24 @@ export const isInvoiceLinked = (invoice: Invoice): boolean => invoiceEntryId(inv
 
 export const isInvoiceOverdue = (invoice: Invoice): boolean =>
   invoice.status === "UNPAID" && Boolean(invoice.dueDate) && new Date(invoice.dueDate!) < new Date();
+
+export const isSubscriptionInvoice = (invoice: Invoice): boolean =>
+  invoice.subscriptionId !== null;
+
+export const isAwaitingPaymentApproval = (invoice: Invoice): boolean =>
+  isSubscriptionInvoice(invoice) &&
+  invoice.paymentSubmittedAt !== null &&
+  invoice.paymentReviewAction === null &&
+  invoice.status !== "PAID";
+
+export const canSubmitInvoicePayment = (invoice: Invoice): boolean =>
+  isSubscriptionInvoice(invoice) &&
+  invoice.type === "EXPENSE" &&
+  invoice.status !== "PAID" &&
+  !VOID_INVOICE_STATUSES.includes(invoice.status);
+
+export const canReviewInvoicePayment = (invoice: Invoice): boolean =>
+  isSubscriptionInvoice(invoice) &&
+  invoice.type === "INCOME" &&
+  invoice.status !== "PAID" &&
+  !VOID_INVOICE_STATUSES.includes(invoice.status);

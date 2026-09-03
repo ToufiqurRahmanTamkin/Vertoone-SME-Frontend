@@ -29,6 +29,7 @@ export interface FinanceInvoiceKpis {
   draft: number;
   unpaid: number;
   paid: number;
+  cancelled: number;
   closed: number;
   linked: number;
   collectionRate: number;

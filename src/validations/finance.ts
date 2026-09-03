@@ -85,6 +85,30 @@ export const InvoiceSchema = z
 
 export type InvoiceFormValues = z.infer<typeof InvoiceSchema>;
 
+export const InvoiceStatusSchema = z.object({
+  status: z.enum(INVOICE_STATUSES),
+  note: z.string().trim().max(500),
+});
+
+export type InvoiceStatusFormValues = z.infer<typeof InvoiceStatusSchema>;
+
+export const InvoicePaymentSchema = z
+  .object({
+    paymentMethod: z.enum(PAYMENT_METHODS),
+    transactionId: z.string().trim().max(120),
+    paidAt: z.string().min(1, "Pick the date you paid"),
+    note: z.string().trim().max(500),
+  })
+  .refine(
+    (data) => !requiresTransactionId(data.paymentMethod) || data.transactionId.trim().length > 0,
+    {
+      message: "A transaction ID is required for every non-cash payment",
+      path: ["transactionId"],
+    }
+  );
+
+export type InvoicePaymentFormValues = z.infer<typeof InvoicePaymentSchema>;
+
 export const PaymentReviewSchema = z
   .object({
     note: z.string().trim().max(500),
