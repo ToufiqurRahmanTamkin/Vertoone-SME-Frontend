@@ -3396,6 +3396,13 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 description: "Who signs off what, in which order, for every request.",
               },
               {
+                title: "Employee Roles & Permissions",
+                slug: "employee-roles-and-permissions",
+                icon: "KeyRound",
+                description:
+                  "The roles employees inherit from their department, designation or team.",
+              },
+              {
                 title: "Employee Fields",
                 slug: "employee-fields",
                 icon: "SlidersHorizontal",

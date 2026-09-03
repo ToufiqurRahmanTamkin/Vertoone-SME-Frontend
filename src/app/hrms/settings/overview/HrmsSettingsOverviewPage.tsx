@@ -18,6 +18,7 @@ import {
   CalendarDays,
   Clock,
   Coins,
+  KeyRound,
   Percent,
   Plane,
 } from "lucide-react";
@@ -172,6 +173,30 @@ const buildSections = (summary: HrmsSettingsSummary): SectionSpec[] => [
       {
         label: "Provident fund",
         value: summary.payroll.providentFundEnabled ? "Deducted" : "Off",
+      },
+    ],
+  },
+  {
+    path: "/hrms/settings/employee-roles-and-permissions",
+    icon: KeyRound,
+    title: "Employee roles & permissions",
+    description: "The roles your people inherit from their department, designation or team.",
+    status: {
+      label:
+        summary.employeeAccess.sourcesWithRoles > 0
+          ? `${summary.employeeAccess.sourcesWithRoles} granting access`
+          : "Nothing inherited",
+      color: summary.employeeAccess.sourcesWithRoles > 0 ? "green" : "amber",
+    },
+    facts: [
+      { label: "Roles defined", value: String(summary.employeeAccess.roles) },
+      { label: "Roles in use", value: String(summary.employeeAccess.rolesInUse) },
+      { label: "Sources", value: String(summary.employeeAccess.sources) },
+      {
+        label: "Without roles",
+        value: String(
+          Math.max(0, summary.employeeAccess.sources - summary.employeeAccess.sourcesWithRoles)
+        ),
       },
     ],
   },

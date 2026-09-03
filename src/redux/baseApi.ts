@@ -256,6 +256,8 @@ export const ALL_TAG_TYPES = [
   "DesignationOptions",
   "HrmsSettings",
   "HrmsSettingsSummary",
+  "EmployeeAccessSources",
+  "EmployeeAccessSummary",
   "LeaveTypes",
   "LeaveTypeSummary",
   "LeaveTypeOptions",

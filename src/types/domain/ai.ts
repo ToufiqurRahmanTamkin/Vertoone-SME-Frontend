@@ -3,6 +3,7 @@ import type { GoalCategory, GoalMetricType, GoalPriority } from "./goal";
 import type { NoteVisibility } from "./note";
 import type { TaskBoardVisibility, TaskPriority } from "./task";
 import type { FinanceCategoryType } from "./finance";
+import type { LeaveAccrual, LeaveGender } from "./leaveType";
 
 export interface AiAllowance {
   limit: number | null;
@@ -149,4 +150,26 @@ export interface GenerateDesignationsPayload {
   count: number;
   context?: string;
   departmentName?: string;
+}
+
+export interface AiLeaveTypeDraft {
+  name: string;
+  code: string;
+  color: string;
+  description: string;
+  daysPerYear: number;
+  isPaid: boolean;
+  accrual: LeaveAccrual;
+  carryForward: boolean;
+  applicableGender: LeaveGender;
+  requiresDocument: boolean;
+  documentAfterDays: number;
+  noticeDays: number;
+}
+
+export interface GenerateLeaveTypesPayload {
+  count: number;
+  context?: string;
+  country?: string;
+  paidOnly?: boolean;
 }

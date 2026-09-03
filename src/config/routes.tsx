@@ -93,6 +93,9 @@ const HolidayCalendar = lazy(
 const PayrollSettings = lazy(
   () => import("@/app/hrms/settings/payroll/PayrollSettingsPage")
 );
+const EmployeeRoles = lazy(
+  () => import("@/app/hrms/settings/employeeRoles/EmployeeRolesPage")
+);
 const Products = lazy(() => import("@/app/sme/products/list/ProductsPage"));
 const ProductCategories = lazy(
   () => import("@/app/sme/products/categories/ProductCategoriesPage")
@@ -267,6 +270,10 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/settings/overtime", element: <OvertimeSettings /> },
   { path: "hrms/settings/holiday-calendar", element: <HolidayCalendar /> },
   { path: "hrms/settings/payroll", element: <PayrollSettings /> },
+  {
+    path: "hrms/settings/employee-roles-and-permissions",
+    element: <EmployeeRoles />,
+  },
 
   { path: "settings/company/profile", element: <CompanyProfile /> },
   { path: "settings/company/concerns", element: <Concerns /> },

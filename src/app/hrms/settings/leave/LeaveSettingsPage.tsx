@@ -11,6 +11,7 @@ import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/compone
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { useGetHrmsSettingsQuery } from "@/redux/apis/hrmsSettingsApis";
 import {
   useDeleteLeaveTypeMutation,
@@ -20,9 +21,10 @@ import {
 } from "@/redux/apis/leaveTypeApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { LEAVE_ACCRUAL_LABELS, type LeaveType } from "@/types/domain/leaveType";
-import { Loader2, Plus, Sparkles } from "lucide-react";
+import { Bot, Loader2, Plus, Sparkles } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiLeaveTypesModal } from "./components/AiLeaveTypesModal";
 import { LeavePolicyForm } from "./components/LeavePolicyForm";
 import { LeaveTypeFormModal } from "./components/LeaveTypeFormModal";
 import { LeaveTypeRowMenu, leaveTypeColumns } from "./leaveTypes.columns";
@@ -62,8 +64,10 @@ export default function LeaveSettingsPage() {
 
   const { data: summary } = useGetLeaveTypeSummaryQuery();
   const { data: settings, isLoading: isLoadingSettings } = useGetHrmsSettingsQuery();
+  const { data: ai } = useGetAiAllowanceQuery();
 
   const [formOpen, setFormOpen] = React.useState(false);
+  const [aiOpen, setAiOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<LeaveType | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<LeaveType | null>(null);
   const [deleteLeaveType, { isLoading: isDeleting }] = useDeleteLeaveTypeMutation();
@@ -177,17 +181,33 @@ export default function LeaveSettingsPage() {
             isLoading={isFetching}
             actions={
               access.canCreate && (
-                <ActionButton
-                  icon={Plus}
-                  label="New leave type"
-                  onClick={openCreate}
-                  disabled={isLimitReached}
-                  title={
-                    isLimitReached
-                      ? `Your plan allows ${limit} leave types. Delete one or upgrade to add more.`
-                      : undefined
-                  }
-                />
+                <>
+                  {ai?.isConfigured && (
+                    <ActionButton
+                      icon={Bot}
+                      label="Generate with AI"
+                      variant="outline"
+                      onClick={() => setAiOpen(true)}
+                      disabled={isLimitReached}
+                      title={
+                        isLimitReached
+                          ? `Your plan allows ${limit} leave types. Delete one or upgrade to add more.`
+                          : undefined
+                      }
+                    />
+                  )}
+                  <ActionButton
+                    icon={Plus}
+                    label="New leave type"
+                    onClick={openCreate}
+                    disabled={isLimitReached}
+                    title={
+                      isLimitReached
+                        ? `Your plan allows ${limit} leave types. Delete one or upgrade to add more.`
+                        : undefined
+                    }
+                  />
+                </>
               )
             }
           />
@@ -294,6 +314,12 @@ export default function LeaveSettingsPage() {
       </Tabs>
 
       <LeaveTypeFormModal open={formOpen} onOpenChange={setFormOpen} leaveType={editing} />
+
+      <AiLeaveTypesModal
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        remaining={limit === null ? null : Math.max(0, limit - used)}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

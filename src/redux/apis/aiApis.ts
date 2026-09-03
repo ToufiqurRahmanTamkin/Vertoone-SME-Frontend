@@ -6,6 +6,7 @@ import type {
   AiDesignationDraft,
   AiGeneratedCategory,
   AiGoalDraft,
+  AiLeaveTypeDraft,
   AiNoteDraft,
   AiPlanCopy,
   GenerateBoardPayload,
@@ -13,6 +14,7 @@ import type {
   GenerateDepartmentsPayload,
   GenerateDesignationsPayload,
   GenerateGoalPayload,
+  GenerateLeaveTypesPayload,
   GenerateNotePayload,
   GeneratePlanCopyPayload,
 } from "@/types/domain/ai";
@@ -56,6 +58,10 @@ const aiApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/ai/designations", method: "POST", body }),
       invalidatesTags: ["AiAllowance"],
     }),
+    generateLeaveTypes: builder.mutation<AiLeaveTypeDraft[], GenerateLeaveTypesPayload>({
+      query: (body) => ({ url: "/ai/leave-types", method: "POST", body }),
+      invalidatesTags: ["AiAllowance"],
+    }),
   }),
 });
 
@@ -69,4 +75,5 @@ export const {
   useGenerateNoteDraftMutation,
   useGenerateDepartmentsMutation,
   useGenerateDesignationsMutation,
+  useGenerateLeaveTypesMutation,
 } = aiApi;

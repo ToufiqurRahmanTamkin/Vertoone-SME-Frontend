@@ -274,5 +274,11 @@ export interface HrmsSettingsSummary {
     taxEnabled: boolean;
     providentFundEnabled: boolean;
   };
+  employeeAccess: {
+    roles: number;
+    rolesInUse: number;
+    sources: number;
+    sourcesWithRoles: number;
+  };
   updatedAt: string;
 }
