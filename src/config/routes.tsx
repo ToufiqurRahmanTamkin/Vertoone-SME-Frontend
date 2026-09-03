@@ -27,6 +27,7 @@ const FinanceExpense = lazy(() => import("@/app/finance/expense/ExpensePage"));
 const FinanceInvoices = lazy(() => import("@/app/finance/invoices/InvoicesPage"));
 const FinanceCategories = lazy(() => import("@/app/finance/categories/FinanceCategoriesPage"));
 const SystemConfig = lazy(() => import("@/app/systemConfig/SystemConfigPage"));
+const SystemOverview = lazy(() => import("@/app/systemOverview/SystemOverviewPage"));
 const Emails = lazy(() => import("@/app/emails/EmailsPage"));
 const SystemActivity = lazy(() => import("@/app/activity/ActivityPage"));
 const DataWipe = lazy(() => import("@/app/dataWipe/DataWipePage"));
@@ -150,6 +151,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "platform/reports/sign-in-activity", element: <SecurityReport /> },
   { path: "platform/user-guides", element: <UserGuides /> },
   { path: "platform/emails", element: <Emails /> },
+  { path: "platform/system/overview", element: <SystemOverview /> },
   { path: "platform/system/configuration", element: <SystemConfig /> },
   { path: "platform/system/activity-log", element: <SystemActivity /> },
   { path: "platform/system/wipe-data", element: <DataWipe /> },

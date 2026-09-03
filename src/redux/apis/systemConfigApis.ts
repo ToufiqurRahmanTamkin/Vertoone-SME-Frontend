@@ -16,7 +16,7 @@ const systemConfigApi = baseApi.injectEndpoints({
     }),
     updateSystemConfig: builder.mutation<SystemConfig, SystemConfigPayload>({
       query: (body) => ({ url: "/system-config", method: "PATCH", body }),
-      invalidatesTags: ["SystemConfig", "Dashboard"],
+      invalidatesTags: ["SystemConfig", "SystemOverview", "Dashboard"],
     }),
   }),
 });

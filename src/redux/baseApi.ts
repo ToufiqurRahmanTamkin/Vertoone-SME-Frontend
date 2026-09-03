@@ -205,6 +205,7 @@ export const ALL_TAG_TYPES = [
   "AiAllowance",
   "Dashboard",
   "SystemConfig",
+  "SystemOverview",
   "SubscriptionPlans",
   "SoldSubscriptions",
   "SubscriptionRequests",
