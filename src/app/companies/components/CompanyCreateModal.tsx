@@ -1,3 +1,4 @@
+import { FileUploader } from "@/components/shared/file-uploader";
 import {
   FormCitySelect,
   FormCountrySelect,
@@ -26,7 +27,7 @@ import type { ApiErrorResponse } from "@/redux/baseApi";
 import { EMPLOYEE_RANGES } from "@/types/domain/company";
 import { CreateCompanySchema, type CreateCompanyFormValues } from "@/validations/company";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Image as ImageIcon, Loader2 } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -38,8 +39,12 @@ interface CompanyCreateModalProps {
 
 const EMPLOYEE_RANGE_OPTIONS = toOptions(EMPLOYEE_RANGE_LABELS);
 
+const LOGO_ASPECT = 1;
+const BANNER_ASPECT = 4;
+
 const STEPS: readonly StepperStep[] = [
   { id: "company", label: "Company" },
+  { id: "branding", label: "Branding" },
   { id: "admin", label: "Admin" },
 ];
 
@@ -55,6 +60,7 @@ const STEP_FIELDS: readonly (keyof CreateCompanyFormValues)[][] = [
     "companyStreet",
     "note",
   ],
+  ["logoUrl", "logoPublicId", "bannerUrl", "bannerPublicId"],
   ["adminName", "adminEmail", "adminPhone", "adminPassword"],
 ];
 
@@ -81,6 +87,10 @@ const emptyValues: CreateCompanyFormValues = {
   adminPhone: "",
   adminPassword: "",
   note: "",
+  logoUrl: "",
+  logoPublicId: "",
+  bannerUrl: "",
+  bannerPublicId: "",
 };
 
 export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalProps) {
@@ -108,6 +118,12 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
   const selectedCountry = useWatch({ control: form.control, name: "companyCountry" });
   const countryCurrency = selectedCountry ? currencyForCountry(selectedCountry) : "";
 
+  const companyName = useWatch({ control: form.control, name: "companyName" });
+  const logoUrl = useWatch({ control: form.control, name: "logoUrl" });
+  const logoPublicId = useWatch({ control: form.control, name: "logoPublicId" });
+  const bannerUrl = useWatch({ control: form.control, name: "bannerUrl" });
+  const bannerPublicId = useWatch({ control: form.control, name: "bannerPublicId" });
+
   const goNext = async () => {
     const isValid = await form.trigger(STEP_FIELDS[step], { shouldFocus: true });
     if (!isValid) return;
@@ -132,6 +148,10 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
         adminPhone: values.adminPhone,
         adminPassword: values.adminPassword,
         note: values.note || undefined,
+        logoUrl: values.logoUrl || undefined,
+        logoPublicId: values.logoPublicId || undefined,
+        bannerUrl: values.bannerUrl || undefined,
+        bannerPublicId: values.bannerPublicId || undefined,
       }).unwrap();
 
       toast.success(`${result.companyName} is live`, {
@@ -259,6 +279,76 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
               )}
 
               {step === 1 && (
+                <div className="grid grid-cols-6 gap-x-3 gap-y-3">
+                  <p className="col-span-6 text-xs text-muted-foreground">
+                    Both are optional. Leave them empty and the company starts without
+                    artwork — its owner can add it later from Company profile.
+                  </p>
+
+                  <div className="col-span-6 overflow-hidden rounded-xl border bg-card">
+                    <div
+                      className="relative w-full bg-gradient-to-r from-primary/25 via-primary/10 to-transparent"
+                      style={{ aspectRatio: String(BANNER_ASPECT) }}
+                    >
+                      {bannerUrl && (
+                        <img src={bannerUrl} alt="" className="size-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 p-3">
+                      <div className="-mt-10 size-16 shrink-0 overflow-hidden rounded-lg border bg-background shadow-sm">
+                        {logoUrl ? (
+                          <img src={logoUrl} alt="" className="size-full object-cover" />
+                        ) : (
+                          <div className="flex size-full items-center justify-center">
+                            <ImageIcon className="size-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="min-w-0 truncate text-sm font-medium">
+                        {companyName || "Company preview"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <FileUploader
+                    className="col-span-6 sm:col-span-3"
+                    value={logoUrl || undefined}
+                    publicId={logoPublicId || undefined}
+                    folder="companies"
+                    label="Company logo"
+                    description="Square. Shown next to the company across the platform."
+                    cropAspect={LOGO_ASPECT}
+                    cropTitle="Position the logo"
+                    cropDescription="Drag to reposition and zoom until the logo sits the way you want it."
+                    disabled={isLoading}
+                    onChange={(asset) => {
+                      form.setValue("logoUrl", asset?.url ?? "", { shouldDirty: true });
+                      form.setValue("logoPublicId", asset?.publicId ?? "", { shouldDirty: true });
+                    }}
+                  />
+
+                  <FileUploader
+                    className="col-span-6 sm:col-span-3"
+                    value={bannerUrl || undefined}
+                    publicId={bannerPublicId || undefined}
+                    folder="companies"
+                    label="Company banner"
+                    description="Wide 4:1 artwork used as the header of the company profile."
+                    cropAspect={BANNER_ASPECT}
+                    cropTitle="Position the banner"
+                    cropDescription="Drag to reposition and zoom until the banner is framed the way you want it."
+                    disabled={isLoading}
+                    onChange={(asset) => {
+                      form.setValue("bannerUrl", asset?.url ?? "", { shouldDirty: true });
+                      form.setValue("bannerPublicId", asset?.publicId ?? "", {
+                        shouldDirty: true,
+                      });
+                    }}
+                  />
+                </div>
+              )}
+
+              {step === 2 && (
                 <div className="grid grid-cols-6 gap-x-3 gap-y-3">
                   <p className="col-span-6 text-xs text-muted-foreground">
                     This becomes the company owner account. They can sign in as soon as you save,

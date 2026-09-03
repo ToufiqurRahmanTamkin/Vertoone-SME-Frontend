@@ -28,6 +28,10 @@ export const CreateCompanySchema = z.object({
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password must be 128 characters or fewer"),
   note: z.string().trim().max(500),
+  logoUrl: z.string().trim().max(600),
+  logoPublicId: z.string().trim().max(300),
+  bannerUrl: z.string().trim().max(600),
+  bannerPublicId: z.string().trim().max(300),
 });
 
 export type CreateCompanyFormValues = z.infer<typeof CreateCompanySchema>;

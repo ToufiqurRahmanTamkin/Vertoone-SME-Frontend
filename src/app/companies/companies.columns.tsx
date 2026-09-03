@@ -36,11 +36,20 @@ export const companyColumns = ({
     cell: ({ row }) => {
       const company = row.original;
       return (
-        <div className="min-w-0">
-          <p className="truncate font-medium">{company.name}</p>
-          <p className="max-w-xs truncate text-xs text-muted-foreground">
-            {company.email} · {company.phone}
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          {company.logoUrl && (
+            <img
+              src={company.logoUrl}
+              alt=""
+              className="size-8 shrink-0 rounded-md border object-cover"
+            />
+          )}
+          <div className="min-w-0">
+            <p className="truncate font-medium">{company.name}</p>
+            <p className="max-w-xs truncate text-xs text-muted-foreground">
+              {company.email} · {company.phone}
+            </p>
+          </div>
         </div>
       );
     },

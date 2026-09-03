@@ -84,6 +84,10 @@ export default function CompanyProfilePage() {
       postalCode: company.zipCode ?? "",
       country: company.country || emptyValues.country,
       employeeRange: company.employeeRange,
+      logoUrl: company.logoUrl ?? "",
+      logoPublicId: company.logoPublicId ?? "",
+      bannerUrl: company.bannerUrl ?? "",
+      bannerPublicId: company.bannerPublicId ?? "",
     });
   }, [company, form]);
 

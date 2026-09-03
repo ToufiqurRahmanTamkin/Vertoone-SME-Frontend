@@ -4,6 +4,7 @@ export const UPLOAD_FOLDERS = [
   "avatars",
   "products",
   "brands",
+  "companies",
   "web",
   "email",
   "general",

@@ -56,6 +56,10 @@ export interface Company {
   country: string;
   currency: string;
   employeeRange: EmployeeRange;
+  logoUrl: string | null;
+  logoPublicId: string | null;
+  bannerUrl: string | null;
+  bannerPublicId: string | null;
   status: CompanyStatus;
   ownerUserId: string | null;
   ownerName: string;
@@ -123,6 +127,10 @@ export type CompanyIdentityPayload = Omit<
 
 export interface CreateCompanyByAdminPayload extends CompanyIdentityPayload {
   note?: string;
+  logoUrl?: string;
+  logoPublicId?: string;
+  bannerUrl?: string;
+  bannerPublicId?: string;
 }
 
 export interface CreateCompanyByAdminResult {

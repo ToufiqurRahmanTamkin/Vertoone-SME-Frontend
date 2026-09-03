@@ -26,9 +26,18 @@ export function CompanyMobileCard({ company, onAction }: CompanyMobileCardProps)
   return (
     <div className="rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate font-semibold">{company.name}</p>
-          <p className="truncate text-xs text-muted-foreground">{company.email}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          {company.logoUrl && (
+            <img
+              src={company.logoUrl}
+              alt=""
+              className="size-9 shrink-0 rounded-md border object-cover"
+            />
+          )}
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{company.name}</p>
+            <p className="truncate text-xs text-muted-foreground">{company.email}</p>
+          </div>
         </div>
         <StatusBadge
           color={COMPANY_STATUS_COLORS[company.status] ?? "muted"}
