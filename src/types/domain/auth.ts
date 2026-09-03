@@ -2,12 +2,19 @@ import type { ModulePermissionMap } from "./permission";
 
 export const ROLES = [
   "SUPER_ADMIN",
+  "MAINTAINER",
   "COMPANY_OWNER",
   "COMPANY_USER",
   "CONCERN_HEAD",
   "EMPLOYEE",
 ] as const;
 export type UserRole = (typeof ROLES)[number];
+
+export const PLATFORM_ROLES = ["SUPER_ADMIN", "MAINTAINER"] as const;
+export type PlatformRole = (typeof PLATFORM_ROLES)[number];
+
+export const isPlatformRole = (role: UserRole | undefined): role is PlatformRole =>
+  role !== undefined && (PLATFORM_ROLES as readonly UserRole[]).includes(role);
 
 export const USER_STATUSES = ["ACTIVE", "INACTIVE", "PENDING_APPROVAL", "REJECTED"] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];
@@ -86,6 +93,7 @@ export interface ResetPasswordInput {
 
 export const HOME_ROUTE_BY_ROLE: Record<UserRole, string> = {
   SUPER_ADMIN: "/platform/dashboard",
+  MAINTAINER: "/platform",
   COMPANY_OWNER: "/company/dashboard",
   COMPANY_USER: "/company/dashboard",
   CONCERN_HEAD: "/company/my-concern",

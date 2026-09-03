@@ -29,6 +29,7 @@ export const FinanceEntrySchema = z
     status: z.enum(FINANCE_STATUSES),
     paymentMethod: z.enum(PAYMENT_METHODS),
     party: z.string().trim().max(140),
+    partyUserId: z.string(),
     reference: z.string().trim().max(120),
     notes: z.string().trim().max(1000),
     invoiceMode: z.enum(FINANCE_ENTRY_INVOICE_MODES),

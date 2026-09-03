@@ -109,7 +109,6 @@ export function AiCategoriesModal({ open, onOpenChange }: AiCategoriesModalProps
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
             Generate categories with AI
           </DialogTitle>
           <DialogDescription>

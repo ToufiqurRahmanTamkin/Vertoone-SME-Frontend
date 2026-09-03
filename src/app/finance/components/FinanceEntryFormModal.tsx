@@ -26,9 +26,11 @@ import {
   useUpdateExpenseMutation,
   useUpdateIncomeMutation,
 } from "@/redux/apis/financeApis";
+import { useGetUserOptionsQuery } from "@/redux/apis/userApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { categoryRefId, type Expense, type Income } from "@/types/domain/finance";
 import type { InvoiceStatus, LinkableInvoice } from "@/types/domain/invoice";
+import type { UserOption } from "@/types/domain/userOption";
 import {
   FinanceEntrySchema,
   type FinanceEntryFormValues,
@@ -67,6 +69,7 @@ const emptyValues = (currency: string): FinanceEntryFormValues => ({
   status: "PAID",
   paymentMethod: "CASH",
   party: "",
+  partyUserId: "",
   reference: "",
   notes: "",
   invoiceMode: "GENERATE",
@@ -82,6 +85,7 @@ const toFormValues = (entry: Income | Expense, kind: FinanceEntryKind): FinanceE
   status: entry.status,
   paymentMethod: entry.paymentMethod,
   party: (kind === "INCOME" ? (entry as Income).receivedFrom : (entry as Expense).paidTo) ?? "",
+  partyUserId: kind === "INCOME" ? ((entry as Income).receivedFromUserId ?? "") : "",
   reference: entry.reference ?? "",
   notes: entry.notes ?? "",
   invoiceMode: "GENERATE",
@@ -96,6 +100,9 @@ const invoiceLinkFields = (
   if (mode === "NONE") return { raiseInvoice: false };
   return {};
 };
+
+const payerOptionLabel = (user: UserOption): string =>
+  `${user.name} · ${user.email} · ${user.companyName}`;
 
 const invoiceOptionLabel = (invoice: LinkableInvoice): string =>
   `${invoice.invoiceNumber} · ${formatAmount(invoice.amount, invoice.currency)} · ${
@@ -137,10 +144,16 @@ export function FinanceEntryFormModal({
 
   const invoiceMode = useWatch({ control: form.control, name: "invoiceMode" });
   const status = useWatch({ control: form.control, name: "status" }) as InvoiceStatus;
+  const entryCurrency = useWatch({ control: form.control, name: "currency" }) || defaultCurrency;
   const isLinking = invoiceMode === "LINK";
 
   const { data: linkableInvoices = [], isFetching: isLoadingInvoices } =
     useGetLinkableInvoicesQuery({ type: kind }, { skip: !open || isEdit });
+
+  const { data: userOptions = [], isFetching: isLoadingUsers } = useGetUserOptionsQuery(
+    { limit: 200 },
+    { skip: !open || !isIncome }
+  );
 
   React.useEffect(() => {
     if (!open) return;
@@ -160,6 +173,16 @@ export function FinanceEntryFormModal({
       })),
     [linkableInvoices]
   );
+
+  const payerOptions = React.useMemo(
+    () => userOptions.map((user) => ({ value: user._id, label: payerOptionLabel(user) })),
+    [userOptions]
+  );
+
+  const onPayerChange = (nextId: string) => {
+    const payer = userOptions.find((candidate) => candidate._id === nextId);
+    form.setValue("party", payer?.name ?? "");
+  };
 
   const onInvoiceChange = (nextId: string) => {
     const invoice = linkableInvoices.find((candidate) => candidate._id === nextId);
@@ -192,7 +215,11 @@ export function FinanceEntryFormModal({
 
     try {
       if (isIncome) {
-        const body = { ...shared, receivedFrom: values.party };
+        const body = {
+          ...shared,
+          receivedFrom: values.party,
+          receivedFromUserId: values.partyUserId || null,
+        };
         if (entry) {
           await updateIncome({ id: entry._id, body }).unwrap();
         } else {
@@ -266,9 +293,14 @@ export function FinanceEntryFormModal({
                 />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput control={form.control} name="amount" label="Amount" type="number" />
-                <FormInput control={form.control} name="currency" label="Currency" />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <FormInput
+                  control={form.control}
+                  name="amount"
+                  label={`Amount (${entryCurrency})`}
+                  type="number"
+                  description={`Recorded in ${entryCurrency}, the currency set under System · Configuration.`}
+                />
                 <FormDate control={form.control} name="date" label="Date" dateOnly />
                 <FormSelect
                   control={form.control}
@@ -319,12 +351,26 @@ export function FinanceEntryFormModal({
               )}
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="party"
-                  label={copy.partyLabel}
-                  placeholder={copy.partyPlaceholder}
-                />
+                {isIncome ? (
+                  <FormSelect
+                    control={form.control}
+                    name="partyUserId"
+                    label={copy.partyLabel}
+                    placeholder={isLoadingUsers ? "Loading users..." : "Pick a user (optional)"}
+                    options={payerOptions}
+                    onValueChange={onPayerChange}
+                    searchable
+                    clearable
+                    description="Optional — leave it blank when the payer is not a user of the system."
+                  />
+                ) : (
+                  <FormInput
+                    control={form.control}
+                    name="party"
+                    label={copy.partyLabel}
+                    placeholder={copy.partyPlaceholder}
+                  />
+                )}
                 <FormInput
                   control={form.control}
                   name="reference"

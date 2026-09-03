@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import type { BaseProps } from "./types";
@@ -33,11 +33,15 @@ export function FormSelect<TFieldValues extends FieldValues>({
   disabled = false,
   onValueChange,
   searchable,
+  clearable = false,
+  clearLabel = "Clear selection",
 }: BaseProps<TFieldValues> & {
   options: { label: string; value: string }[];
   disabled?: boolean;
   onValueChange?: (value: string) => void;
   searchable?: boolean;
+  clearable?: boolean;
+  clearLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const showSearch = searchable ?? options.length > 10;
@@ -79,6 +83,20 @@ export function FormSelect<TFieldValues extends FieldValues>({
                 <CommandList>
                   <CommandEmpty>No results found.</CommandEmpty>
                   <CommandGroup>
+                    {clearable && field.value && (
+                      <CommandItem
+                        value={clearLabel}
+                        className="text-muted-foreground"
+                        onSelect={() => {
+                          field.onChange("");
+                          onValueChange?.("");
+                          setOpen(false);
+                        }}
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        {clearLabel}
+                      </CommandItem>
+                    )}
                     {options.map((option) => (
                       <CommandItem
                         key={option.value}

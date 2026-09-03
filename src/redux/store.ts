@@ -11,7 +11,7 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authReducer, { logOut, setCredentials } from "./authSlice";
-import { baseApi } from "./baseApi";
+import { baseApi, resetSessionGuard } from "./baseApi";
 import settingsReducer from "./settingsSlice";
 
 const rootPersistConfig = {
@@ -40,6 +40,7 @@ sessionListener.startListening({
 sessionListener.startListening({
   actionCreator: setCredentials,
   effect: (action, listenerApi) => {
+    resetSessionGuard();
     const previous = (listenerApi.getOriginalState() as { auth: { user: { _id: string } | null } })
       .auth.user;
     if (previous && previous._id !== action.payload.user._id) {

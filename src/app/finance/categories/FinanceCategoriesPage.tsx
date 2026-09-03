@@ -13,7 +13,7 @@ import {
 import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { FinanceCategory, FinanceCategoryType } from "@/types/domain/finance";
-import { Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Pencil, Plus, Bot, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { AiCategoriesModal } from "./components/AiCategoriesModal";
@@ -107,7 +107,7 @@ export default function FinanceCategoriesPage() {
           <>
             {ai?.isConfigured && (
               <ActionButton
-                icon={Sparkles}
+                icon={Bot}
                 label="Generate with AI"
                 variant="outline"
                 onClick={() => setAiOpen(true)}

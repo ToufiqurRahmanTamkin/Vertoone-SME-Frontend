@@ -12,6 +12,7 @@ const ForgotPassword = lazy(() => import("@/app/auth/forgot-password/ForgotPassw
 const PlatformDashboard = lazy(() => import("@/app/dashboard/page"));
 const Companies = lazy(() => import("@/app/companies/CompaniesPage"));
 const AllUsers = lazy(() => import("@/app/allUsers/AllUsersPage"));
+const Maintainers = lazy(() => import("@/app/maintainers/MaintainersPage"));
 const CompanyDashboard = lazy(() => import("@/app/myCompany/MyCompanyPage"));
 const AccountSettings = lazy(() => import("@/app/settings/account/page"));
 const SubscriptionPlans = lazy(() => import("@/app/plans/PlansPage"));
@@ -131,6 +132,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "platform/dashboard", element: <PlatformDashboard /> },
   { path: "platform/companies", element: <Companies /> },
   { path: "platform/users", element: <AllUsers /> },
+  { path: "platform/maintainers", element: <Maintainers /> },
   { path: "platform/subscription-plans", element: <SubscriptionPlans /> },
   { path: "platform/sold-subscriptions", element: <SoldSubscriptions /> },
   { path: "platform/subscription-requests", element: <SubscriptionRequests /> },

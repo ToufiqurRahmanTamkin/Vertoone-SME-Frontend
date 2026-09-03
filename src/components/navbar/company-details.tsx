@@ -23,6 +23,7 @@ import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useGetMyCompanyQuery } from "@/redux/apis/companyApis";
 import { selectCurrentUser } from "@/redux/authSlice";
+import { isPlatformRole } from "@/types/domain/auth";
 import { companyPlanName } from "@/types/domain/company";
 import type { PaymentStatus, SubscriptionStatus } from "@/types/domain/soldSubscription";
 import { AlertTriangle, Building2 } from "lucide-react";
@@ -39,7 +40,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 
 export function CompanyDetails() {
   const user = useSelector(selectCurrentUser);
-  const isCompanyUser = Boolean(user) && user?.role !== "SUPER_ADMIN";
+  const isCompanyUser = Boolean(user) && !isPlatformRole(user?.role);
 
   const [open, setOpen] = React.useState(false);
   const [hasOpened, setHasOpened] = React.useState(false);

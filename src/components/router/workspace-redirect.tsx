@@ -18,5 +18,11 @@ export function WorkspaceRedirect({ workspaceId }: { workspaceId: string }) {
 
   const target = getWorkspaceOptions(role, modules).find((option) => option.id === workspaceId);
 
-  return <Navigate to={target?.landingPath ?? home} replace />;
+  if (target) {
+    return <Navigate to={target.landingPath} replace />;
+  }
+
+  const fallback = home === `/${workspaceId}` ? "/403" : home;
+
+  return <Navigate to={fallback} replace />;
 }

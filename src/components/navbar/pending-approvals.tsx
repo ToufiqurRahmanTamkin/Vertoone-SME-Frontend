@@ -3,17 +3,20 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { useGetCompanySummaryQuery } from "@/redux/apis/companyApis";
 import { selectCurrentUser } from "@/redux/authSlice";
+import { isPlatformRole } from "@/types/domain/auth";
+import { useModulePermission } from "@/hooks/use-permission";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 export function PendingApprovals() {
   const user = useSelector(selectCurrentUser);
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const companies = useModulePermission("/platform/companies");
+  const canReviewCompanies = isPlatformRole(user?.role) && companies.canView;
 
-  const { data } = useGetCompanySummaryQuery(undefined, { skip: !isSuperAdmin });
+  const { data } = useGetCompanySummaryQuery(undefined, { skip: !canReviewCompanies });
   const pending = data?.pending ?? 0;
 
-  if (!isSuperAdmin || pending === 0) return null;
+  if (!canReviewCompanies || pending === 0) return null;
 
   return (
     <Tooltip>

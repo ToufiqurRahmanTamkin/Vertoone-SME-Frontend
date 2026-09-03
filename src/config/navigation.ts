@@ -219,6 +219,8 @@ interface WorkspaceInput {
 
 const SUPER_ADMIN = ["SUPER_ADMIN"];
 
+const PLATFORM = ["SUPER_ADMIN", "MAINTAINER"];
+
 const COMPANY = ["COMPANY_OWNER", "COMPANY_USER", "CONCERN_HEAD", "EMPLOYEE"];
 
 const EMPLOYEE = ["EMPLOYEE"];
@@ -229,7 +231,7 @@ const CONCERN_HEAD = ["CONCERN_HEAD"];
 
 const USER_ADMIN = ["COMPANY_OWNER", "CONCERN_HEAD"];
 
-const EVERYONE = [...SUPER_ADMIN, ...COMPANY];
+const EVERYONE = [...PLATFORM, ...COMPANY];
 
 const overview = (description: string): ItemInput => ({
   title: "Overview",
@@ -245,7 +247,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
     icon: "Server",
     product: "PLATFORM",
     description: "Run the platform: customers, billing, finance and system health.",
-    roles: SUPER_ADMIN,
+    roles: PLATFORM,
     sections: [
       {
         label: "Overview",
@@ -272,6 +274,13 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
             slug: "users",
             icon: "Users",
             description: "Every user account across all companies.",
+          },
+          {
+            title: "Maintainers",
+            slug: "maintainers",
+            icon: "UserCog",
+            description: "Staff who run this platform on the super admin's behalf.",
+            roles: SUPER_ADMIN,
           },
         ],
       },
@@ -1912,7 +1921,7 @@ const assertMenuIntegrity = (): void => {
     item.roles.includes(role) &&
     (!item.items?.length || item.items.some((child) => reachesRole(child, role)));
 
-  [...SUPER_ADMIN, ...COMPANY].forEach((role) => {
+  [...PLATFORM, ...COMPANY].forEach((role) => {
     switchable.forEach((module) => {
       const labels = new Set<string>();
       [...pinned, module].forEach((workspace) =>

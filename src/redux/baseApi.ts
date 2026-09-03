@@ -9,7 +9,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { Mutex } from "async-mutex";
 import { logOut, setCredentials, type User } from "./authSlice";
-import type { UserRole } from "@/types/domain/auth";
+import { isPlatformRole, type UserRole } from "@/types/domain/auth";
 
 const mutex = new Mutex();
 
@@ -78,7 +78,7 @@ const scopeFinanceUrl = (
   args: string | FetchArgs,
   role: UserRole | undefined
 ): string | FetchArgs => {
-  if (!role || role === "SUPER_ADMIN") return args;
+  if (!role || isPlatformRole(role)) return args;
 
   const url = typeof args === "string" ? args : args.url;
   if (!url.startsWith(PLATFORM_FINANCE_PREFIX)) return args;
@@ -104,19 +104,25 @@ interface AuthSnapshot {
 const readAuth = (api: { getState: () => unknown }): AuthSnapshot =>
   (api.getState() as { auth: AuthSnapshot }).auth;
 
-const SESSION_REJECTED_STATUSES = [401, 403];
-
 const isSessionRejected = (error: FetchBaseQueryError | undefined): boolean =>
-  typeof error?.status === "number" && SESSION_REJECTED_STATUSES.includes(error.status);
+  error?.status === 401;
 
 const REFRESH_COOLDOWN_MS = 5000;
 
 let refreshBlockedUntil = 0;
+let sessionEnded = false;
 
 const endSession = (dispatch: (action: ReturnType<typeof logOut>) => unknown): void => {
+  if (sessionEnded) return;
+  sessionEnded = true;
   refreshBlockedUntil = 0;
   dispatch(logOut());
   redirectToLogin();
+};
+
+export const resetSessionGuard = (): void => {
+  sessionEnded = false;
+  refreshBlockedUntil = 0;
 };
 
 export const baseQueryWithReauth: BaseQueryFn<
@@ -127,6 +133,9 @@ export const baseQueryWithReauth: BaseQueryFn<
   const args = scopeFinanceUrl(rawArgs, readAuth(api).user?.role);
 
   await mutex.waitForUnlock();
+
+  const tokenUsed = readAuth(api).token;
+
   let result = await baseQuery(args, api, extraOptions);
 
   unwrapEnvelope(result);
@@ -135,13 +144,11 @@ export const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
-  const staleToken = readAuth(api).token;
-
   const release = await mutex.acquire();
   try {
     const auth = readAuth(api);
 
-    if (auth.token && auth.token !== staleToken) {
+    if (auth.token && auth.token !== tokenUsed) {
       result = await baseQuery(args, api, extraOptions);
       unwrapEnvelope(result);
       return result;
@@ -167,7 +174,7 @@ export const baseQueryWithReauth: BaseQueryFn<
       | undefined;
 
     if (envelope?.success && envelope.data?.accessToken) {
-      refreshBlockedUntil = 0;
+      resetSessionGuard();
       api.dispatch(
         setCredentials({
           user: auth.user,
@@ -228,6 +235,9 @@ export const ALL_TAG_TYPES = [
   "Concerns",
   "ConcernSummary",
   "AllUsers",
+  "UserOptions",
+  "Maintainers",
+  "MaintainerSummary",
   "Tags",
   "TagSummary",
   "TagOptions",

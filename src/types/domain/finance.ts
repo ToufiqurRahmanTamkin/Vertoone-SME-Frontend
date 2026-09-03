@@ -43,6 +43,7 @@ export interface Income {
   status: InvoiceStatus;
   paymentMethod: PaymentMethod;
   receivedFrom: string;
+  receivedFromUserId: string | null;
   reference: string;
   notes: string;
   sourceType: IncomeSourceType;
@@ -119,6 +120,7 @@ export interface IncomePayload {
   status?: FinanceStatus;
   paymentMethod?: PaymentMethod;
   receivedFrom?: string;
+  receivedFromUserId?: string | null;
   reference?: string;
   notes?: string;
   invoiceId?: string | null;

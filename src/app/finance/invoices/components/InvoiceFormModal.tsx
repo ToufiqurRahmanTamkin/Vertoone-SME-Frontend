@@ -115,6 +115,7 @@ export function InvoiceFormModal({
   const type = useWatch({ control: form.control, name: "type" }) as InvoiceType;
   const entryMode = useWatch({ control: form.control, name: "entryMode" });
   const status = useWatch({ control: form.control, name: "status" }) as InvoiceStatus;
+  const invoiceCurrency = useWatch({ control: form.control, name: "currency" }) || defaultCurrency;
   const isLinking = entryMode === "LINK";
 
   const { data: linkable = [], isFetching: isLoadingEntries } = useGetLinkableEntriesQuery(
@@ -322,9 +323,14 @@ export function InvoiceFormModal({
                 placeholder="What this invoice is for"
               />
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput control={form.control} name="amount" label="Amount" type="number" />
-                <FormInput control={form.control} name="currency" label="Currency" />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <FormInput
+                  control={form.control}
+                  name="amount"
+                  label={`Amount (${invoiceCurrency})`}
+                  type="number"
+                  description={`Billed in ${invoiceCurrency}, the currency set under System · Configuration.`}
+                />
                 <FormDate control={form.control} name="issueDate" label="Issue date" dateOnly />
                 <FormDate control={form.control} name="dueDate" label="Due date" dateOnly />
               </div>
