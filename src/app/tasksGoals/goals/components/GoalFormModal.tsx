@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
+
 import { useGetDepartmentOptionsQuery } from "@/redux/apis/departmentApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import {
@@ -280,7 +280,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto md:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit goal" : "New goal"}</DialogTitle>
           <DialogDescription>
@@ -294,189 +294,186 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
             className="flex min-h-0 flex-1 flex-col"
             onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
           >
-            <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="title"
-                  label="Goal"
-                  placeholder="Grow repeat orders to a third of revenue"
-                />
+            <DialogBody className="flex flex-col gap-0 p-4 sm:p-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Left Column: Basic Details */}
+                <div className="flex flex-col gap-3">
+                  <FormInput
+                    control={form.control}
+                    name="title"
+                    label="Goal"
+                    placeholder="Grow repeat orders to a third of revenue"
+                  />
 
-                <FormColor control={form.control} name="color" label="Colour" />
-              </div>
+                  <FormColor control={form.control} name="color" label="Colour" />
 
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="What success looks like"
-                placeholder="Why this matters and what changes once it is met"
-              />
+                  <FormTextarea
+                    control={form.control}
+                    name="description"
+                    label="What success looks like"
+                    placeholder="Why this matters and what changes once it is met"
+                  />
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <FormSelect
-                  control={form.control}
-                  name="category"
-                  label="Level"
-                  options={CATEGORY_OPTIONS}
-                />
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormSelect
+                      control={form.control}
+                      name="category"
+                      label="Level"
+                      options={CATEGORY_OPTIONS}
+                    />
+                    <FormSelect
+                      control={form.control}
+                      name="status"
+                      label="Status"
+                      options={STATUS_OPTIONS}
+                    />
+                  </div>
 
-                <FormSelect
-                  control={form.control}
-                  name="status"
-                  label="Status"
-                  options={STATUS_OPTIONS}
-                />
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormSelect
+                      control={form.control}
+                      name="priority"
+                      label="Priority"
+                      options={PRIORITY_OPTIONS}
+                    />
+                    <FormDate control={form.control} name="startDate" label="Starts" dateOnly />
+                  </div>
 
-                <FormSelect
-                  control={form.control}
-                  name="priority"
-                  label="Priority"
-                  options={PRIORITY_OPTIONS}
-                />
-              </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormDate control={form.control} name="dueDate" label="Due by" dateOnly />
+                  </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormDate control={form.control} name="startDate" label="Starts" dateOnly />
-                <FormDate control={form.control} name="dueDate" label="Due by" dateOnly />
-              </div>
+                  <FormSwitch
+                    control={form.control}
+                    name="isArchived"
+                    label="Archived"
+                    description="Archived goals stay searchable but drop off the main list."
+                  />
+                </div>
 
-              <Separator />
-
-              <FormSelect
-                control={form.control}
-                name="progressMode"
-                label="How progress is measured"
-                options={PROGRESS_MODE_OPTIONS}
-              />
-
-              {progressMode === "MANUAL" ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Right Column: Progress & Organization */}
+                <div className="flex flex-col gap-3">
                   <FormSelect
                     control={form.control}
-                    name="metricType"
-                    label="Measured as"
-                    options={METRIC_TYPE_OPTIONS}
+                    name="progressMode"
+                    label="How progress is measured"
+                    options={PROGRESS_MODE_OPTIONS}
                   />
 
-                  <FormInput
-                    control={form.control}
-                    name="unit"
-                    label="Unit"
-                    placeholder="orders, days, BDT"
-                  />
-
-                  <FormInput
-                    control={form.control}
-                    name="startValue"
-                    label="Starts at"
-                    type="number"
-                  />
-
-                  <FormInput
-                    control={form.control}
-                    name="targetValue"
-                    label="Target"
-                    type="number"
-                  />
-
-                  <FormInput
-                    control={form.control}
-                    name="currentValue"
-                    label="Where it stands"
-                    type="number"
-                    className="sm:col-span-2"
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Controller
-                    control={form.control}
-                    name="keyResults"
-                    render={({ field }) => (
-                      <KeyResultEditor
-                        value={field.value}
-                        onChange={field.onChange}
-                        ownerChoices={ownerChoices}
+                  {progressMode === "MANUAL" ? (
+                    <div className="grid grid-cols-2 gap-3 rounded-md border bg-muted/20 p-3 shadow-sm">
+                      <FormSelect
+                        control={form.control}
+                        name="metricType"
+                        label="Measured as"
+                        options={METRIC_TYPE_OPTIONS}
                       />
-                    )}
-                  />
-                  {form.formState.errors.keyResults?.message && (
-                    <p className="text-sm text-destructive">
-                      {form.formState.errors.keyResults.message}
-                    </p>
+                      <FormInput
+                        control={form.control}
+                        name="unit"
+                        label="Unit"
+                        placeholder="orders, days, BDT"
+                      />
+                      <FormInput
+                        control={form.control}
+                        name="startValue"
+                        label="Starts at"
+                        type="number"
+                      />
+                      <FormInput
+                        control={form.control}
+                        name="targetValue"
+                        label="Target"
+                        type="number"
+                      />
+                      <FormInput
+                        control={form.control}
+                        name="currentValue"
+                        label="Where it stands"
+                        type="number"
+                        className="col-span-2"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2 rounded-md border bg-muted/20 p-3 shadow-sm">
+                      <Controller
+                        control={form.control}
+                        name="keyResults"
+                        render={({ field }) => (
+                          <KeyResultEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                            ownerChoices={ownerChoices}
+                          />
+                        )}
+                      />
+                      {form.formState.errors.keyResults?.message && (
+                        <p className="text-sm text-destructive">
+                          {form.formState.errors.keyResults.message}
+                        </p>
+                      )}
+                    </div>
                   )}
+
+                  <div className="mt-1 grid grid-cols-2 gap-3">
+                    <FormSelect
+                      control={form.control}
+                      name="ownerId"
+                      label="Accountable for it"
+                      placeholder="Unassigned"
+                      options={ownerChoices}
+                      searchable
+                    />
+                    <FormSelect
+                      control={form.control}
+                      name="departmentId"
+                      label="Department"
+                      placeholder="No department"
+                      options={departmentChoices}
+                      searchable
+                    />
+                  </div>
+
+                  <FormMultiSelect
+                    control={form.control}
+                    name="memberIds"
+                    label="Working on it"
+                    placeholder="Nobody yet"
+                    options={memberChoices}
+                    searchable
+                    emptyText="No employees yet. Add them under Directory · Employees."
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormSelect
+                      control={form.control}
+                      name="parentGoalId"
+                      label="Rolls up into"
+                      placeholder="Stands on its own"
+                      options={parentChoices}
+                      searchable
+                    />
+                    <FormSelect
+                      control={form.control}
+                      name="boardId"
+                      label="Work happens on"
+                      placeholder="Not linked to a board"
+                      options={boardChoices}
+                      searchable
+                    />
+                  </div>
+
+                  <FormMultiSelect
+                    control={form.control}
+                    name="tagIds"
+                    label="Tags"
+                    placeholder="No tags"
+                    options={tagChoices}
+                    searchable
+                    emptyText="No tags yet. Add them under Customers · Tags."
+                  />
                 </div>
-              )}
-
-              <Separator />
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSelect
-                  control={form.control}
-                  name="ownerId"
-                  label="Accountable for it"
-                  placeholder="Unassigned"
-                  options={ownerChoices}
-                  searchable
-                />
-
-                <FormSelect
-                  control={form.control}
-                  name="departmentId"
-                  label="Department"
-                  placeholder="No department"
-                  options={departmentChoices}
-                  searchable
-                />
               </div>
-
-              <FormMultiSelect
-                control={form.control}
-                name="memberIds"
-                label="Working on it"
-                placeholder="Nobody yet"
-                options={memberChoices}
-                searchable
-                emptyText="No employees yet. Add them under Directory · Employees."
-              />
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSelect
-                  control={form.control}
-                  name="parentGoalId"
-                  label="Rolls up into"
-                  placeholder="Stands on its own"
-                  options={parentChoices}
-                  searchable
-                />
-
-                <FormSelect
-                  control={form.control}
-                  name="boardId"
-                  label="Work happens on"
-                  placeholder="Not linked to a board"
-                  options={boardChoices}
-                  searchable
-                />
-              </div>
-
-              <FormMultiSelect
-                control={form.control}
-                name="tagIds"
-                label="Tags"
-                placeholder="No tags"
-                options={tagChoices}
-                searchable
-                emptyText="No tags yet. Add them under Customers · Tags."
-              />
-
-              <FormSwitch
-                control={form.control}
-                name="isArchived"
-                label="Archived"
-                description="Archived goals stay searchable but drop off the main list."
-              />
             </DialogBody>
 
             <DialogFooter>
