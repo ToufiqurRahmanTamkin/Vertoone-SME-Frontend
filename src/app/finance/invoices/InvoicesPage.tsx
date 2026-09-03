@@ -237,7 +237,7 @@ export default function InvoicesPage() {
         description={
           isPlatform
             ? "Every invoice sits against one income or expense entry, and marking an invoice paid marks its entry paid. Subscription invoices settle when you approve the payment the company submitted."
-            : "Every invoice sits against one income or expense entry, and marking an invoice paid marks its entry paid. A subscription invoice settles once our team verifies the payment you submit."
+            : "Every invoice sits against one income or expense entry, and marking an invoice paid marks its entry paid."
         }
         actions={<CurrencyNote currency={currency} />}
       />
