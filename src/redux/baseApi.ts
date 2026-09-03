@@ -289,6 +289,7 @@ export const ALL_TAG_TYPES = [
   "DealBoard",
   "DealActivities",
   "DealActivitySummary",
+  "TasksGoalsOverview",
   "TaskBoards",
   "TaskBoardSummary",
   "TaskBoardOptions",

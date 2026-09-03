@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import {
   useDeleteTaskBoardMutation,
   useGetTaskBoardSummaryQuery,
@@ -23,11 +24,12 @@ import {
   type TaskBoardVisibility,
   type TaskBoardWithStats,
 } from "@/types/domain/task";
-import { Plus } from "lucide-react";
+import { Bot, Plus } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { BoardRowActions, boardColumns, boardProgress } from "./boards.columns";
+import { AiBoardModal } from "./components/AiBoardModal";
 import { BoardFormModal } from "./components/BoardFormModal";
 
 export default function TasksPage() {
@@ -108,6 +110,9 @@ export default function TasksPage() {
     setFormOpen(true);
   }, []);
 
+  const { data: ai } = useGetAiAllowanceQuery();
+  const [aiOpen, setAiOpen] = React.useState(false);
+
   const rowActions = React.useMemo(
     () => ({
       onEdit: openEdit,
@@ -163,14 +168,24 @@ export default function TasksPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New board"
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            />
+            <>
+              {ai?.isConfigured && (
+                <ActionButton
+                  icon={Bot}
+                  label="Create with AI"
+                  variant="outline"
+                  onClick={() => setAiOpen(true)}
+                />
+              )}
+              <ActionButton
+                icon={Plus}
+                label="New board"
+                onClick={() => {
+                  setEditing(null);
+                  setFormOpen(true);
+                }}
+              />
+            </>
           )
         }
       />
@@ -262,6 +277,8 @@ export default function TasksPage() {
         board={editing}
         onCreated={(boardId) => navigate(`/tasks-goals/tasks/${boardId}`)}
       />
+
+      <AiBoardModal open={aiOpen} onOpenChange={setAiOpen} />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

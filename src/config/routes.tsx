@@ -54,6 +54,9 @@ const ContactTypes = lazy(() => import("@/app/crm/contactTypes/ContactTypesPage"
 const Contacts = lazy(() => import("@/app/crm/contacts/ContactsPage"));
 const Leads = lazy(() => import("@/app/crm/leads/LeadsPage"));
 const Deals = lazy(() => import("@/app/crm/deals/DealsPage"));
+const TasksGoalsOverview = lazy(
+  () => import("@/app/tasksGoals/overview/TasksGoalsOverviewPage")
+);
 const Tasks = lazy(() => import("@/app/tasksGoals/tasks/TasksPage"));
 const TaskBoard = lazy(() => import("@/app/tasksGoals/tasks/TaskBoardPage"));
 const Goals = lazy(() => import("@/app/tasksGoals/goals/GoalsPage"));
@@ -184,6 +187,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "company/finance/expenses", element: <FinanceExpense /> },
   { path: "company/finance/invoices", element: <FinanceInvoices /> },
   { path: "company/finance/categories", element: <FinanceCategories /> },
+  { path: "company/tasks-and-goals/overview", element: <TasksGoalsOverview /> },
   { path: "company/tasks-and-goals/tasks", element: <Tasks /> },
   { path: "company/tasks-and-goals/tasks/:id", element: <TaskBoard /> },
   { path: "company/tasks-and-goals/goals", element: <Goals /> },

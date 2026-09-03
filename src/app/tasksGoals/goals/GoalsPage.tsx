@@ -11,6 +11,7 @@ import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/compone
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatDate } from "@/lib/date";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { useGetDepartmentOptionsQuery } from "@/redux/apis/departmentApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import {
@@ -34,9 +35,10 @@ import {
   type GoalPriority,
   type GoalStatus,
 } from "@/types/domain/goal";
-import { Plus } from "lucide-react";
+import { Bot, Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiGoalModal } from "./components/AiGoalModal";
 import { GoalCheckInModal } from "./components/GoalCheckInModal";
 import { GoalDetailSheet } from "./components/GoalDetailSheet";
 import { GoalFormModal } from "./components/GoalFormModal";
@@ -179,6 +181,9 @@ export default function GoalsPage() {
     }
   };
 
+  const { data: ai } = useGetAiAllowanceQuery();
+  const [aiOpen, setAiOpen] = React.useState(false);
+
   const rowActions = React.useMemo(
     () => ({
       onOpen: openDetail,
@@ -244,17 +249,28 @@ export default function GoalsPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New goal"
-              onClick={openCreate}
-              disabled={isLimitReached}
-              title={
-                isLimitReached
-                  ? `Your plan allows ${limit} goals. Delete one or upgrade to add more.`
-                  : undefined
-              }
-            />
+            <>
+              {ai?.isConfigured && (
+                <ActionButton
+                  icon={Bot}
+                  label="Create with AI"
+                  variant="outline"
+                  disabled={isLimitReached}
+                  onClick={() => setAiOpen(true)}
+                />
+              )}
+              <ActionButton
+                icon={Plus}
+                label="New goal"
+                onClick={openCreate}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} goals. Delete one or upgrade to add more.`
+                    : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -361,6 +377,8 @@ export default function GoalsPage() {
         canEdit={access.canEdit}
         canDelete={access.canDelete}
       />
+
+      <AiGoalModal open={aiOpen} onOpenChange={setAiOpen} />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

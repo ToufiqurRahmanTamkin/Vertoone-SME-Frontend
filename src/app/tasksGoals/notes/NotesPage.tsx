@@ -10,6 +10,7 @@ import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/compone
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatDateTime } from "@/lib/date";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import {
   useDeleteNoteMutation,
@@ -27,9 +28,10 @@ import {
   type Note,
   type NoteVisibility,
 } from "@/types/domain/note";
-import { Pin, Plus } from "lucide-react";
+import { Bot, Pin, Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiNoteModal } from "./components/AiNoteModal";
 import { NoteDetailSheet } from "./components/NoteDetailSheet";
 import { NoteFormModal } from "./components/NoteFormModal";
 import { NoteRowActions, noteColumns } from "./notes.columns";
@@ -168,6 +170,9 @@ export default function NotesPage() {
     }
   };
 
+  const { data: ai } = useGetAiAllowanceQuery();
+  const [aiOpen, setAiOpen] = React.useState(false);
+
   const rowActions = React.useMemo(
     () => ({
       onOpen: openDetail,
@@ -231,17 +236,28 @@ export default function NotesPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New note"
-              onClick={openCreate}
-              disabled={isLimitReached}
-              title={
-                isLimitReached
-                  ? `Your plan allows ${limit} notes. Delete one or upgrade to add more.`
-                  : undefined
-              }
-            />
+            <>
+              {ai?.isConfigured && (
+                <ActionButton
+                  icon={Bot}
+                  label="Write with AI"
+                  variant="outline"
+                  disabled={isLimitReached}
+                  onClick={() => setAiOpen(true)}
+                />
+              )}
+              <ActionButton
+                icon={Plus}
+                label="New note"
+                onClick={openCreate}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} notes. Delete one or upgrade to add more.`
+                    : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -336,6 +352,8 @@ export default function NotesPage() {
         canEdit={access.canEdit}
         canDelete={access.canDelete}
       />
+
+      <AiNoteModal open={aiOpen} onOpenChange={setAiOpen} />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
