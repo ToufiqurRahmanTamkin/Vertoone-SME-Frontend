@@ -3400,7 +3400,7 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 slug: "employee-roles-and-permissions",
                 icon: "KeyRound",
                 description:
-                  "The roles employees inherit from their department, designation or team.",
+                  "Permission sets for your workforce, and the employees assigned to each.",
               },
               {
                 title: "Employee Fields",

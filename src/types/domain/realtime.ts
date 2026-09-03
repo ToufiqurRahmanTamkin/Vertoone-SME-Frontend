@@ -61,6 +61,7 @@ export const SOCKET_RESOURCES = [
   "SHOP",
   "POS",
   "ROLES",
+  "EMPLOYEE_ROLES",
   "WEB_SITE",
   "WEB_PAGES",
   "FORMS",

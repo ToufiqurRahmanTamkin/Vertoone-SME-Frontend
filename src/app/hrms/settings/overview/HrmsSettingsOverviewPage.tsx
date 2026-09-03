@@ -180,24 +180,19 @@ const buildSections = (summary: HrmsSettingsSummary): SectionSpec[] => [
     path: "/hrms/settings/employee-roles-and-permissions",
     icon: KeyRound,
     title: "Employee roles & permissions",
-    description: "The roles your people inherit from their department, designation or team.",
+    description: "Permission sets built for your workforce, and the employees holding each one.",
     status: {
       label:
-        summary.employeeAccess.sourcesWithRoles > 0
-          ? `${summary.employeeAccess.sourcesWithRoles} granting access`
-          : "Nothing inherited",
-      color: summary.employeeAccess.sourcesWithRoles > 0 ? "green" : "amber",
+        summary.employeeRoles.active > 0
+          ? `${summary.employeeRoles.active} active`
+          : "Not set up",
+      color: summary.employeeRoles.active > 0 ? "green" : "amber",
     },
     facts: [
-      { label: "Roles defined", value: String(summary.employeeAccess.roles) },
-      { label: "Roles in use", value: String(summary.employeeAccess.rolesInUse) },
-      { label: "Sources", value: String(summary.employeeAccess.sources) },
-      {
-        label: "Without roles",
-        value: String(
-          Math.max(0, summary.employeeAccess.sources - summary.employeeAccess.sourcesWithRoles)
-        ),
-      },
+      { label: "Employee roles", value: String(summary.employeeRoles.total) },
+      { label: "Active", value: String(summary.employeeRoles.active) },
+      { label: "Employees with a role", value: String(summary.employeeRoles.assignedEmployees) },
+      { label: "Without a role", value: String(summary.employeeRoles.unassignedEmployees) },
     ],
   },
 ];

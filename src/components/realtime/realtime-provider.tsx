@@ -130,6 +130,13 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "CalendarBookingSlots",
   ],
   ROLES: ["Roles", "RoleSummary", "RoleOptions", "Permissions"],
+  EMPLOYEE_ROLES: [
+    "EmployeeRoles",
+    "EmployeeRoleSummary",
+    "EmployeeRoleOptions",
+    "EmployeeRoleHolders",
+    "Permissions",
+  ],
   WAREHOUSES: ["Warehouses", "WarehouseSummary", "WarehouseOptions", "Stock", "StockSummary"],
   STOCK: ["Stock", "StockSummary", "StockMovements", "PosCatalog"],
   STOCK_TRANSFERS: ["StockTransfers", "StockTransferSummary", "Stock", "StockSummary"],

@@ -374,7 +374,7 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
                   description="What this person can reach in the app once they can sign in."
                   options={employeeRoleChoices}
                   emptyText="No employee roles yet. Create them under HRMS Settings - Employee Roles & Permissions."
-                  className="col-span-6 sm:col-span-3"
+                  className="sm:col-span-2"
                 />
               </div>
 
