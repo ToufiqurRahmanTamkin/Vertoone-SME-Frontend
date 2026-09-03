@@ -5,7 +5,7 @@ import {
   SUBSCRIPTION_STATUS_COLORS,
   SUBSCRIPTION_STATUS_LABELS,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -59,7 +59,7 @@ export const soldSubscriptionColumns = (
     header: "Amount",
     cell: ({ row }) => (
       <span className="font-medium tabular-nums">
-        {formatAmount(row.original.amount, row.original.currency)}
+        {formatAmountValue(row.original.amount)}
       </span>
     ),
   },

@@ -1,4 +1,5 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
@@ -12,7 +13,7 @@ import {
   SUBSCRIPTION_STATUS_LABELS,
   toOptions,
 } from "@/constant";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import {
@@ -166,7 +167,7 @@ export default function SoldSubscriptionsPage() {
     },
     {
       label: "Revenue (paid)",
-      value: formatAmount(summary?.totalRevenue, currency),
+      value: formatAmountValue(summary?.totalRevenue),
       icon: Wallet,
       color: "success" as const,
     },
@@ -177,6 +178,7 @@ export default function SoldSubscriptionsPage() {
       <PageHeader
         title="Sold Subscriptions"
         description="Every plan assigned to a company, with its invoice, term and payment state."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="xl:grid-cols-5">
@@ -263,9 +265,9 @@ export default function SoldSubscriptionsPage() {
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">Refunded</span>
                 <span className="font-medium tabular-nums">
-                  {formatAmount(record.refundAmount, record.currency)}
+                  {formatAmountValue(record.refundAmount)}
                   {record.systemChargeAmount > 0
-                    ? ` (after ${formatAmount(record.systemChargeAmount, record.currency)} system charge)`
+                    ? ` (after ${formatAmountValue(record.systemChargeAmount)} system charge)`
                     : ""}
                 </span>
               </div>

@@ -8,7 +8,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmount, formatAmountValue, formatNumber } from "@/lib/amount";
 import { downloadCsv } from "@/lib/csv";
 import { useGetRevenueReportQuery } from "@/redux/apis/reportApis";
 import type { RevenueReportRow } from "@/types/domain/report";
@@ -56,7 +56,7 @@ export default function RevenueReportPage() {
         key: "grossRevenue",
         label: "Gross",
         align: "right",
-        render: (row) => formatAmount(row.grossRevenue, currency),
+        render: (row) => formatAmountValue(row.grossRevenue),
         csv: (row) => row.grossRevenue,
       },
       {
@@ -65,7 +65,7 @@ export default function RevenueReportPage() {
         align: "right",
         render: (row) => (
           <span className="font-medium text-emerald-600 dark:text-emerald-400">
-            {formatAmount(row.collectedRevenue, currency)}
+            {formatAmountValue(row.collectedRevenue)}
           </span>
         ),
         csv: (row) => row.collectedRevenue,
@@ -76,7 +76,7 @@ export default function RevenueReportPage() {
         align: "right",
         render: (row) => (
           <span className={row.outstanding > 0 ? "text-amber-600 dark:text-amber-400" : undefined}>
-            {formatAmount(row.outstanding, currency)}
+            {formatAmountValue(row.outstanding)}
           </span>
         ),
         csv: (row) => row.outstanding,
@@ -85,7 +85,7 @@ export default function RevenueReportPage() {
         key: "refunded",
         label: "Refunded",
         align: "right",
-        render: (row) => formatAmount(row.refunded, currency),
+        render: (row) => formatAmountValue(row.refunded),
         csv: (row) => row.refunded,
       },
       {
@@ -96,7 +96,7 @@ export default function RevenueReportPage() {
         csv: (row) => row.sales,
       },
     ],
-    [currency, groupBy]
+    [groupBy]
   );
 
   const onExport = () =>
@@ -111,6 +111,7 @@ export default function RevenueReportPage() {
       onReset={clearFilters}
       onExport={onExport}
       isFetching={isFetching}
+      currency={currency}
       periodLabel={describePeriod(data?.period.from, data?.period.to)}
     >
       <ReportStats
@@ -118,14 +119,14 @@ export default function RevenueReportPage() {
         items={[
           {
             label: "Collected",
-            value: formatAmount(totals?.collectedRevenue, currency),
-            description: `of ${formatAmount(totals?.grossRevenue, currency)} invoiced`,
+            value: formatAmountValue(totals?.collectedRevenue),
+            description: `of ${formatAmountValue(totals?.grossRevenue)} invoiced`,
             icon: Wallet,
             color: "success",
           },
           {
             label: "Outstanding",
-            value: formatAmount(totals?.outstanding, currency),
+            value: formatAmountValue(totals?.outstanding),
             description: "Invoiced but not yet collected",
             icon: Banknote,
             color: "warning",
@@ -133,13 +134,13 @@ export default function RevenueReportPage() {
           {
             label: "Sales",
             value: formatNumber(totals?.sales),
-            description: `${formatAmount(totals?.averageSaleValue, currency)} average value`,
+            description: `${formatAmountValue(totals?.averageSaleValue)} average value`,
             icon: Receipt,
             color: "info",
           },
           {
             label: "Refunded",
-            value: formatAmount(totals?.refunded, currency),
+            value: formatAmountValue(totals?.refunded),
             description: "Returned to customers",
             icon: TrendingUp,
             color: "error",

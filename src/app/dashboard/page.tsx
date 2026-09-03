@@ -3,6 +3,7 @@ import { FinanceTrendChart } from "@/app/dashboard/components/FinanceTrendChart"
 import { GrowthTrendChart } from "@/app/dashboard/components/GrowthTrendChart";
 import { KpiCard } from "@/app/dashboard/components/KpiCard";
 import { RevenueTrendChart } from "@/app/dashboard/components/RevenueTrendChart";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -22,7 +23,7 @@ import {
   SUBSCRIPTION_STATUS_COLORS,
   SUBSCRIPTION_STATUS_LABELS,
 } from "@/constant";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate, formatDateTime } from "@/lib/date";
 import { useGetDashboardOverviewQuery } from "@/redux/apis/dashboardApis";
 import { selectCurrentUser } from "@/redux/authSlice";
@@ -62,8 +63,8 @@ export default function DashboardPage() {
   const primaryCards = [
     {
       label: "Revenue",
-      value: formatAmount(kpis?.revenue.total, currency),
-      description: `${formatAmount(kpis?.revenue.thisMonth, currency)} this month`,
+      value: formatAmountValue(kpis?.revenue.total),
+      description: `${formatAmountValue(kpis?.revenue.thisMonth)} this month`,
       icon: Wallet,
       color: "success" as const,
       changePercent: kpis?.revenue.changePercent,
@@ -89,10 +90,9 @@ export default function DashboardPage() {
     },
     {
       label: "Net profit",
-      value: formatAmount(kpis?.finance.net, currency),
-      description: `${formatAmount(kpis?.finance.income, currency)} in · ${formatAmount(
-        kpis?.finance.expense,
-        currency
+      value: formatAmountValue(kpis?.finance.net),
+      description: `${formatAmountValue(kpis?.finance.income)} in · ${formatAmountValue(
+        kpis?.finance.expense
       )} out`,
       icon: Trophy,
       color: (kpis?.finance.net ?? 0) >= 0 ? ("success" as const) : ("error" as const),
@@ -102,15 +102,15 @@ export default function DashboardPage() {
   const secondaryCards = [
     {
       label: "Outstanding",
-      value: formatAmount(kpis?.revenue.outstanding, currency),
+      value: formatAmountValue(kpis?.revenue.outstanding),
       description: `${formatNumber(kpis?.subscriptions.awaitingApproval)} invoice(s) awaiting approval`,
       icon: CreditCard,
       color: "warning" as const,
     },
     {
       label: "Average sale",
-      value: formatAmount(kpis?.revenue.averageSaleValue, currency),
-      description: `${formatAmount(kpis?.revenue.refunded, currency)} refunded to date`,
+      value: formatAmountValue(kpis?.revenue.averageSaleValue),
+      description: `${formatAmountValue(kpis?.revenue.refunded)} refunded to date`,
       icon: ArrowUpRight,
       color: "default" as const,
     },
@@ -180,7 +180,7 @@ export default function DashboardPage() {
     label: PAYMENT_STATUS_LABELS[entry.key as PaymentStatus] ?? entry.key,
     count: entry.count,
     color: PAYMENT_STATUS_COLORS[entry.key as PaymentStatus] ?? "muted",
-    valueLabel: `${entry.count.toLocaleString()} · ${formatAmount(entry.amount, currency)}`,
+    valueLabel: `${entry.count.toLocaleString()} · ${formatAmountValue(entry.amount)}`,
   }));
 
   const paymentMethodRows: BreakdownRow[] = (data?.paymentMethodBreakdown ?? []).map((entry) => ({
@@ -188,7 +188,7 @@ export default function DashboardPage() {
     label: PAYMENT_METHOD_LABELS[entry.key as PaymentMethod] ?? entry.key,
     count: entry.count,
     color: "blue" as const,
-    valueLabel: `${entry.count.toLocaleString()} · ${formatAmount(entry.amount, currency)}`,
+    valueLabel: `${entry.count.toLocaleString()} · ${formatAmountValue(entry.amount)}`,
   }));
 
   const employeeRangeRows: BreakdownRow[] = (data?.employeeRangeBreakdown ?? []).map((entry) => ({
@@ -214,14 +214,7 @@ export default function DashboardPage() {
             ? `Platform overview · updated ${formatDateTime(data.generatedAt)}`
             : "Revenue, companies, subscriptions and content across the platform."
         }
-        actions={
-          <Button asChild variant="outline" className="cursor-pointer">
-            <Link to="/platform/reports/overview">
-              View reports
-              <ArrowUpRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
-        }
+        actions={<CurrencyNote currency={currency} />}
       />
 
       {!isLoading && hasAlerts && (
@@ -249,7 +242,7 @@ export default function DashboardPage() {
           {outstanding > 0 && (
             <span className="text-muted-foreground">
               <span className="font-semibold text-foreground">
-                {formatAmount(outstanding, currency)}
+                {formatAmountValue(outstanding)}
               </span>{" "}
               outstanding
             </span>
@@ -371,7 +364,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <span className="shrink-0 font-medium tabular-nums">
-                    {formatAmount(entry.revenue, currency)}
+                    {formatAmountValue(entry.revenue)}
                   </span>
                 </div>
               ))}
@@ -474,7 +467,7 @@ export default function DashboardPage() {
                       label={`${renewal.daysRemaining}d left`}
                     />
                     <span className="w-24 text-right font-medium tabular-nums">
-                      {formatAmount(renewal.amount, renewal.currency)}
+                      {formatAmountValue(renewal.amount)}
                     </span>
                   </div>
                 </div>
@@ -540,7 +533,7 @@ export default function DashboardPage() {
                     }
                   />
                   <span className="w-24 text-right font-medium tabular-nums">
-                    {formatAmount(sale.amount, sale.currency)}
+                    {formatAmountValue(sale.amount)}
                   </span>
                 </div>
               </div>
@@ -580,7 +573,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <span className="shrink-0 font-medium tabular-nums">
-                    {formatAmount(customer.totalSpend, customer.currency)}
+                    {formatAmountValue(customer.totalSpend)}
                   </span>
                 </div>
               ))}

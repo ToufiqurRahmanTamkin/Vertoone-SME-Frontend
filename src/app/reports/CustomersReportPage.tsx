@@ -1,4 +1,4 @@
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { downloadCsv } from "@/lib/csv";
 import { formatDate } from "@/lib/date";
 import { useGetCustomerReportQuery } from "@/redux/apis/reportApis";
@@ -53,7 +53,7 @@ export default function CustomersReportPage() {
         label: "Collected",
         align: "right",
         render: (row) => (
-          <span className="font-medium">{formatAmount(row.collectedRevenue, currency)}</span>
+          <span className="font-medium">{formatAmountValue(row.collectedRevenue)}</span>
         ),
         csv: (row) => row.collectedRevenue,
       },
@@ -63,7 +63,7 @@ export default function CustomersReportPage() {
         align: "right",
         render: (row) => (
           <span className={row.outstanding > 0 ? "text-amber-600 dark:text-amber-400" : undefined}>
-            {formatAmount(row.outstanding, currency)}
+            {formatAmountValue(row.outstanding)}
           </span>
         ),
         csv: (row) => row.outstanding,
@@ -78,7 +78,7 @@ export default function CustomersReportPage() {
         csv: (row) => row.lastPurchaseAt ?? "",
       },
     ],
-    [currency]
+    []
   );
 
   const onExport = () =>
@@ -96,6 +96,7 @@ export default function CustomersReportPage() {
       onExport={onExport}
       isFetching={isFetching}
       showGroupBy={false}
+      currency={currency}
       periodLabel={describePeriod(data?.period.from, data?.period.to)}
     >
       <ReportStats
@@ -110,14 +111,14 @@ export default function CustomersReportPage() {
           },
           {
             label: "Collected revenue",
-            value: formatAmount(totals?.collectedRevenue, currency),
+            value: formatAmountValue(totals?.collectedRevenue),
             description: "Paid across all customers",
             icon: Wallet,
             color: "success",
           },
           {
             label: "Average per customer",
-            value: formatAmount(totals?.averageRevenuePerCustomer, currency),
+            value: formatAmountValue(totals?.averageRevenuePerCustomer),
             description: "Collected revenue ÷ customers",
             icon: Wallet,
             color: "default",
@@ -126,7 +127,7 @@ export default function CustomersReportPage() {
             label: "Top customer",
             value: topCustomer?.customerName ?? "—",
             description: topCustomer
-              ? formatAmount(topCustomer.collectedRevenue, currency)
+              ? formatAmountValue(topCustomer.collectedRevenue)
               : "No purchases in this period",
             icon: Crown,
             color: "warning",

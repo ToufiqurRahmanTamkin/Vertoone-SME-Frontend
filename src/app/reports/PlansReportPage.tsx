@@ -8,7 +8,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BILLING_CYCLE_LABELS } from "@/constant";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmount, formatAmountValue, formatNumber } from "@/lib/amount";
 import { downloadCsv } from "@/lib/csv";
 import { useGetPlanReportQuery } from "@/redux/apis/reportApis";
 import type { BillingCycle } from "@/types/domain/plan";
@@ -55,7 +55,7 @@ export default function PlansReportPage() {
             <p className="truncate font-medium">{row.planName}</p>
             <p className="text-[11px] text-muted-foreground">
               {BILLING_CYCLE_LABELS[row.billingCycle as BillingCycle] ?? row.billingCycle} ·{" "}
-              {formatAmount(row.price, currency)}
+              {formatAmountValue(row.price)}
             </p>
           </div>
         ),
@@ -80,7 +80,7 @@ export default function PlansReportPage() {
         label: "Collected",
         align: "right",
         render: (row) => (
-          <span className="font-medium">{formatAmount(row.collectedRevenue, currency)}</span>
+          <span className="font-medium">{formatAmountValue(row.collectedRevenue)}</span>
         ),
         csv: (row) => row.collectedRevenue,
       },
@@ -88,7 +88,7 @@ export default function PlansReportPage() {
         key: "outstanding",
         label: "Outstanding",
         align: "right",
-        render: (row) => formatAmount(row.outstanding, currency),
+        render: (row) => formatAmountValue(row.outstanding),
         csv: (row) => row.outstanding,
       },
       {
@@ -104,7 +104,7 @@ export default function PlansReportPage() {
         csv: (row) => row.share,
       },
     ],
-    [currency]
+    []
   );
 
   const onExport = () =>
@@ -122,6 +122,7 @@ export default function PlansReportPage() {
       onExport={onExport}
       isFetching={isFetching}
       showGroupBy={false}
+      currency={currency}
       periodLabel={describePeriod(data?.period.from, data?.period.to)}
     >
       <ReportStats
@@ -143,7 +144,7 @@ export default function PlansReportPage() {
           },
           {
             label: "Collected",
-            value: formatAmount(totals?.collectedRevenue, currency),
+            value: formatAmountValue(totals?.collectedRevenue),
             description: "Paid subscriptions only",
             icon: Wallet,
             color: "success",

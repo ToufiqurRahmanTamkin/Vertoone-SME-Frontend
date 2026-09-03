@@ -5,7 +5,7 @@ import {
   SUBSCRIPTION_STATUS_COLORS,
   SUBSCRIPTION_STATUS_LABELS,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
 import {
@@ -51,7 +51,7 @@ export function SoldSubscriptionMobileCard({
         <div className="flex justify-between">
           <dt className="text-muted-foreground">Amount</dt>
           <dd className="font-medium tabular-nums">
-            {formatAmount(record.amount, record.currency)}
+            {formatAmountValue(record.amount)}
           </dd>
         </div>
         <div className="flex justify-between">

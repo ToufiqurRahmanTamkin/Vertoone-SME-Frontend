@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { useGetReportSummaryQuery } from "@/redux/apis/reportApis";
 import type { ReportKey, ReportSummaryCard } from "@/types/domain/report";
 import {
@@ -36,8 +36,8 @@ const REPORT_ICONS: Record<ReportKey, LucideIcon> = {
   security: ShieldCheck,
 };
 
-const formatCardValue = (card: ReportSummaryCard, currency: string): string => {
-  if (card.format === "currency") return formatAmount(card.value, currency);
+const formatCardValue = (card: ReportSummaryCard): string => {
+  if (card.format === "currency") return formatAmountValue(card.value);
   if (card.format === "percent") return `${card.value}%`;
   return formatNumber(card.value);
 };
@@ -59,6 +59,7 @@ export default function ReportsPage() {
       onReset={clearFilters}
       isFetching={isFetching}
       showGroupBy={false}
+      currency={currency}
       periodLabel={describePeriod(data?.period.from, data?.period.to)}
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -71,7 +72,7 @@ export default function ReportsPage() {
               </p>
               {card ? (
                 <p className="mt-1 truncate text-2xl font-bold tabular-nums">
-                  {formatCardValue(card, currency)}
+                  {formatCardValue(card)}
                 </p>
               ) : (
                 <Skeleton className="mt-2 h-8 w-32" />

@@ -1,3 +1,4 @@
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
@@ -28,6 +29,7 @@ interface ReportLayoutProps {
   onExport?: () => void;
   isFetching?: boolean;
   showGroupBy?: boolean;
+  currency?: string;
   periodLabel?: string;
   children: React.ReactNode;
 }
@@ -41,6 +43,7 @@ export function ReportLayout({
   onExport,
   isFetching = false,
   showGroupBy = true,
+  currency,
   periodLabel,
   children,
 }: ReportLayoutProps) {
@@ -56,21 +59,26 @@ export function ReportLayout({
         title={title}
         description={description}
         actions={
-          onExport && (
-            <Button
-              variant="outline"
-              className="cursor-pointer"
-              onClick={onExport}
-              disabled={isFetching}
-            >
-              {isFetching ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              ) : (
-                <Download className="mr-1.5 size-4" />
+          currency || onExport ? (
+            <>
+              {currency && <CurrencyNote currency={currency} />}
+              {onExport && (
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={onExport}
+                  disabled={isFetching}
+                >
+                  {isFetching ? (
+                    <Loader2 className="mr-1.5 size-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-1.5 size-4" />
+                  )}
+                  Export CSV
+                </Button>
               )}
-              Export CSV
-            </Button>
-          )
+            </>
+          ) : undefined
         }
       />
 

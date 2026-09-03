@@ -5,7 +5,7 @@ import {
   SUBSCRIPTION_REQUEST_TYPE_COLORS,
   SUBSCRIPTION_REQUEST_TYPE_LABELS,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SubscriptionRequest } from "@/types/domain/subscriptionRequest";
 import { Flame } from "lucide-react";
@@ -61,14 +61,14 @@ export function SubscriptionRequestMobileCard({
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">Amount</dt>
           <dd className="font-medium tabular-nums">
-            {formatAmount(record.amount, record.currency)}
+            {formatAmountValue(record.amount)}
           </dd>
         </div>
         {record.type === "CANCELLATION" && (
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Refund</dt>
             <dd className="font-medium tabular-nums">
-              {formatAmount(record.refundAmount, record.currency)}
+              {formatAmountValue(record.refundAmount)}
             </dd>
           </div>
         )}

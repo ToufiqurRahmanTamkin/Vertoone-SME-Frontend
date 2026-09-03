@@ -6,7 +6,7 @@ import {
   SUBSCRIPTION_REQUEST_TYPE_COLORS,
   SUBSCRIPTION_REQUEST_TYPE_LABELS,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SubscriptionRequest } from "@/types/domain/subscriptionRequest";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -112,11 +112,11 @@ export const subscriptionRequestColumns = (
     cell: ({ row }) => (
       <div className="text-sm">
         <span className="font-medium tabular-nums">
-          {formatAmount(row.original.amount, row.original.currency)}
+          {formatAmountValue(row.original.amount)}
         </span>
         {row.original.type === "CANCELLATION" && (
           <p className="text-xs text-muted-foreground">
-            Refund {formatAmount(row.original.refundAmount, row.original.currency)}
+            Refund {formatAmountValue(row.original.refundAmount)}
           </p>
         )}
       </div>

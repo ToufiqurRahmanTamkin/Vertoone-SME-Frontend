@@ -1,3 +1,4 @@
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
@@ -9,7 +10,7 @@ import {
   toOptions,
 } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
   useGetSubscriptionRequestsQuery,
@@ -113,7 +114,7 @@ export default function SubscriptionRequestsPage() {
     },
     {
       label: "Refunded",
-      value: formatAmount(summary?.refundedAmount, currency),
+      value: formatAmountValue(summary?.refundedAmount),
       icon: HandCoins,
       color: "success" as const,
     },
@@ -124,6 +125,7 @@ export default function SubscriptionRequestsPage() {
       <PageHeader
         title="Subscription Requests"
         description="Cancellations and plan upgrades raised by company owners, waiting on your approval."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="xl:grid-cols-5">
@@ -182,13 +184,13 @@ export default function SubscriptionRequestsPage() {
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">System charge</span>
               <span className="font-medium tabular-nums">
-                {formatAmount(record.systemChargeAmount, record.currency)}
+                {formatAmountValue(record.systemChargeAmount)}
               </span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Refund</span>
               <span className="font-medium tabular-nums">
-                {formatAmount(record.refundAmount, record.currency)}
+                {formatAmountValue(record.refundAmount)}
               </span>
             </div>
             <div className="flex justify-between gap-4">

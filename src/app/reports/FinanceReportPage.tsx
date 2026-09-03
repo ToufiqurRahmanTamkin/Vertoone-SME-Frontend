@@ -11,7 +11,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FINANCE_CATEGORY_TYPE_COLORS, FINANCE_CATEGORY_TYPE_LABELS } from "@/constant";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmount, formatAmountValue, formatNumber } from "@/lib/amount";
 import { downloadCsv } from "@/lib/csv";
 import { useGetFinanceReportQuery } from "@/redux/apis/reportApis";
 import type { FinanceCategoryRow, FinanceReportRow } from "@/types/domain/report";
@@ -62,7 +62,7 @@ export default function FinanceReportPage() {
         align: "right",
         render: (row) => (
           <span className="text-emerald-600 dark:text-emerald-400">
-            {formatAmount(row.income, currency)}
+            {formatAmountValue(row.income)}
           </span>
         ),
         csv: (row) => row.income,
@@ -73,7 +73,7 @@ export default function FinanceReportPage() {
         align: "right",
         render: (row) => (
           <span className="text-orange-600 dark:text-orange-400">
-            {formatAmount(row.expense, currency)}
+            {formatAmountValue(row.expense)}
           </span>
         ),
         csv: (row) => row.expense,
@@ -84,13 +84,13 @@ export default function FinanceReportPage() {
         align: "right",
         render: (row) => (
           <span className={row.net < 0 ? "font-medium text-red-600 dark:text-red-400" : "font-medium"}>
-            {formatAmount(row.net, currency)}
+            {formatAmountValue(row.net)}
           </span>
         ),
         csv: (row) => row.net,
       },
     ],
-    [currency, groupBy]
+    [groupBy]
   );
 
   const categoryColumns = React.useMemo<ReportColumn<FinanceCategoryRow>[]>(
@@ -123,7 +123,7 @@ export default function FinanceReportPage() {
         key: "amount",
         label: "Amount",
         align: "right",
-        render: (row) => formatAmount(row.amount, currency),
+        render: (row) => formatAmountValue(row.amount),
         csv: (row) => row.amount,
       },
       {
@@ -139,7 +139,7 @@ export default function FinanceReportPage() {
         csv: (row) => row.share,
       },
     ],
-    [currency]
+    []
   );
 
   const onExport = () =>
@@ -156,6 +156,7 @@ export default function FinanceReportPage() {
       onReset={clearFilters}
       onExport={onExport}
       isFetching={isFetching}
+      currency={currency}
       periodLabel={describePeriod(data?.period.from, data?.period.to)}
     >
       <ReportStats
@@ -163,21 +164,21 @@ export default function FinanceReportPage() {
         items={[
           {
             label: "Income",
-            value: formatAmount(totals?.income, currency),
+            value: formatAmountValue(totals?.income),
             description: "Recorded in this period",
             icon: ArrowUpRight,
             color: "success",
           },
           {
             label: "Expense",
-            value: formatAmount(totals?.expense, currency),
+            value: formatAmountValue(totals?.expense),
             description: "Recorded in this period",
             icon: ArrowDownRight,
             color: "warning",
           },
           {
             label: "Net profit",
-            value: formatAmount(net, currency),
+            value: formatAmountValue(net),
             description: net < 0 ? "Running at a loss" : "Income minus expense",
             icon: Scale,
             color: net < 0 ? "error" : "success",
