@@ -55,7 +55,7 @@ export function ImageCropperDialog({
   onCancel,
   onConfirm,
 }: ImageCropperDialogProps) {
-  const viewportRef = React.useRef<HTMLDivElement>(null);
+  const [viewportNode, setViewportNode] = React.useState<HTMLDivElement | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const dragRef = React.useRef<{
     pointerId: number;
@@ -80,15 +80,14 @@ export function ImageCropperDialog({
   }
 
   React.useEffect(() => {
-    const node = viewportRef.current;
-    if (!node) return;
+    if (!viewportNode) return;
     const observer = new ResizeObserver(([entry]) => {
       const box = entry.contentRect;
       setViewport({ width: box.width, height: box.height });
     });
-    observer.observe(node);
+    observer.observe(viewportNode);
     return () => observer.disconnect();
-  }, [open, src]);
+  }, [viewportNode]);
 
   const baseScale =
     natural && viewport.width > 0
@@ -120,15 +119,14 @@ export function ImageCropperDialog({
   );
 
   React.useEffect(() => {
-    const node = viewportRef.current;
-    if (!node) return;
+    if (!viewportNode) return;
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       applyZoom(zoom - event.deltaY * 0.002);
     };
-    node.addEventListener("wheel", onWheel, { passive: false });
-    return () => node.removeEventListener("wheel", onWheel);
-  }, [applyZoom, zoom, open, src]);
+    viewportNode.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewportNode.removeEventListener("wheel", onWheel);
+  }, [applyZoom, viewportNode, zoom]);
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!natural || event.button !== 0) return;
@@ -270,7 +268,7 @@ export function ImageCropperDialog({
 
         <DialogBody className="flex flex-col gap-4">
           <div
-            ref={viewportRef}
+            ref={setViewportNode}
             role="application"
             aria-label="Image crop area"
             tabIndex={0}
@@ -385,7 +383,7 @@ export function ImageCropperDialog({
             type="button"
             className="cursor-pointer"
             onClick={() => void handleConfirm()}
-            disabled={!natural || isRendering}
+            disabled={!natural || baseScale === 0 || isRendering}
           >
             {isRendering ? (
               <Loader2 className="mr-1.5 size-4 animate-spin" />

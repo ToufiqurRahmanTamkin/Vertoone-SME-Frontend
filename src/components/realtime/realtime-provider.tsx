@@ -159,6 +159,10 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "BusinessToolsDashboard",
   ],
   BUSINESS_TOOLS_SETTINGS: ["BusinessToolsSettings"],
+  HRMS_SETTINGS: ["HrmsSettings", "HrmsSettingsSummary"],
+  LEAVE_TYPES: ["LeaveTypes", "LeaveTypeSummary", "LeaveTypeOptions", "HrmsSettingsSummary"],
+  SHIFTS: ["Shifts", "ShiftSummary", "ShiftOptions", "HrmsSettingsSummary"],
+  HOLIDAYS: ["Holidays", "HolidaySummary", "HrmsSettingsSummary"],
   EMAIL_TEMPLATES: [
     "EmailTemplates",
     "EmailTemplate",

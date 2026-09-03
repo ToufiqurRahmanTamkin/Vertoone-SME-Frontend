@@ -1259,12 +1259,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 description: "Check-in and check-out records day by day.",
               },
               {
-                title: "Shifts",
-                slug: "shifts",
-                icon: "Clock",
-                description: "Working-hour patterns assigned to employees.",
-              },
-              {
                 title: "Holidays",
                 slug: "holidays",
                 icon: "CalendarDays",
@@ -1493,6 +1487,12 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 slug: "leave",
                 icon: "Plane",
                 description: "Leave types, entitlement, accrual and carry-forward rules.",
+              },
+              {
+                title: "Shifts",
+                slug: "shifts",
+                icon: "Clock",
+                description: "Working-hour patterns, the week start and the weekly off days.",
               },
               {
                 title: "Overtime",

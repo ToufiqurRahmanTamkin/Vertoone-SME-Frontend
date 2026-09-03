@@ -70,6 +70,26 @@ const MeetingRegistrations = lazy(
 const Bookings = lazy(() => import("@/app/calendar/bookings/BookingsPage"));
 const BookingRequests = lazy(() => import("@/app/calendar/bookings/BookingRequestsPage"));
 const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
+const HrmsSettingsOverview = lazy(
+  () => import("@/app/hrms/settings/overview/HrmsSettingsOverviewPage")
+);
+const LeaveSettings = lazy(() => import("@/app/hrms/settings/leave/LeaveSettingsPage"));
+const ShiftSettings = lazy(() => import("@/app/hrms/settings/shifts/ShiftSettingsPage"));
+const AttendanceRuleSettings = lazy(
+  () => import("@/app/hrms/settings/attendance/AttendanceRuleSettingsPage")
+);
+const LateFineSettings = lazy(
+  () => import("@/app/hrms/settings/lateFine/LateFineSettingsPage")
+);
+const OvertimeSettings = lazy(
+  () => import("@/app/hrms/settings/overtime/OvertimeSettingsPage")
+);
+const HolidayCalendar = lazy(
+  () => import("@/app/hrms/settings/holidays/HolidayCalendarPage")
+);
+const PayrollSettings = lazy(
+  () => import("@/app/hrms/settings/payroll/PayrollSettingsPage")
+);
 const Products = lazy(() => import("@/app/sme/products/list/ProductsPage"));
 const ProductCategories = lazy(
   () => import("@/app/sme/products/categories/ProductCategoriesPage")
@@ -222,6 +242,14 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/directory/departments", element: <Departments /> },
   { path: "hrms/directory/designations", element: <Designations /> },
   { path: "hrms/payroll/salaries", element: <Salaries /> },
+  { path: "hrms/settings/overview", element: <HrmsSettingsOverview /> },
+  { path: "hrms/settings/leave", element: <LeaveSettings /> },
+  { path: "hrms/settings/shifts", element: <ShiftSettings /> },
+  { path: "hrms/settings/attendance-rules", element: <AttendanceRuleSettings /> },
+  { path: "hrms/settings/late-fine-rules", element: <LateFineSettings /> },
+  { path: "hrms/settings/overtime", element: <OvertimeSettings /> },
+  { path: "hrms/settings/holiday-calendar", element: <HolidayCalendar /> },
+  { path: "hrms/settings/payroll", element: <PayrollSettings /> },
 
   { path: "settings/company/profile", element: <CompanyProfile /> },
   { path: "settings/company/concerns", element: <Concerns /> },
@@ -288,6 +316,7 @@ const legacyRedirects: RouteConfig[] = [
   { path: "finance/expense", element: <Navigate to="/platform/finance/expense" replace /> },
   { path: "finance/income", element: <Navigate to="/platform/finance/income" replace /> },
   { path: "finance/invoices", element: <Navigate to="/platform/finance/invoices" replace /> },
+  { path: "hrms/attendance/shifts", element: <Navigate to="/hrms/settings/shifts" replace /> },
   { path: "hrms/settings/payroll-settings", element: <Navigate to="/hrms/settings/payroll" replace /> },
   { path: "insights/customers/campaigns", element: <Navigate to="/crm/insights/campaigns" replace /> },
   { path: "insights/customers/deals", element: <Navigate to="/crm/insights/deals" replace /> },
