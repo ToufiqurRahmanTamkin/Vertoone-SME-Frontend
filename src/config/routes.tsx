@@ -137,6 +137,16 @@ const FormResponses = lazy(() => import("@/app/businessTools/formBuilder/FormRes
 const BusinessToolsSettings = lazy(
   () => import("@/app/businessTools/settings/BusinessToolsSettingsPage")
 );
+const DocumentsOverview = lazy(
+  () => import("@/app/documents/overview/DocumentsOverviewPage")
+);
+const AllDocuments = lazy(
+  () => import("@/app/documents/allDocuments/AllDocumentsPage")
+);
+const DigitalContracts = lazy(
+  () => import("@/app/documents/digitalContracts/DigitalContractsPage")
+);
+const SignContract = lazy(() => import("@/app/publicContract/SignContractPage"));
 const PublicShop = lazy(() => import("@/app/publicShop/PublicShopPage"));
 const PublicEvent = lazy(() => import("@/app/publicCalendar/PublicEventPage"));
 const PublicMeeting = lazy(() => import("@/app/publicCalendar/PublicMeetingPage"));
@@ -187,6 +197,9 @@ const builtRoutes: RouteConfig[] = [
   { path: "company/finance/expenses", element: <FinanceExpense /> },
   { path: "company/finance/invoices", element: <FinanceInvoices /> },
   { path: "company/finance/categories", element: <FinanceCategories /> },
+  { path: "company/documents/overview", element: <DocumentsOverview /> },
+  { path: "company/documents/all-documents", element: <AllDocuments /> },
+  { path: "company/documents/digital-contracts", element: <DigitalContracts /> },
   { path: "company/tasks-and-goals/overview", element: <TasksGoalsOverview /> },
   { path: "company/tasks-and-goals/tasks", element: <Tasks /> },
   { path: "company/tasks-and-goals/tasks/:id", element: <TaskBoard /> },
@@ -459,6 +472,8 @@ export const routes: RouteConfig[] = [
   { path: "/", element: <RootRedirect /> },
 
   { path: "shop/:slug", element: <PublicShop /> },
+
+  { path: "sign/:token", element: <SignContract /> },
 
   { path: "events/:slug", element: <PublicEvent /> },
   { path: "meetings/:slug", element: <PublicMeeting /> },

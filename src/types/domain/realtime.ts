@@ -32,6 +32,8 @@ export const SOCKET_RESOURCES = [
   "TASK_ACTIVITIES",
   "GOALS",
   "NOTES",
+  "DOCUMENTS",
+  "CONTRACTS",
   "EMPLOYEES",
   "TEAMS",
   "DEPARTMENTS",

@@ -8,6 +8,9 @@ export const UPLOAD_FOLDERS = [
   "web",
   "email",
   "general",
+  "documents",
+  "contracts",
+  "signatures",
 ] as const;
 export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
 
@@ -18,4 +21,13 @@ export interface UploadedAsset {
   bytes: number;
   width: number;
   height: number;
+}
+
+export interface UploadedDocument {
+  url: string;
+  publicId: string;
+  fileName: string;
+  mimeType: string;
+  extension: string;
+  bytes: number;
 }
