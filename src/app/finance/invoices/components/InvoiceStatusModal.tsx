@@ -17,7 +17,13 @@ import {
 } from "@/constant";
 import { useSetInvoiceStatusMutation } from "@/redux/apis/financeApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import { isInvoiceLinked, type Invoice, type InvoiceStatus } from "@/types/domain/invoice";
+import {
+  isInvoiceLinked,
+  isSystemInvoice,
+  SETTLEMENT_INVOICE_STATUSES,
+  type Invoice,
+  type InvoiceStatus,
+} from "@/types/domain/invoice";
 import { InvoiceStatusSchema, type InvoiceStatusFormValues } from "@/validations/finance";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -47,6 +53,13 @@ export function InvoiceStatusModal({ open, onOpenChange, invoice }: InvoiceStatu
   }, [open, invoice, form]);
 
   const status = useWatch({ control: form.control, name: "status" }) as InvoiceStatus;
+
+  const settleOnly = invoice !== null && isSystemInvoice(invoice);
+  const statusOptions = settleOnly
+    ? STATUS_OPTIONS.filter((option) =>
+        SETTLEMENT_INVOICE_STATUSES.includes(option.value as InvoiceStatus)
+      )
+    : STATUS_OPTIONS;
 
   const onSubmit = async (values: InvoiceStatusFormValues) => {
     if (!invoice) return;
@@ -82,7 +95,12 @@ export function InvoiceStatusModal({ open, onOpenChange, invoice }: InvoiceStatu
                 control={form.control}
                 name="status"
                 label="Status"
-                options={STATUS_OPTIONS}
+                options={statusOptions}
+                description={
+                  settleOnly
+                    ? "This invoice was raised by the system, so it can only be marked paid or unpaid."
+                    : undefined
+                }
               />
 
               <p className="rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">

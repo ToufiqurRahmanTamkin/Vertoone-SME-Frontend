@@ -26,6 +26,7 @@ import {
   isAwaitingPaymentApproval,
   isInvoiceOverdue,
   isSubscriptionInvoice,
+  isSystemInvoice,
   type Invoice,
 } from "@/types/domain/invoice";
 import type { PaymentMethod } from "@/types/domain/soldSubscription";
@@ -82,8 +83,10 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
             {isInvoiceOverdue(invoice) && (
               <StatusBadge color="red" label="Overdue" />
             )}
-            {isSubscriptionInvoice(invoice) && (
+            {isSubscriptionInvoice(invoice) ? (
               <StatusBadge color="violet" label="Subscription" />
+            ) : (
+              isSystemInvoice(invoice) && <StatusBadge color="zinc" label="System raised" />
             )}
             {isAwaitingPaymentApproval(invoice) && (
               <StatusBadge color="amber" label="Awaiting approval" />
@@ -92,6 +95,8 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
 
           <p className="text-xs text-muted-foreground">
             {INVOICE_STATUS_DESCRIPTIONS[invoice.status]}
+            {isSystemInvoice(invoice) &&
+              " This invoice was raised by the system, so it cannot be edited or deleted — only marked paid or unpaid."}
           </p>
 
           <div className="rounded-lg border bg-muted/30 p-4">

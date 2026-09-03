@@ -1,11 +1,22 @@
 import { RowActions } from "@/components/shared/row-actions";
 import {
   canReviewInvoicePayment,
+  canRevertInvoicePayment,
   canSubmitInvoicePayment,
   isSubscriptionInvoice,
+  isSystemInvoice,
   type Invoice,
 } from "@/types/domain/invoice";
-import { BadgeCheck, BadgeX, Eye, Pencil, Tags, Trash2, Wallet } from "lucide-react";
+import {
+  BadgeCheck,
+  BadgeX,
+  Eye,
+  Pencil,
+  RotateCcw,
+  Tags,
+  Trash2,
+  Wallet,
+} from "lucide-react";
 
 export interface InvoiceRowActionHandlers {
   onView: (invoice: Invoice) => void;
@@ -14,9 +25,13 @@ export interface InvoiceRowActionHandlers {
   onPay: (invoice: Invoice) => void;
   onApprove: (invoice: Invoice) => void;
   onReject: (invoice: Invoice) => void;
+  onRevert: (invoice: Invoice) => void;
   onDelete: (invoice: Invoice) => void;
   isPlatform: boolean;
 }
+
+const SYSTEM_LOCK_HINT =
+  "Raised by the system. It can only be marked paid or unpaid.";
 
 export function InvoiceRowActions({
   invoice,
@@ -26,12 +41,15 @@ export function InvoiceRowActions({
   onPay,
   onApprove,
   onReject,
+  onRevert,
   onDelete,
   isPlatform,
 }: InvoiceRowActionHandlers & { invoice: Invoice }) {
+  const system = isSystemInvoice(invoice);
   const subscription = isSubscriptionInvoice(invoice);
   const canPay = !isPlatform && canSubmitInvoicePayment(invoice);
   const canReview = isPlatform && canReviewInvoicePayment(invoice);
+  const canRevert = canRevertInvoicePayment(invoice, isPlatform);
 
   return (
     <RowActions
@@ -57,24 +75,34 @@ export function InvoiceRowActions({
           icon: BadgeX,
           onSelect: () => onReject(invoice),
         },
+        canRevert && {
+          key: "revert",
+          label: isPlatform ? "Mark as unpaid" : "Withdraw payment",
+          icon: RotateCcw,
+          onSelect: () => onRevert(invoice),
+        },
         !subscription && {
           key: "status",
-          label: "Change status",
+          label: system ? "Mark paid or unpaid" : "Change status",
           icon: Tags,
           onSelect: () => onChangeStatus(invoice),
         },
-        !subscription && {
+        {
           key: "edit",
           label: "Edit",
           icon: Pencil,
+          disabled: system,
+          title: system ? SYSTEM_LOCK_HINT : undefined,
           onSelect: () => onEdit(invoice),
         },
-        !subscription && {
+        {
           key: "delete",
           label: "Delete",
           icon: Trash2,
           variant: "destructive" as const,
           separated: true,
+          disabled: system,
+          title: system ? SYSTEM_LOCK_HINT : undefined,
           onSelect: () => onDelete(invoice),
         },
       ]}

@@ -10,6 +10,9 @@ export interface FinanceEntryRowActionHandlers<T> {
 const isSystemGeneratedEntry = (entry: Income | Expense): boolean =>
   "sourceType" in entry && entry.sourceType !== "MANUAL";
 
+const SYSTEM_LOCK_HINT =
+  "Raised by the system. Settle it from its invoice — marking that paid or unpaid updates this entry.";
+
 export function FinanceEntryRowActions<T extends Income | Expense>({
   entry,
   onEdit,
@@ -26,6 +29,7 @@ export function FinanceEntryRowActions<T extends Income | Expense>({
           label: "Edit",
           icon: Pencil,
           disabled: locked,
+          title: locked ? SYSTEM_LOCK_HINT : undefined,
           onSelect: () => onEdit(entry),
         },
         {
@@ -35,6 +39,7 @@ export function FinanceEntryRowActions<T extends Income | Expense>({
           variant: "destructive",
           separated: true,
           disabled: locked,
+          title: locked ? SYSTEM_LOCK_HINT : undefined,
           onSelect: () => onDelete(entry),
         },
       ]}

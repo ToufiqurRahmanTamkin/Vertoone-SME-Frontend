@@ -13,10 +13,11 @@ import {
   isInvoiceLinked,
   isInvoiceOverdue,
   isSubscriptionInvoice,
+  isSystemInvoice,
   type Invoice,
 } from "@/types/domain/invoice";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Link2, Link2Off, Repeat } from "lucide-react";
+import { Link2, Link2Off, Lock, Repeat } from "lucide-react";
 import {
   InvoiceRowActions,
   type InvoiceRowActionHandlers,
@@ -31,8 +32,18 @@ export const invoiceColumns = (
     cell: ({ row }) => (
       <div className="min-w-0">
         <p className="flex items-center gap-1.5 truncate font-mono text-xs font-semibold">
-          {isSubscriptionInvoice(row.original) && (
-            <Repeat className="h-3 w-3 shrink-0 text-muted-foreground" />
+          {isSubscriptionInvoice(row.original) ? (
+            <Repeat
+              className="h-3 w-3 shrink-0 text-muted-foreground"
+              aria-label="Subscription invoice"
+            />
+          ) : (
+            isSystemInvoice(row.original) && (
+              <Lock
+                className="h-3 w-3 shrink-0 text-muted-foreground"
+                aria-label="System raised"
+              />
+            )
           )}
           {row.original.invoiceNumber}
         </p>

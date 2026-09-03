@@ -39,6 +39,7 @@ export interface Invoice {
   reference: string;
   notes: string;
   issuedBy: string | null;
+  systemGenerated: boolean;
   subscriptionId: string | null;
   transactionId: string;
   paymentNote: string;
@@ -81,6 +82,7 @@ export interface InvoiceListQuery {
   overdue?: boolean;
   awaitingApproval?: boolean;
   subscriptionOnly?: boolean;
+  systemGenerated?: boolean;
   dateFrom?: string;
   dateTo?: string;
 }
@@ -193,6 +195,11 @@ export const isInvoiceOverdue = (invoice: Invoice): boolean =>
 export const isSubscriptionInvoice = (invoice: Invoice): boolean =>
   invoice.subscriptionId !== null;
 
+export const isSystemInvoice = (invoice: Invoice): boolean =>
+  invoice.systemGenerated || isSubscriptionInvoice(invoice);
+
+export const SETTLEMENT_INVOICE_STATUSES: InvoiceStatus[] = ["UNPAID", "PAID"];
+
 export const isAwaitingPaymentApproval = (invoice: Invoice): boolean =>
   isSubscriptionInvoice(invoice) &&
   invoice.paymentSubmittedAt !== null &&
@@ -210,3 +217,9 @@ export const canReviewInvoicePayment = (invoice: Invoice): boolean =>
   invoice.type === "INCOME" &&
   invoice.status !== "PAID" &&
   !VOID_INVOICE_STATUSES.includes(invoice.status);
+
+export const canRevertInvoicePayment = (invoice: Invoice, isPlatform: boolean): boolean => {
+  if (!isSubscriptionInvoice(invoice)) return false;
+  if (isPlatform) return invoice.status === "PAID" || invoice.paymentSubmittedAt !== null;
+  return invoice.status !== "PAID" && invoice.paymentSubmittedAt !== null;
+};

@@ -29,6 +29,7 @@ import {
   useDeleteInvoiceMutation,
   useGetInvoiceSummaryQuery,
   useGetInvoicesQuery,
+  useSetInvoiceStatusMutation,
 } from "@/redux/apis/financeApis";
 import { useGetSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { selectCurrentUser } from "@/redux/authSlice";
@@ -37,6 +38,7 @@ import { isPlatformRole } from "@/types/domain/auth";
 import {
   isAwaitingPaymentApproval,
   isInvoiceLinked,
+  isSystemInvoice,
   type Invoice,
   type InvoiceStatus,
   type InvoiceType,
@@ -81,7 +83,8 @@ const FILTERS: FilterConfig[] = [
     options: [
       { label: "Subscription invoices", value: "subscription" },
       { label: "Awaiting payment approval", value: "awaiting" },
-      { label: "Everything else", value: "other" },
+      { label: "System raised", value: "system" },
+      { label: "Raised by hand", value: "manual" },
     ],
   },
   { name: "date", label: "Issued", type: "date-range" },
@@ -102,14 +105,16 @@ export default function InvoicesPage() {
     linked: filters.linked === undefined ? undefined : filters.linked === "true",
     overdue: filters.overdue === "true" ? true : undefined,
     awaitingApproval: filters.billing === "awaiting" ? true : undefined,
-    subscriptionOnly:
-      filters.billing === "subscription" ? true : filters.billing === "other" ? false : undefined,
+    subscriptionOnly: filters.billing === "subscription" ? true : undefined,
+    systemGenerated:
+      filters.billing === "system" ? true : filters.billing === "manual" ? false : undefined,
     dateFrom: filters.from as string | undefined,
     dateTo: filters.to as string | undefined,
   });
   const { data: summary, isLoading: isSummaryLoading } = useGetInvoiceSummaryQuery();
 
   const [deleteInvoice, { isLoading: isDeleting }] = useDeleteInvoiceMutation();
+  const [setInvoiceStatus, { isLoading: isReverting }] = useSetInvoiceStatusMutation();
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Invoice | null>(null);
@@ -119,6 +124,7 @@ export default function InvoicesPage() {
   const [payTarget, setPayTarget] = React.useState<Invoice | null>(null);
   const [reviewTarget, setReviewTarget] = React.useState<Invoice | null>(null);
   const [reviewMode, setReviewMode] = React.useState<InvoiceReviewMode>("APPROVE");
+  const [pendingRevert, setPendingRevert] = React.useState<Invoice | null>(null);
 
   const openCreate = () => {
     setEditing(null);
@@ -128,6 +134,19 @@ export default function InvoicesPage() {
   const openEdit = (invoice: Invoice) => {
     setEditing(invoice);
     setFormOpen(true);
+  };
+
+  const confirmRevert = async () => {
+    if (!pendingRevert) return;
+    try {
+      await setInvoiceStatus({ id: pendingRevert._id, body: { status: "UNPAID" } }).unwrap();
+      toast.success(isPlatform ? "Invoice reopened as unpaid" : "Payment withdrawn");
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not reopen the invoice");
+    } finally {
+      setPendingRevert(null);
+    }
   };
 
   const confirmDelete = async () => {
@@ -156,6 +175,7 @@ export default function InvoicesPage() {
       onPay: setPayTarget,
       onApprove: (invoice: Invoice) => openReview(invoice, "APPROVE"),
       onReject: (invoice: Invoice) => openReview(invoice, "REJECT"),
+      onRevert: setPendingRevert,
       onDelete: setPendingDelete,
       isPlatform,
     }),
@@ -292,6 +312,9 @@ export default function InvoicesPage() {
               {isAwaitingPaymentApproval(invoice) && (
                 <StatusBadge color="violet" label="Awaiting approval" />
               )}
+              {isSystemInvoice(invoice) && !isAwaitingPaymentApproval(invoice) && (
+                <StatusBadge color="zinc" label="System raised" />
+              )}
             </div>
 
             <p className="mt-2 text-xs text-muted-foreground">
@@ -332,6 +355,25 @@ export default function InvoicesPage() {
         onOpenChange={(open) => !open && setReviewTarget(null)}
         mode={reviewMode}
         invoice={reviewTarget}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingRevert)}
+        onOpenChange={(open) => !open && setPendingRevert(null)}
+        title={
+          isPlatform
+            ? `Reopen ${pendingRevert?.invoiceNumber ?? ""} as unpaid?`
+            : `Withdraw the payment on ${pendingRevert?.invoiceNumber ?? ""}?`
+        }
+        description={
+          isPlatform
+            ? "The subscription goes back to unpaid and any submitted payment details are cleared, so the company can pay again."
+            : "Your submitted payment details are cleared and the invoice goes back to unpaid. You can submit again afterwards."
+        }
+        confirmText={isPlatform ? "Mark unpaid" : "Withdraw"}
+        variant="destructive"
+        isLoading={isReverting}
+        onConfirm={confirmRevert}
       />
 
       <ConfirmDialog
