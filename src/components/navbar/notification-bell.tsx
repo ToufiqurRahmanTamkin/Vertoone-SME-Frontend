@@ -138,6 +138,7 @@ export function NotificationBell() {
   };
 
   const handleMarkAllRead = async () => {
+    setOpen(false);
     try {
       await markAllRead().unwrap();
       toast.success("All notifications marked as read");
@@ -148,6 +149,7 @@ export function NotificationBell() {
   };
 
   const handleClearAll = async () => {
+    setOpen(false);
     try {
       await clearAll().unwrap();
       toast.success("Notifications cleared");

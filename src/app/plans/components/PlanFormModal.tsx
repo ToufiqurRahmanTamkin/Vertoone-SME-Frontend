@@ -1,5 +1,6 @@
 import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
 import { FormInput, FormSelect, FormSwitch, FormTextarea } from "@/components/shared/form-fields";
+import { ReviewSummary, type ReviewSection } from "@/components/shared/review-summary";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,9 +20,11 @@ import { useCreatePlanMutation, useUpdatePlanMutation } from "@/redux/apis/planA
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { categoryRefId, SUBSCRIPTION_REVENUE_CATEGORY } from "@/types/domain/finance";
 import {
+  PRODUCT_LABELS,
   prunePermissionMap,
   withGrantedModules,
   type ModulePermissionMap,
+  type ModuleProduct,
 } from "@/types/domain/permission";
 import {
   DEFAULT_CURRENCY,
@@ -51,6 +54,7 @@ const STEPS: readonly StepperStep[] = [
   { id: "details", label: "Plan details" },
   { id: "modules", label: "Modules & limits" },
   { id: "availability", label: "Availability" },
+  { id: "review", label: "Review" },
 ];
 
 const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
@@ -66,6 +70,7 @@ const STEP_FIELDS: readonly (keyof PlanFormValues)[][] = [
   ],
   ["limitUsers", "aiTokenLimit"],
   ["isActive", "isPrivate"],
+  [],
 ];
 
 const LAST_STEP = STEPS.length - 1;
@@ -263,7 +268,77 @@ export function PlanFormModal({
   const summary = useWatch({ control: form.control });
 
   const selectedCategoryName =
-    incomeCategoryOptions.find((option) => option.value === summary.financeCategoryId)?.label ?? "—";
+    incomeCategoryOptions.find((option) => option.value === summary.financeCategoryId)?.label ?? "";
+
+  const featureList = parseFeatures(summary.features ?? "");
+
+  const moduleCountsByProduct = React.useMemo(() => {
+    const granted = new Set(
+      Object.entries(livePermissions)
+        .filter(([, permission]) => permission.canView)
+        .map(([key]) => key)
+    );
+
+    const counts = new Map<ModuleProduct, number>();
+    companyModules.forEach((definition) => {
+      if (!granted.has(definition.key)) return;
+      counts.set(definition.product, (counts.get(definition.product) ?? 0) + 1);
+    });
+
+    return [...counts.entries()]
+      .map(([product, count]) => `${PRODUCT_LABELS[product]} ${count}`)
+      .join(" · ");
+  }, [livePermissions, companyModules]);
+
+  const describeLimit = (value: number | "" | undefined, suffix: string): string => {
+    if (value === "" || value === undefined) return "Unlimited";
+    if (value === 0) return "Off";
+    return `${value.toLocaleString()}${suffix}`;
+  };
+
+  const reviewSections: ReviewSection[] = [
+    {
+      title: "Plan",
+      items: [
+        { label: "Name", value: summary.name },
+        {
+          label: "Price",
+          value: `${(summary.price ?? 0).toLocaleString()} ${summary.currency ?? ""}`,
+        },
+        {
+          label: "Billing cycle",
+          value: summary.billingCycle ? BILLING_CYCLE_LABELS[summary.billingCycle] : "",
+        },
+        { label: "Trial", value: summary.trialDays ? `${summary.trialDays} days` : "None" },
+        { label: "Income category", value: selectedCategoryName },
+        { label: "Description", value: summary.description, wide: true },
+      ],
+    },
+    {
+      title: "Modules and limits",
+      description: moduleCountsByProduct || undefined,
+      items: [
+        { label: "Menus enabled", value: `${selectedModuleCount} of ${companyModules.length}` },
+        { label: "Users", value: describeLimit(summary.limitUsers, "") },
+        { label: "AI tokens", value: describeLimit(summary.aiTokenLimit, " / month") },
+        {
+          label: "Features",
+          value: featureList.length > 0 ? featureList.join(", ") : "",
+          wide: true,
+        },
+      ],
+    },
+    {
+      title: "Availability",
+      items: [
+        { label: "Status", value: summary.isActive ? "Active, sellable" : "Inactive" },
+        {
+          label: "Visibility",
+          value: summary.isPrivate ? "Private, assigned by you" : "Public, shown at signup",
+        },
+      ],
+    },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -397,60 +472,31 @@ export function PlanFormModal({
               )}
 
               {step === 2 && (
-                <div className="space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <FormSwitch
-                      control={form.control}
-                      name="isActive"
-                      label="Active"
-                      description="Available to sell"
-                    />
-                    <FormSwitch
-                      control={form.control}
-                      name="isPrivate"
-                      label="Private plan"
-                      description="Hidden from public signup — you assign it to a company yourself"
-                    />
-                  </div>
-
-                  <dl className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-5">
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Plan</dt>
-                      <dd className="truncate font-medium">{summary.name || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Price</dt>
-                      <dd className="font-medium">
-                        {summary.price ?? 0} {summary.currency} /{" "}
-                        {summary.billingCycle ? BILLING_CYCLE_LABELS[summary.billingCycle] : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Trial</dt>
-                      <dd className="font-medium">
-                        {summary.trialDays ? `${summary.trialDays} days` : "None"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Menus</dt>
-                      <dd className="font-medium">{selectedModuleCount} enabled</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">AI tokens</dt>
-                      <dd className="font-medium">
-                        {summary.aiTokenLimit === "" || summary.aiTokenLimit === undefined
-                          ? "Unlimited"
-                          : summary.aiTokenLimit === 0
-                            ? "Off"
-                            : `${summary.aiTokenLimit.toLocaleString()} / month`}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Income category</dt>
-                      <dd className="truncate font-medium">{selectedCategoryName}</dd>
-                    </div>
-                  </dl>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <FormSwitch
+                    control={form.control}
+                    name="isActive"
+                    label="Active"
+                    description="Available to sell"
+                  />
+                  <FormSwitch
+                    control={form.control}
+                    name="isPrivate"
+                    label="Private plan"
+                    description="Hidden from public signup — you assign it to a company yourself"
+                  />
                 </div>
+              )}
+
+              {step === 3 && (
+                <ReviewSummary
+                  sections={reviewSections}
+                  note={
+                    isEdit
+                      ? "Saving applies these menus and limits straight away to every company already on this plan — their sidebar updates without a sign-out."
+                      : "Nothing is billed when you save. Sell this plan from Sold subscriptions to put a company on it."
+                  }
+                />
               )}
             </DialogBody>
 

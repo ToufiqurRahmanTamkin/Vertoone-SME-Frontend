@@ -1,4 +1,5 @@
 import { FileUploader } from "@/components/shared/file-uploader";
+import { ReviewSummary, type ReviewSection } from "@/components/shared/review-summary";
 import {
   FormCitySelect,
   FormCountrySelect,
@@ -46,6 +47,7 @@ const STEPS: readonly StepperStep[] = [
   { id: "company", label: "Company" },
   { id: "branding", label: "Branding" },
   { id: "admin", label: "Admin" },
+  { id: "review", label: "Review" },
 ];
 
 const STEP_FIELDS: readonly (keyof CreateCompanyFormValues)[][] = [
@@ -62,6 +64,7 @@ const STEP_FIELDS: readonly (keyof CreateCompanyFormValues)[][] = [
   ],
   ["logoUrl", "logoPublicId", "bannerUrl", "bannerPublicId"],
   ["adminName", "adminEmail", "adminPhone", "adminPassword"],
+  [],
 ];
 
 const LAST_STEP = STEPS.length - 1;
@@ -118,11 +121,61 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
   const selectedCountry = useWatch({ control: form.control, name: "companyCountry" });
   const countryCurrency = selectedCountry ? currencyForCountry(selectedCountry) : "";
 
+  const values = useWatch({ control: form.control });
   const companyName = useWatch({ control: form.control, name: "companyName" });
   const logoUrl = useWatch({ control: form.control, name: "logoUrl" });
   const logoPublicId = useWatch({ control: form.control, name: "logoPublicId" });
   const bannerUrl = useWatch({ control: form.control, name: "bannerUrl" });
   const bannerPublicId = useWatch({ control: form.control, name: "bannerPublicId" });
+
+  const reviewSections: ReviewSection[] = [
+    {
+      title: "Company",
+      items: [
+        { label: "Name", value: values.companyName },
+        {
+          label: "Size",
+          value: values.employeeRange ? EMPLOYEE_RANGE_LABELS[values.employeeRange] : "",
+        },
+        { label: "Email", value: values.companyEmail },
+        { label: "Phone", value: values.companyPhone },
+        {
+          label: "Address",
+          value: [
+            values.companyStreet,
+            values.companyCity,
+            values.companyZipCode,
+            values.companyCountry,
+          ]
+            .filter(Boolean)
+            .join(", "),
+          wide: true,
+        },
+        { label: "Billing currency", value: countryCurrency },
+        { label: "Internal note", value: values.note, wide: true },
+      ],
+    },
+    {
+      title: "Branding",
+      description: "Optional artwork shown across the company workspace.",
+      items: [
+        { label: "Logo", value: values.logoUrl ? "Uploaded" : "None" },
+        { label: "Banner", value: values.bannerUrl ? "Uploaded" : "None" },
+      ],
+    },
+    {
+      title: "Company owner",
+      items: [
+        { label: "Name", value: values.adminName },
+        { label: "Email", value: values.adminEmail },
+        { label: "Phone", value: values.adminPhone },
+        {
+          label: "Password",
+          value: values.adminPassword ? `${values.adminPassword.length} characters set` : "",
+        },
+      ],
+    },
+  ];
 
   const goNext = async () => {
     const isValid = await form.trigger(STEP_FIELDS[step], { shouldFocus: true });
@@ -383,6 +436,13 @@ export function CompanyCreateModal({ open, onOpenChange }: CompanyCreateModalPro
                     className="col-span-6 sm:col-span-3"
                   />
                 </div>
+              )}
+
+              {step === 3 && (
+                <ReviewSummary
+                  sections={reviewSections}
+                  note="Saving approves the company immediately, activates the owner account and emails them these credentials. It starts without a plan — sell it a subscription from Sold subscriptions to unlock the paid modules."
+                />
               )}
             </DialogBody>
 

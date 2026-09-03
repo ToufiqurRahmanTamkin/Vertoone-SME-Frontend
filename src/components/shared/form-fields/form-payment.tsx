@@ -39,7 +39,7 @@ export function FormPayment<TFieldValues extends FieldValues>({
   const isNonCash = Boolean(method) && requiresTransactionId(method as PaymentMethod);
 
   const { data: config } = useGetSystemConfigQuery(undefined, { skip: !showQr || !isNonCash });
-  const qrUrl = config?.paymentQrUrl;
+  const qrUrl = config?.paymentQrEnabled ? config.paymentQrUrl : "";
 
   const previousMethod = React.useRef(method);
   React.useEffect(() => {

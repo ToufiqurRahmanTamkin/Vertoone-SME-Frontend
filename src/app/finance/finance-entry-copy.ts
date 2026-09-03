@@ -9,7 +9,7 @@ interface FinanceEntryCopy {
   formDescription: string;
   titlePlaceholder: string;
   partyLabel: string;
-  partyPlaceholder: string;
+  partyDescription: string;
   partyColumnHeader: string;
   submitLabel: string;
   newButtonLabel: string;
@@ -36,7 +36,8 @@ export const FINANCE_ENTRY_COPY: Record<FinanceEntryKind, FinanceEntryCopy> = {
     formDescription: "File this receipt under an income category.",
     titlePlaceholder: "March retainer",
     partyLabel: "Received from",
-    partyPlaceholder: "Who paid",
+    partyDescription:
+      "Optional — leave it blank when the payer is not a user of the system.",
     partyColumnHeader: "From",
     submitLabel: "Record income",
     newButtonLabel: "Record income",
@@ -61,7 +62,8 @@ export const FINANCE_ENTRY_COPY: Record<FinanceEntryKind, FinanceEntryCopy> = {
     formDescription: "File this payment under an expense category.",
     titlePlaceholder: "Office rent for March",
     partyLabel: "Paid to",
-    partyPlaceholder: "Who was paid",
+    partyDescription:
+      "Optional — leave it blank when the payee is not a user of the system.",
     partyColumnHeader: "To",
     submitLabel: "Record expense",
     newButtonLabel: "Record expense",

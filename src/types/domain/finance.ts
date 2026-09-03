@@ -64,6 +64,7 @@ export interface Expense {
   status: InvoiceStatus;
   paymentMethod: PaymentMethod;
   paidTo: string;
+  paidToUserId: string | null;
   reference: string;
   notes: string;
   recordedBy: string | null;
@@ -149,6 +150,7 @@ export interface ExpensePayload {
   status?: FinanceStatus;
   paymentMethod?: PaymentMethod;
   paidTo?: string;
+  paidToUserId?: string | null;
   reference?: string;
   notes?: string;
   invoiceId?: string | null;

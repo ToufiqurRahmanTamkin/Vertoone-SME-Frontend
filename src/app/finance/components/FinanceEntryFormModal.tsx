@@ -85,7 +85,10 @@ const toFormValues = (entry: Income | Expense, kind: FinanceEntryKind): FinanceE
   status: entry.status,
   paymentMethod: entry.paymentMethod,
   party: (kind === "INCOME" ? (entry as Income).receivedFrom : (entry as Expense).paidTo) ?? "",
-  partyUserId: kind === "INCOME" ? ((entry as Income).receivedFromUserId ?? "") : "",
+  partyUserId:
+    (kind === "INCOME"
+      ? (entry as Income).receivedFromUserId
+      : (entry as Expense).paidToUserId) ?? "",
   reference: entry.reference ?? "",
   notes: entry.notes ?? "",
   invoiceMode: "GENERATE",
@@ -101,7 +104,7 @@ const invoiceLinkFields = (
   return {};
 };
 
-const payerOptionLabel = (user: UserOption): string =>
+const partyOptionLabel = (user: UserOption): string =>
   `${user.name} · ${user.email} · ${user.companyName}`;
 
 const invoiceOptionLabel = (invoice: LinkableInvoice): string =>
@@ -152,7 +155,7 @@ export function FinanceEntryFormModal({
 
   const { data: userOptions = [], isFetching: isLoadingUsers } = useGetUserOptionsQuery(
     { limit: 200 },
-    { skip: !open || !isIncome }
+    { skip: !open }
   );
 
   React.useEffect(() => {
@@ -174,14 +177,14 @@ export function FinanceEntryFormModal({
     [linkableInvoices]
   );
 
-  const payerOptions = React.useMemo(
-    () => userOptions.map((user) => ({ value: user._id, label: payerOptionLabel(user) })),
+  const partyOptions = React.useMemo(
+    () => userOptions.map((user) => ({ value: user._id, label: partyOptionLabel(user) })),
     [userOptions]
   );
 
-  const onPayerChange = (nextId: string) => {
-    const payer = userOptions.find((candidate) => candidate._id === nextId);
-    form.setValue("party", payer?.name ?? "");
+  const onPartyChange = (nextId: string) => {
+    const party = userOptions.find((candidate) => candidate._id === nextId);
+    form.setValue("party", party?.name ?? "");
   };
 
   const onInvoiceChange = (nextId: string) => {
@@ -226,7 +229,11 @@ export function FinanceEntryFormModal({
           await createIncome(body).unwrap();
         }
       } else {
-        const body = { ...shared, paidTo: values.party };
+        const body = {
+          ...shared,
+          paidTo: values.party,
+          paidToUserId: values.partyUserId || null,
+        };
         if (entry) {
           await updateExpense({ id: entry._id, body }).unwrap();
         } else {
@@ -351,26 +358,17 @@ export function FinanceEntryFormModal({
               )}
 
               <div className="grid gap-4 sm:grid-cols-2">
-                {isIncome ? (
-                  <FormSelect
-                    control={form.control}
-                    name="partyUserId"
-                    label={copy.partyLabel}
-                    placeholder={isLoadingUsers ? "Loading users..." : "Pick a user (optional)"}
-                    options={payerOptions}
-                    onValueChange={onPayerChange}
-                    searchable
-                    clearable
-                    description="Optional — leave it blank when the payer is not a user of the system."
-                  />
-                ) : (
-                  <FormInput
-                    control={form.control}
-                    name="party"
-                    label={copy.partyLabel}
-                    placeholder={copy.partyPlaceholder}
-                  />
-                )}
+                <FormSelect
+                  control={form.control}
+                  name="partyUserId"
+                  label={copy.partyLabel}
+                  placeholder={isLoadingUsers ? "Loading users..." : "Pick a user (optional)"}
+                  options={partyOptions}
+                  onValueChange={onPartyChange}
+                  searchable
+                  clearable
+                  description={copy.partyDescription}
+                />
                 <FormInput
                   control={form.control}
                   name="reference"
