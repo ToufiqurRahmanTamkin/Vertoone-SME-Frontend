@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
+
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import { useCreateNoteMutation, useUpdateNoteMutation } from "@/redux/apis/noteApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
@@ -161,7 +161,7 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto md:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit note" : "New note"}</DialogTitle>
           <DialogDescription>
@@ -175,103 +175,104 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
             className="flex min-h-0 flex-1 flex-col"
             onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
           >
-            <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="title"
-                  label="Title"
-                  placeholder="Supplier call — pricing agreed"
-                />
+            <DialogBody className="flex flex-col gap-0 p-4 sm:p-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Left Column: Note Content */}
+                <div className="flex flex-col gap-3">
+                  <FormInput
+                    control={form.control}
+                    name="title"
+                    label="Title"
+                    placeholder="Supplier call — pricing agreed"
+                  />
 
-                <FormColor control={form.control} name="color" label="Colour" />
-              </div>
+                  <FormColor control={form.control} name="color" label="Colour" />
 
-              <FormTextarea
-                control={form.control}
-                name="content"
-                label="Note"
-                placeholder="What was said, decided or needs doing next"
-                rows={8}
-              />
+                  <FormSelect
+                    control={form.control}
+                    name="visibility"
+                    label="Who can read it"
+                    options={VISIBILITY_OPTIONS}
+                  />
 
-              <Separator />
+                  <FormSelect
+                    control={form.control}
+                    name="ownerId"
+                    label="Owner"
+                    placeholder="Unassigned"
+                    options={ownerChoices}
+                    searchable
+                  />
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSelect
-                  control={form.control}
-                  name="visibility"
-                  label="Who can read it"
-                  options={VISIBILITY_OPTIONS}
-                />
+                  <FormTextarea
+                    control={form.control}
+                    name="content"
+                    label="Note"
+                    placeholder="What was said, decided or needs doing next"
+                    rows={12}
+                  />
+                </div>
 
-                <FormSelect
-                  control={form.control}
-                  name="ownerId"
-                  label="Owner"
-                  placeholder="Unassigned"
-                  options={ownerChoices}
-                  searchable
-                />
-              </div>
+                {/* Right Column: Meta & Settings */}
+                <div className="flex flex-col gap-3">
 
-              {visibility === "SHARED" && (
-                <FormMultiSelect
-                  control={form.control}
-                  name="sharedWithIds"
-                  label="Shared with"
-                  placeholder="Nobody yet"
-                  options={peopleChoices}
-                  searchable
-                  emptyText="No employees yet. Add them under Directory · Employees."
-                />
-              )}
+                  {visibility === "SHARED" && (
+                    <FormMultiSelect
+                      control={form.control}
+                      name="sharedWithIds"
+                      label="Shared with"
+                      placeholder="Nobody yet"
+                      options={peopleChoices}
+                      searchable
+                      emptyText="No employees yet. Add them under Directory · Employees."
+                    />
+                  )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSelect
-                  control={form.control}
-                  name="boardId"
-                  label="Linked board"
-                  placeholder="Not linked to a board"
-                  options={boardChoices}
-                  searchable
-                  description="Keeps the note next to the work it belongs to."
-                />
+                  <div className="flex flex-col gap-3">
+                    <FormSelect
+                      control={form.control}
+                      name="boardId"
+                      label="Linked board"
+                      placeholder="Not linked to a board"
+                      options={boardChoices}
+                      searchable
+                      description="Keeps the note next to the work it belongs to."
+                    />
 
-                <FormDate
-                  control={form.control}
-                  name="reminderAt"
-                  label="Remind me at"
-                  includeTime
-                />
-              </div>
+                    <FormDate
+                      control={form.control}
+                      name="reminderAt"
+                      label="Remind me at"
+                      includeTime
+                    />
+                  </div>
 
-              <FormMultiSelect
-                control={form.control}
-                name="tagIds"
-                label="Tags"
-                placeholder="No tags"
-                options={tagChoices}
-                searchable
-                emptyText="No tags yet. Add them under Customers · Tags."
-              />
+                  <FormMultiSelect
+                    control={form.control}
+                    name="tagIds"
+                    label="Tags"
+                    placeholder="No tags"
+                    options={tagChoices}
+                    searchable
+                    emptyText="No tags yet. Add them under Customers · Tags."
+                  />
 
-              <Separator />
+                  <div className="mt-2 flex flex-col gap-3">
+                    <FormSwitch
+                      control={form.control}
+                      name="isPinned"
+                      label="Pinned"
+                      description="Pinned notes sit at the top of the list."
+                    />
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormSwitch
-                  control={form.control}
-                  name="isPinned"
-                  label="Pinned"
-                  description="Pinned notes sit at the top of the list."
-                />
-
-                <FormSwitch
-                  control={form.control}
-                  name="isArchived"
-                  label="Archived"
-                  description="Archived notes stay searchable but drop off the main list."
-                />
+                    <FormSwitch
+                      control={form.control}
+                      name="isArchived"
+                      label="Archived"
+                      description="Archived notes stay searchable but drop off the main list."
+                    />
+                  </div>
+                </div>
               </div>
             </DialogBody>
 
