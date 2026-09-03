@@ -27,6 +27,7 @@ export const EmployeeSchema = z.object({
   emergencyContactPhone: optionalPhone,
   departmentIds: z.array(z.string()).min(1, "Pick at least one department"),
   designationIds: z.array(z.string()).min(1, "Pick at least one designation"),
+  employeeRoleIds: z.array(z.string()),
   employmentType: z.enum(EMPLOYMENT_TYPES),
   workLocation: z.string().trim().max(80),
   joiningDate: z.string().trim(),

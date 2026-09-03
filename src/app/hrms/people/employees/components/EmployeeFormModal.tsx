@@ -43,6 +43,7 @@ import {
 } from "@/redux/apis/employeeApis";
 import { useGetDepartmentOptionsQuery } from "@/redux/apis/departmentApis";
 import { useGetDesignationOptionsQuery } from "@/redux/apis/designationApis";
+import { useGetEmployeeRoleOptionsQuery } from "@/redux/apis/employeeRoleApis";
 import { useGetConcernsQuery } from "@/redux/apis/concernApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
 import { useAccessGrant } from "@/hooks/use-access-grant";
@@ -87,6 +88,7 @@ const emptyValues = (): EmployeeFormValues => ({
   emergencyContactPhone: "",
   departmentIds: [],
   designationIds: [],
+  employeeRoleIds: [],
   employmentType: "FULL_TIME",
   workLocation: "",
   joiningDate: "",
@@ -126,6 +128,7 @@ const toFormValues = (employee: Employee): EmployeeFormValues => ({
   emergencyContactPhone: employee.emergencyContact?.phone ?? "",
   departmentIds: employee.departmentIds ?? [],
   designationIds: employee.designationIds ?? [],
+  employeeRoleIds: employee.employeeRoleIds ?? [],
   employmentType: employee.employmentType,
   workLocation: employee.workLocation ?? "",
   joiningDate: employee.joiningDate,
@@ -171,6 +174,7 @@ const toPayload = (
   },
   departmentIds: values.departmentIds,
   designationIds: values.designationIds,
+  employeeRoleIds: values.employeeRoleIds,
   employmentType: values.employmentType,
   workLocation: values.workLocation,
   joiningDate: values.joiningDate || undefined,
@@ -204,6 +208,7 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
   const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();
   const { data: designationOptions = [] } = useGetDesignationOptionsQuery();
+  const { data: employeeRoleOptions = [] } = useGetEmployeeRoleOptionsQuery();
   const { data: concernList } = useGetConcernsQuery({ limit: 100 });
 
   const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
@@ -263,6 +268,15 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
         hint: designation.code,
       })),
     [designationOptions]
+  );
+
+  const employeeRoleChoices = React.useMemo<MultiSelectOption[]>(
+    () =>
+      employeeRoleOptions.map((role) => ({
+        value: role._id,
+        label: role.name,
+      })),
+    [employeeRoleOptions]
   );
 
   const tagChoices = React.useMemo<MultiSelectOption[]>(
@@ -351,6 +365,16 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
                   placeholder="Pick at least one"
                   options={designationChoices}
                   emptyText="No designations yet. Create them under HRMS - Designations."
+                />
+                <FormMultiSelect
+                  control={form.control}
+                  name="employeeRoleIds"
+                  label="Employee roles"
+                  placeholder="No employee role"
+                  description="What this person can reach in the app once they can sign in."
+                  options={employeeRoleChoices}
+                  emptyText="No employee roles yet. Create them under HRMS Settings - Employee Roles & Permissions."
+                  className="col-span-6 sm:col-span-3"
                 />
               </div>
 

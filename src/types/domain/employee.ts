@@ -2,6 +2,7 @@ import type { UserStatus } from "./auth";
 import type { ConcernRef } from "./concern";
 import type { DepartmentRef } from "./department";
 import type { DesignationRef } from "./designation";
+import type { EmployeeRoleRef } from "./employeeRole";
 import type { ModulePermissionMap } from "./permission";
 import type { TagRef } from "./tag";
 
@@ -96,6 +97,8 @@ export interface Employee {
   departmentIds: string[];
   designations: DesignationRef[];
   designationIds: string[];
+  employeeRoles: EmployeeRoleRef[];
+  employeeRoleIds: string[];
   employmentType: EmploymentType;
   workLocation: string;
   joiningDate: string;
@@ -126,6 +129,7 @@ export interface EmployeeListQuery {
   employmentType?: EmploymentType;
   departmentIds?: string;
   designationIds?: string;
+  employeeRoleIds?: string;
   tagIds?: string;
   concernId?: string;
   supervisorId?: string;
@@ -164,6 +168,7 @@ export interface EmployeePayload {
   emergencyContact?: Partial<EmergencyContact>;
   departmentIds: string[];
   designationIds: string[];
+  employeeRoleIds?: string[];
   employmentType: EmploymentType;
   workLocation?: string;
   joiningDate?: string;
