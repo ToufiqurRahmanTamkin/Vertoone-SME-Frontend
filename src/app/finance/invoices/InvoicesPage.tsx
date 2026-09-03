@@ -239,7 +239,6 @@ export default function InvoicesPage() {
               Issued {formatDate(invoice.issueDate)} ·{" "}
               {isInvoiceLinked(invoice) ? INVOICE_ORIGIN_LABELS[invoice.origin] : "Not linked"}
             </p>
-
           </div>
         )}
       />

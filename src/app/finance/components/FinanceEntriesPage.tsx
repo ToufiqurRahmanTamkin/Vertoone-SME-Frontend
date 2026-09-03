@@ -273,41 +273,39 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
             )}
           </div>
         )}
-        mobileCard={(entry) => {
-          return (
-            <div className="rounded-xl border bg-card p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{entry.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {categoryRefName(entry.categoryId)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <span className="font-medium tabular-nums">
-                    {formatAmountValue(entry.amount)}
-                  </span>
-                  <FinanceEntryRowActions entry={entry} {...rowActions} />
-                </div>
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <StatusBadge
-                  color={INVOICE_STATUS_COLORS[entry.status]}
-                  label={INVOICE_STATUS_LABELS[entry.status]}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {new Date(entry.date).toLocaleDateString()} ·{" "}
-                  {PAYMENT_METHOD_LABELS[entry.paymentMethod]}
-                </span>
-              </div>
-              {entry.invoice && (
-                <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-                  {entry.invoice.invoiceNumber}
+        mobileCard={(entry) => (
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{entry.title}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {categoryRefName(entry.categoryId)}
                 </p>
-              )}
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <span className="font-medium tabular-nums">
+                  {formatAmountValue(entry.amount)}
+                </span>
+                <FinanceEntryRowActions entry={entry} {...rowActions} />
+              </div>
             </div>
-          );
-        }}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <StatusBadge
+                color={INVOICE_STATUS_COLORS[entry.status]}
+                label={INVOICE_STATUS_LABELS[entry.status]}
+              />
+              <span className="text-xs text-muted-foreground">
+                {new Date(entry.date).toLocaleDateString()} ·{" "}
+                {PAYMENT_METHOD_LABELS[entry.paymentMethod]}
+              </span>
+            </div>
+            {entry.invoice && (
+              <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
+                {entry.invoice.invoiceNumber}
+              </p>
+            )}
+          </div>
+        )}
       />
 
       <FinanceEntryFormModal
