@@ -128,3 +128,25 @@ export interface GenerateNotePayload {
   tone?: string;
   format?: string;
 }
+
+export interface AiDepartmentDraft {
+  name: string;
+  description: string;
+}
+
+export interface GenerateDepartmentsPayload {
+  count: number;
+  context?: string;
+}
+
+export interface AiDesignationDraft {
+  name: string;
+  description: string;
+  level: number;
+}
+
+export interface GenerateDesignationsPayload {
+  count: number;
+  context?: string;
+  departmentName?: string;
+}

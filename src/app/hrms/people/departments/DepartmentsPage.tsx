@@ -7,6 +7,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import {
   useDeleteDepartmentMutation,
   useGetDepartmentSummaryQuery,
@@ -14,9 +15,10 @@ import {
 } from "@/redux/apis/departmentApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Department } from "@/types/domain/department";
-import { Plus } from "lucide-react";
+import { Bot, Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiDepartmentsModal } from "./components/AiDepartmentsModal";
 import { DepartmentFormModal } from "./components/DepartmentFormModal";
 import { DepartmentRowActions, departmentColumns } from "./departments.columns";
 
@@ -45,7 +47,10 @@ export default function DepartmentsPage() {
 
   const { data: summary } = useGetDepartmentSummaryQuery();
 
+  const { data: ai } = useGetAiAllowanceQuery();
+
   const [formOpen, setFormOpen] = React.useState(false);
+  const [aiOpen, setAiOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Department | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<Department | null>(null);
   const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
@@ -128,17 +133,33 @@ export default function DepartmentsPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New department"
-              onClick={openCreate}
-              disabled={isLimitReached}
-              title={
-                isLimitReached
-                  ? `Your plan allows ${limit} departments. Delete one or upgrade to add more.`
-                  : undefined
-              }
-            />
+            <>
+              {ai?.isConfigured && (
+                <ActionButton
+                  icon={Bot}
+                  label="Generate with AI"
+                  variant="outline"
+                  onClick={() => setAiOpen(true)}
+                  disabled={isLimitReached}
+                  title={
+                    isLimitReached
+                      ? `Your plan allows ${limit} departments. Delete one or upgrade to add more.`
+                      : undefined
+                  }
+                />
+              )}
+              <ActionButton
+                icon={Plus}
+                label="New department"
+                onClick={openCreate}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} departments. Delete one or upgrade to add more.`
+                    : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -200,6 +221,12 @@ export default function DepartmentsPage() {
       />
 
       <DepartmentFormModal open={formOpen} onOpenChange={setFormOpen} department={editing} />
+
+      <AiDepartmentsModal
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        remaining={limit === null ? null : Math.max(0, limit - used)}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

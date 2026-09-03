@@ -7,6 +7,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import {
   useDeleteDesignationMutation,
   useGetDesignationSummaryQuery,
@@ -14,9 +15,10 @@ import {
 } from "@/redux/apis/designationApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Designation } from "@/types/domain/designation";
-import { Plus } from "lucide-react";
+import { Bot, Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiDesignationsModal } from "./components/AiDesignationsModal";
 import { DesignationFormModal } from "./components/DesignationFormModal";
 import { DesignationRowActions, designationColumns } from "./designations.columns";
 
@@ -45,7 +47,10 @@ export default function DesignationsPage() {
 
   const { data: summary } = useGetDesignationSummaryQuery();
 
+  const { data: ai } = useGetAiAllowanceQuery();
+
   const [formOpen, setFormOpen] = React.useState(false);
+  const [aiOpen, setAiOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Designation | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<Designation | null>(null);
   const [deleteDesignation, { isLoading: isDeleting }] = useDeleteDesignationMutation();
@@ -128,17 +133,33 @@ export default function DesignationsPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New designation"
-              onClick={openCreate}
-              disabled={isLimitReached}
-              title={
-                isLimitReached
-                  ? `Your plan allows ${limit} designations. Delete one or upgrade to add more.`
-                  : undefined
-              }
-            />
+            <>
+              {ai?.isConfigured && (
+                <ActionButton
+                  icon={Bot}
+                  label="Generate with AI"
+                  variant="outline"
+                  onClick={() => setAiOpen(true)}
+                  disabled={isLimitReached}
+                  title={
+                    isLimitReached
+                      ? `Your plan allows ${limit} designations. Delete one or upgrade to add more.`
+                      : undefined
+                  }
+                />
+              )}
+              <ActionButton
+                icon={Plus}
+                label="New designation"
+                onClick={openCreate}
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Your plan allows ${limit} designations. Delete one or upgrade to add more.`
+                    : undefined
+                }
+              />
+            </>
           )
         }
       />
@@ -200,6 +221,12 @@ export default function DesignationsPage() {
       />
 
       <DesignationFormModal open={formOpen} onOpenChange={setFormOpen} designation={editing} />
+
+      <AiDesignationsModal
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        remaining={limit === null ? null : Math.max(0, limit - used)}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

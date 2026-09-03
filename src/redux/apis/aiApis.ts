@@ -2,12 +2,16 @@ import type {
   AiAllowance,
   AiBoardDraft,
   AiCompanyDraft,
+  AiDepartmentDraft,
+  AiDesignationDraft,
   AiGeneratedCategory,
   AiGoalDraft,
   AiNoteDraft,
   AiPlanCopy,
   GenerateBoardPayload,
   GenerateCategoriesPayload,
+  GenerateDepartmentsPayload,
+  GenerateDesignationsPayload,
   GenerateGoalPayload,
   GenerateNotePayload,
   GeneratePlanCopyPayload,
@@ -44,6 +48,14 @@ const aiApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/ai/note-draft", method: "POST", body }),
       invalidatesTags: ["AiAllowance"],
     }),
+    generateDepartments: builder.mutation<AiDepartmentDraft[], GenerateDepartmentsPayload>({
+      query: (body) => ({ url: "/ai/departments", method: "POST", body }),
+      invalidatesTags: ["AiAllowance"],
+    }),
+    generateDesignations: builder.mutation<AiDesignationDraft[], GenerateDesignationsPayload>({
+      query: (body) => ({ url: "/ai/designations", method: "POST", body }),
+      invalidatesTags: ["AiAllowance"],
+    }),
   }),
 });
 
@@ -55,4 +67,6 @@ export const {
   useGenerateBoardDraftMutation,
   useGenerateGoalDraftMutation,
   useGenerateNoteDraftMutation,
+  useGenerateDepartmentsMutation,
+  useGenerateDesignationsMutation,
 } = aiApi;
