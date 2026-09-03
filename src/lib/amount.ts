@@ -11,6 +11,11 @@ export const formatAmount = (amount: number | null | undefined, currency = "BDT"
   }
 };
 
+export const formatAmountValue = (amount: number | null | undefined): string =>
+  (typeof amount === "number" && isFinite(amount) ? amount : 0).toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+  });
+
 export const formatNumber = (value: number | null | undefined): string =>
   (typeof value === "number" && isFinite(value) ? value : 0).toLocaleString();
 

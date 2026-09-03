@@ -4,7 +4,7 @@ import { KpiCard } from "@/app/dashboard/components/KpiCard";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatGrid } from "@/components/ui/stat";
 import {
@@ -15,7 +15,7 @@ import {
   INVOICE_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "@/constant";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate, formatDateTime } from "@/lib/date";
 import { useGetFinanceDashboardQuery } from "@/redux/apis/financeApis";
 import type { CategoryBreakdownEntry } from "@/types/domain/financeDashboard";
@@ -24,6 +24,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   CalendarClock,
+  Coins,
   CreditCard,
   FileText,
   Layers,
@@ -38,15 +39,14 @@ import { Link, useLocation } from "react-router-dom";
 
 const categoryRows = (
   entries: CategoryBreakdownEntry[],
-  type: "INCOME" | "EXPENSE",
-  currency: string
+  type: "INCOME" | "EXPENSE"
 ): BreakdownRow[] =>
   entries.map((entry) => ({
     key: entry.categoryId,
     label: entry.categoryName,
     count: entry.count,
     color: FINANCE_CATEGORY_TYPE_COLORS[type],
-    valueLabel: formatAmount(entry.amount, currency),
+    valueLabel: formatAmountValue(entry.amount),
   }));
 
 export default function FinanceDashboardPage() {
@@ -69,23 +69,23 @@ export default function FinanceDashboardPage() {
   const ledgerCards = [
     {
       label: "Net profit",
-      value: formatAmount(net, currency),
-      description: `${formatAmount(ledger?.netThisMonth, currency)} this month`,
+      value: formatAmountValue(net),
+      description: `${formatAmountValue(ledger?.netThisMonth)} this month`,
       icon: Scale,
       color: net >= 0 ? ("success" as const) : ("error" as const),
     },
     {
       label: "Income",
-      value: formatAmount(ledger?.income, currency),
-      description: `${formatAmount(ledger?.incomeThisMonth, currency)} this month`,
+      value: formatAmountValue(ledger?.income),
+      description: `${formatAmountValue(ledger?.incomeThisMonth)} this month`,
       icon: TrendingUp,
       color: "success" as const,
       changePercent: ledger?.incomeChangePercent,
     },
     {
       label: "Expense",
-      value: formatAmount(ledger?.expense, currency),
-      description: `${formatAmount(ledger?.expenseThisMonth, currency)} this month`,
+      value: formatAmountValue(ledger?.expense),
+      description: `${formatAmountValue(ledger?.expenseThisMonth)} this month`,
       icon: TrendingDown,
       color: "warning" as const,
       changePercent: ledger?.expenseChangePercent,
@@ -102,21 +102,21 @@ export default function FinanceDashboardPage() {
   const billingCards = [
     {
       label: "Receivable",
-      value: formatAmount(receivables?.receivable, currency),
-      description: `${formatAmount(receivables?.overdueReceivable, currency)} of it overdue`,
+      value: formatAmountValue(receivables?.receivable),
+      description: `${formatAmountValue(receivables?.overdueReceivable)} of it overdue`,
       icon: ArrowUpRight,
       color: "info" as const,
     },
     {
       label: "Payable",
-      value: formatAmount(receivables?.payable, currency),
-      description: `${formatAmount(receivables?.overduePayable, currency)} of it overdue`,
+      value: formatAmountValue(receivables?.payable),
+      description: `${formatAmountValue(receivables?.overduePayable)} of it overdue`,
       icon: ArrowDownRight,
       color: "warning" as const,
     },
     {
       label: "Due this week",
-      value: formatAmount(receivables?.dueThisWeek, currency),
+      value: formatAmountValue(receivables?.dueThisWeek),
       description: `${formatNumber(overdueCount)} invoice(s) already past due`,
       icon: CalendarClock,
       color: overdueCount > 0 ? ("error" as const) : ("default" as const),
@@ -130,12 +130,45 @@ export default function FinanceDashboardPage() {
     },
   ];
 
+  const volumeCards = [
+    {
+      label: "Income entries",
+      value: formatNumber(entries?.incomeCount),
+      description: `${formatAmountValue(entries?.averageIncome)} on average`,
+      icon: TrendingUp,
+      color: "success" as const,
+    },
+    {
+      label: "Expense entries",
+      value: formatNumber(entries?.expenseCount),
+      description: `${formatAmountValue(entries?.averageExpense)} on average`,
+      icon: TrendingDown,
+      color: "warning" as const,
+    },
+    {
+      label: "Invoices",
+      value: formatNumber(invoices?.total),
+      description: `${formatNumber(invoices?.paid)} paid · ${formatNumber(
+        invoices?.unpaid
+      )} unpaid · ${formatNumber(invoices?.draft)} draft`,
+      icon: FileText,
+      color: "info" as const,
+    },
+    {
+      label: "Categories",
+      value: formatNumber(entries?.categoryCount),
+      description: "Active income and expense categories",
+      icon: Layers,
+      color: "default" as const,
+    },
+  ];
+
   const statusRows: BreakdownRow[] = (data?.invoiceStatusBreakdown ?? []).map((row) => ({
     key: row.status,
     label: INVOICE_STATUS_LABELS[row.status],
     count: row.count,
     color: INVOICE_STATUS_COLORS[row.status],
-    valueLabel: formatAmount(row.amount, currency),
+    valueLabel: formatAmountValue(row.amount),
   }));
 
   const methodRows: BreakdownRow[] = (data?.paymentMethods ?? []).map((row) => ({
@@ -143,7 +176,7 @@ export default function FinanceDashboardPage() {
     label: PAYMENT_METHOD_LABELS[row.method],
     count: row.count,
     color: "blue" as const,
-    valueLabel: formatAmount(row.amount, currency),
+    valueLabel: formatAmountValue(row.amount),
   }));
 
   return (
@@ -156,12 +189,10 @@ export default function FinanceDashboardPage() {
             : "Money in, money out and what is still owed."
         }
         actions={
-          <Button asChild variant="outline" className="cursor-pointer">
-            <Link to={invoicesPath}>
-              All invoices
-              <ArrowUpRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
+          <Badge variant="secondary" className="gap-1.5 px-2.5 py-1 font-normal">
+            <Coins className="size-3.5" />
+            Amounts in <span className="font-semibold">{currency}</span>
+          </Badge>
         }
       />
 
@@ -192,7 +223,7 @@ export default function FinanceDashboardPage() {
           {dueThisWeek > 0 && (
             <span className="text-muted-foreground">
               <span className="font-semibold text-foreground">
-                {formatAmount(dueThisWeek, currency)}
+                {formatAmountValue(dueThisWeek)}
               </span>{" "}
               falls due within seven days
             </span>
@@ -208,6 +239,12 @@ export default function FinanceDashboardPage() {
 
       <StatGrid className="xl:grid-cols-4">
         {billingCards.map((card) => (
+          <KpiCard key={card.label} {...card} isLoading={isLoading} />
+        ))}
+      </StatGrid>
+
+      <StatGrid className="xl:grid-cols-4">
+        {volumeCards.map((card) => (
           <KpiCard key={card.label} {...card} isLoading={isLoading} />
         ))}
       </StatGrid>
@@ -247,7 +284,7 @@ export default function FinanceDashboardPage() {
           description="Where the money came from."
         >
           <BreakdownBars
-            rows={categoryRows(data?.incomeCategories ?? [], "INCOME", currency)}
+            rows={categoryRows(data?.incomeCategories ?? [], "INCOME")}
             isLoading={isLoading}
             emptyMessage="No income booked yet."
           />
@@ -259,7 +296,7 @@ export default function FinanceDashboardPage() {
           description="Where the money went."
         >
           <BreakdownBars
-            rows={categoryRows(data?.expenseCategories ?? [], "EXPENSE", currency)}
+            rows={categoryRows(data?.expenseCategories ?? [], "EXPENSE")}
             isLoading={isLoading}
             emptyMessage="No expense booked yet."
           />
@@ -314,7 +351,7 @@ export default function FinanceDashboardPage() {
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="font-medium tabular-nums">
-                      {formatAmount(invoice.amount, invoice.currency)}
+                      {formatAmountValue(invoice.amount)}
                     </p>
                     <p className="text-xs font-medium text-red-600 dark:text-red-400">
                       {invoice.daysOverdue} day(s) late
@@ -361,7 +398,7 @@ export default function FinanceDashboardPage() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className="font-medium tabular-nums">
-                      {formatAmount(invoice.amount, invoice.currency)}
+                      {formatAmountValue(invoice.amount)}
                     </span>
                     <StatusBadge
                       color={INVOICE_STATUS_COLORS[invoice.status]}
@@ -378,11 +415,7 @@ export default function FinanceDashboardPage() {
       <SectionCard
         icon={Layers}
         title="Latest ledger entries"
-        description={`Income and expense as they were recorded. ${formatNumber(
-          entries?.incomeCount
-        )} income and ${formatNumber(entries?.expenseCount)} expense entries across ${formatNumber(
-          entries?.categoryCount
-        )} active categories.`}
+        description="Income and expense as they were recorded, newest first."
         contentClassName="p-0 md:p-0"
       >
         {isLoading ? (
@@ -417,7 +450,7 @@ export default function FinanceDashboardPage() {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <span className="font-medium tabular-nums">
-                    {formatAmount(entry.amount, entry.currency)}
+                    {formatAmountValue(entry.amount)}
                   </span>
                   <StatusBadge
                     color={INVOICE_STATUS_COLORS[entry.status]}
