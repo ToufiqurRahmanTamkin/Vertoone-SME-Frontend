@@ -152,7 +152,7 @@ export function ShiftFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto md:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? `Edit ${shift?.name}` : "New shift"}</DialogTitle>
           <DialogDescription>
@@ -162,101 +162,111 @@ export function ShiftFormModal({
 
         <Form {...form}>
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-4">
-                <FormInput
-                  control={form.control}
-                  name="name"
-                  label="Name"
-                  placeholder="General shift"
-                  className="sm:col-span-2"
-                />
-                <FormInput control={form.control} name="code" label="Code" placeholder="Auto" />
-                <FormColor control={form.control} name="color" label="Colour" />
-              </div>
+            <DialogBody className="flex flex-col gap-0 p-4 sm:p-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Left Column: Basic Details */}
+                <div className="flex flex-col gap-3">
+                  <FormInput
+                    control={form.control}
+                    name="name"
+                    label="Name"
+                    placeholder="General shift"
+                  />
+                  <div className="flex flex-col gap-3">
+                    <FormInput control={form.control} name="code" label="Code" placeholder="Auto" />
+                    <FormColor control={form.control} name="color" label="Colour" />
+                  </div>
+                  <FormTextarea
+                    control={form.control}
+                    name="description"
+                    label="Description"
+                    placeholder="Who works this shift (optional)"
+                    rows={4}
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="sortOrder"
+                    label="Display order"
+                    type="number"
+                  />
+                  
+                  <div className="mt-2 flex flex-col gap-3">
+                    <FormSwitch
+                      control={form.control}
+                      name="isDefault"
+                      label="Default shift"
+                      description="New employees start on this one."
+                    />
+                  </div>
+                </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <FormInput
-                  control={form.control}
-                  name="startTime"
-                  label="Starts at"
-                  type="time"
-                />
-                <FormInput control={form.control} name="endTime" label="Ends at" type="time" />
-                <FormInput
-                  control={form.control}
-                  name="breakMinutes"
-                  label="Unpaid break (minutes)"
-                  type="number"
-                />
-              </div>
+                {/* Right Column: Time & Rules */}
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormInput
+                      control={form.control}
+                      name="startTime"
+                      label="Starts at"
+                      type="time"
+                    />
+                    <FormInput control={form.control} name="endTime" label="Ends at" type="time" />
+                  </div>
+                  
+                  <FormInput
+                    control={form.control}
+                    name="breakMinutes"
+                    label="Unpaid break (minutes)"
+                    type="number"
+                  />
+                  
+                  {preview && (
+                    <p className="rounded-lg border border-dashed bg-muted/20 px-4 py-2.5 text-sm text-muted-foreground">
+                      {preview.paidHours} paid hours a day
+                      {preview.overnight && " · this shift runs past midnight"}
+                    </p>
+                  )}
 
-              {preview && (
-                <p className="rounded-lg border border-dashed bg-muted/20 px-4 py-2.5 text-sm text-muted-foreground">
-                  {preview.paidHours} paid hours a day
-                  {preview.overnight && " · this shift runs past midnight"}
-                </p>
-              )}
+                  <FormMultiSelect
+                    control={form.control}
+                    name="workingDays"
+                    label="Working days"
+                    placeholder="Pick the days this shift is worked"
+                    options={DAY_OPTIONS}
+                  />
 
-              <FormMultiSelect
-                control={form.control}
-                name="workingDays"
-                label="Working days"
-                placeholder="Pick the days this shift is worked"
-                options={DAY_OPTIONS}
-              />
+                  <div className="mt-2 grid grid-cols-2 gap-3 rounded-md border bg-muted/20 p-3 shadow-sm">
+                    <FormInput
+                      control={form.control}
+                      name="graceMinutes"
+                      label="Late grace (mins)"
+                      type="number"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="earlyLeaveGraceMinutes"
+                      label="Early leave grace (mins)"
+                      type="number"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="minHoursFullDay"
+                      label="Full day after (hours)"
+                      type="number"
+                      step="0.5"
+                    />
+                    <FormInput
+                      control={form.control}
+                      name="minHoursHalfDay"
+                      label="Half day after (hours)"
+                      type="number"
+                      step="0.5"
+                    />
+                  </div>
 
-              <div className="grid gap-4 sm:grid-cols-4">
-                <FormInput
-                  control={form.control}
-                  name="graceMinutes"
-                  label="Late grace (minutes)"
-                  type="number"
-                  description="Clock-ins inside this window are on time."
-                />
-                <FormInput
-                  control={form.control}
-                  name="earlyLeaveGraceMinutes"
-                  label="Early leave grace (minutes)"
-                  type="number"
-                />
-                <FormInput
-                  control={form.control}
-                  name="minHoursFullDay"
-                  label="Full day after (hours)"
-                  type="number"
-                  step="0.5"
-                />
-                <FormInput
-                  control={form.control}
-                  name="minHoursHalfDay"
-                  label="Half day after (hours)"
-                  type="number"
-                  step="0.5"
-                />
-              </div>
-
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Description"
-                placeholder="Who works this shift (optional)"
-              />
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <FormInput
-                  control={form.control}
-                  name="sortOrder"
-                  label="Display order"
-                  type="number"
-                />
-                <FormSwitch
-                  control={form.control}
-                  name="isDefault"
-                  label="Default shift"
-                  description="New employees start on this one."
-                />
-                <FormSwitch control={form.control} name="isActive" label="Active" />
+                  <div className="mt-2">
+                    <FormSwitch control={form.control} name="isActive" label="Active" />
+                  </div>
+                </div>
               </div>
             </DialogBody>
 
@@ -271,7 +281,7 @@ export function ShiftFormModal({
                 Cancel
               </Button>
               <Button type="submit" className="cursor-pointer" disabled={isSaving}>
-                {isSaving && <Loader2 className="size-4 animate-spin" />}
+                {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {isEdit ? "Save changes" : "Create shift"}
               </Button>
             </DialogFooter>
