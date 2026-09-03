@@ -21,7 +21,13 @@ import {
 import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
-import { invoiceEntry, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
+import {
+  invoiceEntry,
+  isAwaitingPaymentApproval,
+  isInvoiceOverdue,
+  isSubscriptionInvoice,
+  type Invoice,
+} from "@/types/domain/invoice";
 import type { PaymentMethod } from "@/types/domain/soldSubscription";
 import * as React from "react";
 
@@ -76,6 +82,12 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
             {isInvoiceOverdue(invoice) && (
               <StatusBadge color="red" label="Overdue" />
             )}
+            {isSubscriptionInvoice(invoice) && (
+              <StatusBadge color="violet" label="Subscription" />
+            )}
+            {isAwaitingPaymentApproval(invoice) && (
+              <StatusBadge color="amber" label="Awaiting approval" />
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -99,6 +111,39 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
               <span className="font-mono">{invoice.reference || "—"}</span>
             </Row>
           </div>
+
+          {isSubscriptionInvoice(invoice) && (
+            <div className="space-y-2 border-t pt-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Payment
+              </p>
+              <Row label="Transaction ID">
+                <span className="font-mono">{invoice.transactionId || "—"}</span>
+              </Row>
+              <Row label="Submitted on">
+                {invoice.paymentSubmittedAt ? formatDate(invoice.paymentSubmittedAt) : "—"}
+              </Row>
+              {invoice.paymentNote && <Row label="Payer note">{invoice.paymentNote}</Row>}
+              <Row label="Verification">
+                {invoice.paymentReviewAction ? (
+                  <StatusBadge
+                    color={invoice.paymentReviewAction === "APPROVED" ? "green" : "red"}
+                    label={invoice.paymentReviewAction === "APPROVED" ? "Approved" : "Rejected"}
+                  />
+                ) : invoice.paymentSubmittedAt ? (
+                  <StatusBadge color="amber" label="Awaiting approval" />
+                ) : (
+                  <span className="text-muted-foreground">Not submitted yet</span>
+                )}
+              </Row>
+              {invoice.paymentReviewedAt && (
+                <Row label="Reviewed on">{formatDate(invoice.paymentReviewedAt)}</Row>
+              )}
+              {invoice.paymentReviewNote && (
+                <Row label="Reviewer note">{invoice.paymentReviewNote}</Row>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2 border-t pt-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -131,6 +176,15 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
               </p>
             )}
           </div>
+
+          {invoice.statusNote && (
+            <div className="border-t pt-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Status note
+              </p>
+              <p className="mt-1.5 whitespace-pre-wrap text-sm">{invoice.statusNote}</p>
+            </div>
+          )}
 
           {invoice.notes && (
             <div className="border-t pt-4">

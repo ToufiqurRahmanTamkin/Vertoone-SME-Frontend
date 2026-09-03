@@ -8,9 +8,15 @@ import {
 } from "@/constant";
 import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
-import { isInvoiceLinked, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
+import {
+  isAwaitingPaymentApproval,
+  isInvoiceLinked,
+  isInvoiceOverdue,
+  isSubscriptionInvoice,
+  type Invoice,
+} from "@/types/domain/invoice";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Link2, Link2Off } from "lucide-react";
+import { Link2, Link2Off, Repeat } from "lucide-react";
 import {
   InvoiceRowActions,
   type InvoiceRowActionHandlers,
@@ -24,7 +30,12 @@ export const invoiceColumns = (
     header: "Invoice",
     cell: ({ row }) => (
       <div className="min-w-0">
-        <p className="truncate font-mono text-xs font-semibold">{row.original.invoiceNumber}</p>
+        <p className="flex items-center gap-1.5 truncate font-mono text-xs font-semibold">
+          {isSubscriptionInvoice(row.original) && (
+            <Repeat className="h-3 w-3 shrink-0 text-muted-foreground" />
+          )}
+          {row.original.invoiceNumber}
+        </p>
         <p className="max-w-xs truncate text-xs text-muted-foreground">{row.original.title}</p>
       </div>
     ),
@@ -74,10 +85,15 @@ export const invoiceColumns = (
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <StatusBadge
-        color={INVOICE_STATUS_COLORS[row.original.status]}
-        label={INVOICE_STATUS_LABELS[row.original.status]}
-      />
+      <div className="flex flex-wrap items-center gap-1.5">
+        <StatusBadge
+          color={INVOICE_STATUS_COLORS[row.original.status]}
+          label={INVOICE_STATUS_LABELS[row.original.status]}
+        />
+        {isAwaitingPaymentApproval(row.original) && (
+          <StatusBadge color="violet" label="Awaiting approval" />
+        )}
+      </div>
     ),
   },
   {

@@ -31,19 +31,29 @@ import {
   useGetInvoicesQuery,
 } from "@/redux/apis/financeApis";
 import { useGetSystemConfigQuery } from "@/redux/apis/systemConfigApis";
+import { selectCurrentUser } from "@/redux/authSlice";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import { isPlatformRole } from "@/types/domain/auth";
 import {
+  isAwaitingPaymentApproval,
   isInvoiceLinked,
   type Invoice,
   type InvoiceStatus,
   type InvoiceType,
 } from "@/types/domain/invoice";
-import { Clock3, FileText, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { Clock3, FileText, Plus, ShieldCheck, TrendingDown, TrendingUp } from "lucide-react";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { InvoiceDetailDialog } from "./components/InvoiceDetailDialog";
 import { InvoiceFormModal } from "./components/InvoiceFormModal";
+import { InvoicePaymentModal } from "./components/InvoicePaymentModal";
+import {
+  InvoicePaymentReviewModal,
+  type InvoiceReviewMode,
+} from "./components/InvoicePaymentReviewModal";
 import { InvoiceRowActions } from "./components/InvoiceRowActions";
+import { InvoiceStatusModal } from "./components/InvoiceStatusModal";
 import { invoiceColumns } from "./invoices.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -64,12 +74,24 @@ const FILTERS: FilterConfig[] = [
     type: "select",
     options: [{ label: "Past its due date", value: "true" }],
   },
+  {
+    name: "billing",
+    label: "Billing",
+    type: "select",
+    options: [
+      { label: "Subscription invoices", value: "subscription" },
+      { label: "Awaiting payment approval", value: "awaiting" },
+      { label: "Everything else", value: "other" },
+    ],
+  },
   { name: "date", label: "Issued", type: "date-range" },
 ];
 
 export default function InvoicesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const { data: config } = useGetSystemConfigQuery();
+  const user = useSelector(selectCurrentUser);
+  const isPlatform = isPlatformRole(user?.role);
 
   const { data, isLoading, isFetching } = useGetInvoicesQuery({
     page: filters.page,
@@ -79,6 +101,9 @@ export default function InvoicesPage() {
     status: filters.status as InvoiceStatus | undefined,
     linked: filters.linked === undefined ? undefined : filters.linked === "true",
     overdue: filters.overdue === "true" ? true : undefined,
+    awaitingApproval: filters.billing === "awaiting" ? true : undefined,
+    subscriptionOnly:
+      filters.billing === "subscription" ? true : filters.billing === "other" ? false : undefined,
     dateFrom: filters.from as string | undefined,
     dateTo: filters.to as string | undefined,
   });
@@ -90,6 +115,10 @@ export default function InvoicesPage() {
   const [editing, setEditing] = React.useState<Invoice | null>(null);
   const [viewing, setViewing] = React.useState<Invoice | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<Invoice | null>(null);
+  const [statusTarget, setStatusTarget] = React.useState<Invoice | null>(null);
+  const [payTarget, setPayTarget] = React.useState<Invoice | null>(null);
+  const [reviewTarget, setReviewTarget] = React.useState<Invoice | null>(null);
+  const [reviewMode, setReviewMode] = React.useState<InvoiceReviewMode>("APPROVE");
 
   const openCreate = () => {
     setEditing(null);
@@ -114,9 +143,23 @@ export default function InvoicesPage() {
     }
   };
 
+  const openReview = React.useCallback((invoice: Invoice, mode: InvoiceReviewMode) => {
+    setReviewMode(mode);
+    setReviewTarget(invoice);
+  }, []);
+
   const rowActions = React.useMemo(
-    () => ({ onView: setViewing, onEdit: openEdit, onDelete: setPendingDelete }),
-    []
+    () => ({
+      onView: setViewing,
+      onEdit: openEdit,
+      onChangeStatus: setStatusTarget,
+      onPay: setPayTarget,
+      onApprove: (invoice: Invoice) => openReview(invoice, "APPROVE"),
+      onReject: (invoice: Invoice) => openReview(invoice, "REJECT"),
+      onDelete: setPendingDelete,
+      isPlatform,
+    }),
+    [isPlatform, openReview]
   );
 
   const columns = React.useMemo(() => invoiceColumns(rowActions), [rowActions]);
@@ -156,17 +199,30 @@ export default function InvoicesPage() {
       icon: Clock3,
       color: (summary?.overdueCount ?? 0) > 0 ? ("error" as const) : ("info" as const),
     },
+    {
+      label: "Awaiting approval",
+      value: formatNumber(summary?.awaitingApprovalCount),
+      description: isPlatform
+        ? "Subscription payments to verify"
+        : "Payments sent for verification",
+      icon: ShieldCheck,
+      color: (summary?.awaitingApprovalCount ?? 0) > 0 ? ("warning" as const) : ("info" as const),
+    },
   ];
 
   return (
     <>
       <PageHeader
         title="Invoices"
-        description="Every invoice sits against one income or expense entry. Bill an entry you already recorded, or let the invoice create one. Marking an invoice paid marks its entry paid."
+        description={
+          isPlatform
+            ? "Every invoice sits against one income or expense entry, and marking an invoice paid marks its entry paid. Subscription invoices settle when you approve the payment the company submitted."
+            : "Every invoice sits against one income or expense entry, and marking an invoice paid marks its entry paid. A subscription invoice settles once our team verifies the payment you submit."
+        }
         actions={<CurrencyNote currency={currency} />}
       />
 
-      <StatGrid className="xl:grid-cols-4">
+      <StatGrid className="xl:grid-cols-5">
         {stats.map(({ label, value, description, icon: Icon, color }) => (
           <Stat key={label}>
             <StatLabel>{label}</StatLabel>
@@ -233,6 +289,9 @@ export default function InvoicesPage() {
                 color={INVOICE_STATUS_COLORS[invoice.status]}
                 label={INVOICE_STATUS_LABELS[invoice.status]}
               />
+              {isAwaitingPaymentApproval(invoice) && (
+                <StatusBadge color="violet" label="Awaiting approval" />
+              )}
             </div>
 
             <p className="mt-2 text-xs text-muted-foreground">
@@ -254,6 +313,25 @@ export default function InvoicesPage() {
         open={Boolean(viewing)}
         onOpenChange={(open) => !open && setViewing(null)}
         invoice={viewing}
+      />
+
+      <InvoiceStatusModal
+        open={Boolean(statusTarget)}
+        onOpenChange={(open) => !open && setStatusTarget(null)}
+        invoice={statusTarget}
+      />
+
+      <InvoicePaymentModal
+        open={Boolean(payTarget)}
+        onOpenChange={(open) => !open && setPayTarget(null)}
+        invoice={payTarget}
+      />
+
+      <InvoicePaymentReviewModal
+        open={Boolean(reviewTarget)}
+        onOpenChange={(open) => !open && setReviewTarget(null)}
+        mode={reviewMode}
+        invoice={reviewTarget}
       />
 
       <ConfirmDialog
