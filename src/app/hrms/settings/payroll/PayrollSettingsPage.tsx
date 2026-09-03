@@ -31,6 +31,11 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { SettingsFieldset } from "../components/SettingsFieldset";
 import { SettingsFormFooter } from "../components/SettingsFormFooter";
+import {
+  SettingsTabs,
+  useSettingsTabs,
+  type SettingsTab,
+} from "../components/SettingsTabs";
 
 const CYCLE_OPTIONS = PAY_CYCLES.map((value) => ({ value, label: PAY_CYCLE_LABELS[value] }));
 
@@ -125,197 +130,251 @@ function PayrollForm({
     }
   };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <SettingsFieldset canEdit={canEdit}>
-          <SectionCard
-            icon={CalendarClock}
-            title="The pay run"
-            description="How often people are paid and where the attendance window closes."
-          >
-            <div className="grid gap-4 sm:grid-cols-3">
-              <FormSelect
-                control={form.control}
-                name="payCycle"
-                label="Pay cycle"
-                options={CYCLE_OPTIONS}
-              />
+  const tabs: SettingsTab[] = [
+    {
+      value: "pay-run",
+      label: "Pay run",
+      fields: [
+        "payCycle",
+        "payDay",
+        "cutoffDay",
+        "autoGeneratePayslips",
+        "lockAfterApproval",
+      ],
+      content: (
+        <SectionCard
+          icon={CalendarClock}
+          title="The pay run"
+          description="How often people are paid and where the attendance window closes."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormSelect
+              control={form.control}
+              name="payCycle"
+              label="Pay cycle"
+              options={CYCLE_OPTIONS}
+            />
+            <FormInput
+              control={form.control}
+              name="payDay"
+              label="Pay day"
+              type="number"
+              description="Day of the month salaries are released."
+            />
+            <FormInput
+              control={form.control}
+              name="cutoffDay"
+              label="Attendance cut-off day"
+              type="number"
+              description="Days after this fall into the next run."
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormSwitch
+              control={form.control}
+              name="autoGeneratePayslips"
+              label="Generate payslips automatically"
+              description="Draft payslips are created when the cycle closes."
+            />
+            <FormSwitch
+              control={form.control}
+              name="lockAfterApproval"
+              label="Lock a payslip once approved"
+              description="Stops anybody editing a run that has been signed off."
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "day-rate",
+      label: "Day rate",
+      fields: [
+        "dayBasis",
+        "fixedDaysPerMonth",
+        "basicPercentOfGross",
+        "roundingMode",
+        "roundTo",
+        "includeOvertime",
+        "includeLateFine",
+        "includeUnpaidLeaveDeduction",
+      ],
+      content: (
+        <SectionCard
+          icon={Calculator}
+          title="How a day of pay is worked out"
+          description="The divisor behind every per-day and per-hour figure on a payslip."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormSelect
+              control={form.control}
+              name="dayBasis"
+              label="A month counts as"
+              options={BASIS_OPTIONS}
+            />
+            {dayBasis === "FIXED_DAYS" && (
               <FormInput
                 control={form.control}
-                name="payDay"
-                label="Pay day"
+                name="fixedDaysPerMonth"
+                label="Days in a month"
                 type="number"
-                description="Day of the month salaries are released."
+                description="30 is the common choice."
               />
+            )}
+            <FormInput
+              control={form.control}
+              name="basicPercentOfGross"
+              label="Basic as % of gross"
+              type="number"
+              description="Used when a salary is entered as one gross figure."
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormSelect
+              control={form.control}
+              name="roundingMode"
+              label="Round net pay"
+              options={ROUNDING_OPTIONS}
+            />
+            {roundingMode !== "NONE" && (
               <FormInput
                 control={form.control}
-                name="cutoffDay"
-                label="Attendance cut-off day"
+                name="roundTo"
+                label="Round to the nearest"
                 type="number"
-                description="Days after this fall into the next run."
               />
-            </div>
+            )}
+          </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FormSwitch
-                control={form.control}
-                name="autoGeneratePayslips"
-                label="Generate payslips automatically"
-                description="Draft payslips are created when the cycle closes."
-              />
-              <FormSwitch
-                control={form.control}
-                name="lockAfterApproval"
-                label="Lock a payslip once approved"
-                description="Stops anybody editing a run that has been signed off."
-              />
-            </div>
-          </SectionCard>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <FormSwitch
+              control={form.control}
+              name="includeOvertime"
+              label="Add approved overtime"
+            />
+            <FormSwitch
+              control={form.control}
+              name="includeLateFine"
+              label="Apply late fines"
+            />
+            <FormSwitch
+              control={form.control}
+              name="includeUnpaidLeaveDeduction"
+              label="Deduct unpaid leave"
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "deductions",
+      label: "Deductions",
+      fields: [
+        "taxEnabled",
+        "providentFundEnabled",
+        "festivalBonusEnabled",
+        "taxPercent",
+        "pfEmployeePercent",
+        "pfEmployerPercent",
+        "festivalBonusPerYear",
+      ],
+      content: (
+        <SectionCard
+          icon={Landmark}
+          title="Statutory deductions"
+          description="Tax and provident fund rates applied to every payslip."
+        >
+          <div className="grid gap-3 sm:grid-cols-3">
+            <FormSwitch control={form.control} name="taxEnabled" label="Deduct income tax" />
+            <FormSwitch
+              control={form.control}
+              name="providentFundEnabled"
+              label="Deduct provident fund"
+            />
+            <FormSwitch
+              control={form.control}
+              name="festivalBonusEnabled"
+              label="Pay a festival bonus"
+            />
+          </div>
 
-          <SectionCard
-            icon={Calculator}
-            title="How a day of pay is worked out"
-            description="The divisor behind every per-day and per-hour figure on a payslip."
-          >
-            <div className="grid gap-4 sm:grid-cols-3">
-              <FormSelect
-                control={form.control}
-                name="dayBasis"
-                label="A month counts as"
-                options={BASIS_OPTIONS}
-              />
-              {dayBasis === "FIXED_DAYS" && (
-                <FormInput
-                  control={form.control}
-                  name="fixedDaysPerMonth"
-                  label="Days in a month"
-                  type="number"
-                  description="30 is the common choice."
-                />
-              )}
+          <div className="grid gap-4 sm:grid-cols-4">
+            {taxEnabled && (
               <FormInput
                 control={form.control}
-                name="basicPercentOfGross"
-                label="Basic as % of gross"
+                name="taxPercent"
+                label="Tax rate (%)"
                 type="number"
-                description="Used when a salary is entered as one gross figure."
+                step="0.1"
               />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormSelect
-                control={form.control}
-                name="roundingMode"
-                label="Round net pay"
-                options={ROUNDING_OPTIONS}
-              />
-              {roundingMode !== "NONE" && (
+            )}
+            {providentFundEnabled && (
+              <>
                 <FormInput
                   control={form.control}
-                  name="roundTo"
-                  label="Round to the nearest"
-                  type="number"
-                />
-              )}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <FormSwitch
-                control={form.control}
-                name="includeOvertime"
-                label="Add approved overtime"
-              />
-              <FormSwitch
-                control={form.control}
-                name="includeLateFine"
-                label="Apply late fines"
-              />
-              <FormSwitch
-                control={form.control}
-                name="includeUnpaidLeaveDeduction"
-                label="Deduct unpaid leave"
-              />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            icon={Landmark}
-            title="Statutory deductions"
-            description="Tax and provident fund rates applied to every payslip."
-          >
-            <div className="grid gap-3 sm:grid-cols-3">
-              <FormSwitch control={form.control} name="taxEnabled" label="Deduct income tax" />
-              <FormSwitch
-                control={form.control}
-                name="providentFundEnabled"
-                label="Deduct provident fund"
-              />
-              <FormSwitch
-                control={form.control}
-                name="festivalBonusEnabled"
-                label="Pay a festival bonus"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-4">
-              {taxEnabled && (
-                <FormInput
-                  control={form.control}
-                  name="taxPercent"
-                  label="Tax rate (%)"
+                  name="pfEmployeePercent"
+                  label="Employee share (%)"
                   type="number"
                   step="0.1"
                 />
-              )}
-              {providentFundEnabled && (
-                <>
-                  <FormInput
-                    control={form.control}
-                    name="pfEmployeePercent"
-                    label="Employee share (%)"
-                    type="number"
-                    step="0.1"
-                  />
-                  <FormInput
-                    control={form.control}
-                    name="pfEmployerPercent"
-                    label="Employer share (%)"
-                    type="number"
-                    step="0.1"
-                  />
-                </>
-              )}
-              {festivalBonusEnabled && (
                 <FormInput
                   control={form.control}
-                  name="festivalBonusPerYear"
-                  label="Bonuses a year"
+                  name="pfEmployerPercent"
+                  label="Employer share (%)"
                   type="number"
+                  step="0.1"
                 />
-              )}
-            </div>
-          </SectionCard>
+              </>
+            )}
+            {festivalBonusEnabled && (
+              <FormInput
+                control={form.control}
+                name="festivalBonusPerYear"
+                label="Bonuses a year"
+                type="number"
+              />
+            )}
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "payslips",
+      label: "Payslips",
+      fields: ["payslipPrefix", "payslipNote"],
+      content: (
+        <SectionCard
+          icon={Receipt}
+          title="Payslips"
+          description="How generated payslips are numbered and what they say at the bottom."
+        >
+          <FormInput
+            control={form.control}
+            name="payslipPrefix"
+            label="Payslip number prefix"
+            placeholder="PS"
+            className="sm:max-w-xs"
+          />
+          <FormTextarea
+            control={form.control}
+            name="payslipNote"
+            label="Footer note"
+            placeholder="Anything that should appear on every payslip (optional)"
+          />
+        </SectionCard>
+      ),
+    },
+  ];
 
-          <SectionCard
-            icon={Receipt}
-            title="Payslips"
-            description="How generated payslips are numbered and what they say at the bottom."
-          >
-            <FormInput
-              control={form.control}
-              name="payslipPrefix"
-              label="Payslip number prefix"
-              placeholder="PS"
-              className="sm:max-w-xs"
-            />
-            <FormTextarea
-              control={form.control}
-              name="payslipNote"
-              label="Footer note"
-              placeholder="Anything that should appear on every payslip (optional)"
-            />
-          </SectionCard>
+  const { tab, setTab, showFirstError } = useSettingsTabs(tabs);
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit, showFirstError)} className="flex flex-col gap-4">
+        <SettingsFieldset canEdit={canEdit}>
+          <SettingsTabs tabs={tabs} value={tab} onValueChange={setTab} />
         </SettingsFieldset>
 
         <SettingsFormFooter

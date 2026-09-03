@@ -7,10 +7,7 @@ import {
 } from "@/constant";
 import { formatDate } from "@/lib/date";
 import type { Employee } from "@/types/domain/employee";
-import {
-  EmployeeRowActions,
-  type EmployeeColumnActions,
-} from "../employees.columns";
+import { EmployeeRowActions, type EmployeeColumnActions } from "../employees.columns";
 
 export function EmployeeMobileCard({
   employee,

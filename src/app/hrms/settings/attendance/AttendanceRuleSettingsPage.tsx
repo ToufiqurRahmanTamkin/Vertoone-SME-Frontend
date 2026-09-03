@@ -27,6 +27,11 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { SettingsFieldset } from "../components/SettingsFieldset";
 import { SettingsFormFooter } from "../components/SettingsFormFooter";
+import {
+  SettingsTabs,
+  useSettingsTabs,
+  type SettingsTab,
+} from "../components/SettingsTabs";
 
 const CAPTURE_OPTIONS = ATTENDANCE_CAPTURE_METHODS.map((value) => ({
   value,
@@ -111,184 +116,236 @@ function AttendanceRuleForm({
     }
   };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <SettingsFieldset canEdit={canEdit}>
-          <SectionCard
-            icon={Clock}
-            title="Late, early and absent"
-            description="Measured against the start and end time of the shift each employee is on."
-          >
-            <div className="grid gap-4 sm:grid-cols-3">
-              <FormInput
-                control={form.control}
-                name="graceMinutes"
-                label="Late after (minutes)"
-                type="number"
-                description="An 8:00 shift with 15 minutes grace marks 8:16 as late."
-              />
-              <FormInput
-                control={form.control}
-                name="halfDayAfterMinutes"
-                label="Half day after (minutes late)"
-                type="number"
-                description="Arriving this far in counts as half a day."
-              />
-              <FormInput
-                control={form.control}
-                name="autoAbsentAfterMinutes"
-                label="Absent after (minutes late)"
-                type="number"
-                description="No clock-in by then and the day is marked absent."
-              />
-            </div>
+  const tabs: SettingsTab[] = [
+    {
+      value: "thresholds",
+      label: "Late & absent",
+      fields: [
+        "graceMinutes",
+        "halfDayAfterMinutes",
+        "autoAbsentAfterMinutes",
+        "earlyLeaveGraceMinutes",
+        "minHoursFullDay",
+        "minHoursHalfDay",
+        "requireNoteOnLate",
+      ],
+      content: (
+        <SectionCard
+          icon={Clock}
+          title="Late, early and absent"
+          description="Measured against the start and end time of the shift each employee is on."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormInput
+              control={form.control}
+              name="graceMinutes"
+              label="Late after (minutes)"
+              type="number"
+              description="An 8:00 shift with 15 minutes grace marks 8:16 as late."
+            />
+            <FormInput
+              control={form.control}
+              name="halfDayAfterMinutes"
+              label="Half day after (minutes late)"
+              type="number"
+              description="Arriving this far in counts as half a day."
+            />
+            <FormInput
+              control={form.control}
+              name="autoAbsentAfterMinutes"
+              label="Absent after (minutes late)"
+              type="number"
+              description="No clock-in by then and the day is marked absent."
+            />
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              <FormInput
-                control={form.control}
-                name="earlyLeaveGraceMinutes"
-                label="Early leave grace (minutes)"
-                type="number"
-              />
-              <FormInput
-                control={form.control}
-                name="minHoursFullDay"
-                label="Full day needs (hours)"
-                type="number"
-                step="0.5"
-              />
-              <FormInput
-                control={form.control}
-                name="minHoursHalfDay"
-                label="Half day needs (hours)"
-                type="number"
-                step="0.5"
-              />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormInput
+              control={form.control}
+              name="earlyLeaveGraceMinutes"
+              label="Early leave grace (minutes)"
+              type="number"
+            />
+            <FormInput
+              control={form.control}
+              name="minHoursFullDay"
+              label="Full day needs (hours)"
+              type="number"
+              step="0.5"
+            />
+            <FormInput
+              control={form.control}
+              name="minHoursHalfDay"
+              label="Half day needs (hours)"
+              type="number"
+              step="0.5"
+            />
+          </div>
 
+          <FormSwitch
+            control={form.control}
+            name="requireNoteOnLate"
+            label="Ask for a reason when somebody is late"
+          />
+        </SectionCard>
+      ),
+    },
+    {
+      value: "clock-in",
+      label: "Clocking in",
+      fields: [
+        "captureMethods",
+        "allowRemoteClockIn",
+        "allowMultipleSessions",
+        "requireGeofence",
+        "requireSelfie",
+        "geofenceRadiusMeters",
+      ],
+      content: (
+        <SectionCard
+          icon={MapPin}
+          title="Clocking in"
+          description="Where and how your people are allowed to record their time."
+        >
+          <FormMultiSelect
+            control={form.control}
+            name="captureMethods"
+            label="Clock in from"
+            placeholder="Pick at least one"
+            options={CAPTURE_OPTIONS}
+          />
+
+          <div className="grid gap-3 sm:grid-cols-2">
             <FormSwitch
               control={form.control}
-              name="requireNoteOnLate"
-              label="Ask for a reason when somebody is late"
+              name="allowRemoteClockIn"
+              label="Allow clocking in away from the office"
             />
-          </SectionCard>
-
-          <SectionCard
-            icon={MapPin}
-            title="Clocking in"
-            description="Where and how your people are allowed to record their time."
-          >
-            <FormMultiSelect
+            <FormSwitch
               control={form.control}
-              name="captureMethods"
-              label="Clock in from"
-              placeholder="Pick at least one"
-              options={CAPTURE_OPTIONS}
+              name="allowMultipleSessions"
+              label="Allow several sessions a day"
+              description="People can clock out and back in for breaks."
             />
+            <FormSwitch
+              control={form.control}
+              name="requireGeofence"
+              label="Only inside a location"
+              description="Clock-ins outside the radius are rejected."
+            />
+            <FormSwitch
+              control={form.control}
+              name="requireSelfie"
+              label="Require a photo"
+            />
+          </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FormSwitch
-                control={form.control}
-                name="allowRemoteClockIn"
-                label="Allow clocking in away from the office"
-              />
-              <FormSwitch
-                control={form.control}
-                name="allowMultipleSessions"
-                label="Allow several sessions a day"
-                description="People can clock out and back in for breaks."
-              />
-              <FormSwitch
-                control={form.control}
-                name="requireGeofence"
-                label="Only inside a location"
-                description="Clock-ins outside the radius are rejected."
-              />
-              <FormSwitch
-                control={form.control}
-                name="requireSelfie"
-                label="Require a photo"
-              />
-            </div>
-
-            {requireGeofence && (
+          {requireGeofence && (
+            <FormInput
+              control={form.control}
+              name="geofenceRadiusMeters"
+              label="Allowed radius (metres)"
+              type="number"
+              className="sm:max-w-xs"
+            />
+          )}
+        </SectionCard>
+      ),
+    },
+    {
+      value: "clock-out",
+      label: "Clock-outs",
+      fields: ["autoClockOutEnabled", "autoClockOutAfterHours"],
+      content: (
+        <SectionCard
+          icon={Timer}
+          title="Forgotten clock-outs"
+          description="What happens when somebody clocks in and never clocks out."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormSwitch
+              control={form.control}
+              name="autoClockOutEnabled"
+              label="Clock people out automatically"
+            />
+            {autoClockOutEnabled && (
               <FormInput
                 control={form.control}
-                name="geofenceRadiusMeters"
-                label="Allowed radius (metres)"
+                name="autoClockOutAfterHours"
+                label="Clock out after (hours)"
                 type="number"
-                className="sm:max-w-xs"
+                step="0.5"
               />
             )}
-          </SectionCard>
-
-          <SectionCard
-            icon={Timer}
-            title="Forgotten clock-outs"
-            description="What happens when somebody clocks in and never clocks out."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormSwitch
-                control={form.control}
-                name="autoClockOutEnabled"
-                label="Clock people out automatically"
-              />
-              {autoClockOutEnabled && (
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "corrections",
+      label: "Corrections",
+      fields: [
+        "regularizationEnabled",
+        "regularizationWindowDays",
+        "maxRegularizationsPerMonth",
+        "weekOffPaid",
+        "countHolidayAsPresent",
+      ],
+      content: (
+        <SectionCard
+          icon={PencilLine}
+          title="Corrections and days off"
+          description="Whether employees may fix a wrong record, and how days off are treated."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormSwitch
+              control={form.control}
+              name="regularizationEnabled"
+              label="Allow attendance corrections"
+              className="sm:col-span-1"
+            />
+            {regularizationEnabled && (
+              <>
                 <FormInput
                   control={form.control}
-                  name="autoClockOutAfterHours"
-                  label="Clock out after (hours)"
+                  name="regularizationWindowDays"
+                  label="Can be fixed within (days)"
                   type="number"
-                  step="0.5"
                 />
-              )}
-            </div>
-          </SectionCard>
+                <FormInput
+                  control={form.control}
+                  name="maxRegularizationsPerMonth"
+                  label="Corrections allowed a month"
+                  type="number"
+                />
+              </>
+            )}
+          </div>
 
-          <SectionCard
-            icon={PencilLine}
-            title="Corrections and days off"
-            description="Whether employees may fix a wrong record, and how days off are treated."
-          >
-            <div className="grid gap-4 sm:grid-cols-3">
-              <FormSwitch
-                control={form.control}
-                name="regularizationEnabled"
-                label="Allow attendance corrections"
-                className="sm:col-span-1"
-              />
-              {regularizationEnabled && (
-                <>
-                  <FormInput
-                    control={form.control}
-                    name="regularizationWindowDays"
-                    label="Can be fixed within (days)"
-                    type="number"
-                  />
-                  <FormInput
-                    control={form.control}
-                    name="maxRegularizationsPerMonth"
-                    label="Corrections allowed a month"
-                    type="number"
-                  />
-                </>
-              )}
-            </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormSwitch
+              control={form.control}
+              name="weekOffPaid"
+              label="Weekly off days are paid"
+            />
+            <FormSwitch
+              control={form.control}
+              name="countHolidayAsPresent"
+              label="Holidays count as present"
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+  ];
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FormSwitch
-                control={form.control}
-                name="weekOffPaid"
-                label="Weekly off days are paid"
-              />
-              <FormSwitch
-                control={form.control}
-                name="countHolidayAsPresent"
-                label="Holidays count as present"
-              />
-            </div>
-          </SectionCard>
+  const { tab, setTab, showFirstError } = useSettingsTabs(tabs);
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit, showFirstError)} className="flex flex-col gap-4">
+        <SettingsFieldset canEdit={canEdit}>
+          <SettingsTabs tabs={tabs} value={tab} onValueChange={setTab} />
         </SettingsFieldset>
 
         <SettingsFormFooter

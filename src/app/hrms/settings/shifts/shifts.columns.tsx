@@ -36,17 +36,7 @@ export const workingDayLabel = (days: number[]): string => {
 
 export function ShiftRowMenu({ shift, actions }: { shift: Shift; actions: ShiftRowActions }) {
   return (
-    <div className="flex justify-end gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        className="cursor-pointer"
-        onClick={() => actions.onEdit(shift)}
-        disabled={!actions.canEdit}
-      >
-        <Pencil className="size-3.5" />
-        Edit
-      </Button>
+    <div className="flex justify-end">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

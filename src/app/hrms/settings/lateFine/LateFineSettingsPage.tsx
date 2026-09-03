@@ -26,6 +26,11 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { SettingsFieldset } from "../components/SettingsFieldset";
 import { SettingsFormFooter } from "../components/SettingsFormFooter";
+import {
+  SettingsTabs,
+  useSettingsTabs,
+  type SettingsTab,
+} from "../components/SettingsTabs";
 
 const MAX_RULES = 10;
 
@@ -120,205 +125,241 @@ function LateFineForm({
   const cycleWord =
     resetCycle === "WEEKLY" ? "week" : resetCycle === "YEARLY" ? "year" : "month";
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <SettingsFieldset canEdit={canEdit}>
-          <SectionCard
-            icon={Gauge}
-            title="When lateness starts counting"
-            description="A late arrival is anything past the shift start plus this window. The tally resets at the end of each cycle."
-          >
+  const tabs: SettingsTab[] = [
+    {
+      value: "counting",
+      label: "Counting lates",
+      fields: ["enabled", "lateAfterMinutes", "graceLatesPerCycle", "resetCycle"],
+      content: (
+        <SectionCard
+          icon={Gauge}
+          title="When lateness starts counting"
+          description="A late arrival is anything past the shift start plus this window. The tally resets at the end of each cycle."
+        >
+          <FormSwitch
+            control={form.control}
+            name="enabled"
+            label="Deduct pay for repeated lateness"
+            description="Turn this off to keep tracking lateness without any deduction."
+          />
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormInput
+              control={form.control}
+              name="lateAfterMinutes"
+              label="Late after (minutes)"
+              type="number"
+              description="An 8:00 shift set to 15 marks 8:16 as late."
+            />
+            <FormInput
+              control={form.control}
+              name="graceLatesPerCycle"
+              label="Free lates per cycle"
+              type="number"
+              description="Ignored before any deduction applies."
+            />
+            <FormSelect
+              control={form.control}
+              name="resetCycle"
+              label="Tally resets"
+              options={CYCLE_OPTIONS}
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "steps",
+      label: "Fine steps",
+      fields: ["rules"],
+      content: (
+        <SectionCard
+          icon={Percent}
+          title="What lateness costs"
+          description="Add a step for each threshold. The highest step an employee reaches in the cycle is the one that applies."
+          action={
+            canEdit && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                disabled={fields.length >= MAX_RULES}
+                onClick={() =>
+                  append({
+                    lateCount: (rules?.length ?? 0) * 3 + 3,
+                    deductionType: "BASIC_DAYS",
+                    value: 1,
+                  })
+                }
+              >
+                <Plus className="size-3.5" />
+                Add step
+              </Button>
+            )
+          }
+        >
+          {fields.length === 0 ? (
+            <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
+              No steps yet. Add one to say what happens after a number of late arrivals.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid items-end gap-3 rounded-lg border bg-muted/20 p-3 sm:grid-cols-[auto_1fr_1fr_auto]"
+                >
+                  <FormInput
+                    control={form.control}
+                    name={`rules.${index}.lateCount`}
+                    label="After (lates)"
+                    type="number"
+                    className="sm:w-32"
+                  />
+                  <FormSelect
+                    control={form.control}
+                    name={`rules.${index}.deductionType`}
+                    label="Deduct"
+                    options={DEDUCTION_OPTIONS}
+                  />
+                  <FormInput
+                    control={form.control}
+                    name={`rules.${index}.value`}
+                    label="Amount"
+                    type="number"
+                    step="0.5"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 cursor-pointer text-destructive hover:text-destructive"
+                    aria-label={`Remove step ${index + 1}`}
+                    disabled={!canEdit}
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {form.formState.errors.rules?.root?.message && (
+            <p className="text-sm text-destructive">
+              {form.formState.errors.rules.root.message}
+            </p>
+          )}
+
+          {enabled && (rules?.length ?? 0) > 0 && (
+            <div className="rounded-lg border border-dashed bg-muted/20 p-3">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">In plain English</p>
+              <ul className="space-y-1 text-sm">
+                {rules.map((rule, index) => (
+                  <li key={index}>
+                    Clock in more than {toNumber(lateAfterMinutes)} minutes late{" "}
+                    <span className="font-medium">{toNumber(rule.lateCount)} times</span> in a{" "}
+                    {cycleWord} and{" "}
+                    <span className="font-medium">
+                      {describeDeduction(rule.deductionType, toNumber(rule.value))}
+                    </span>{" "}
+                    is deducted.
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </SectionCard>
+      ),
+    },
+    {
+      value: "absence",
+      label: "Early & absent",
+      fields: [
+        "earlyLeaveCountsAsLate",
+        "earlyLeaveAfterMinutes",
+        "absentDeductionDays",
+        "halfDayDeductionDays",
+      ],
+      content: (
+        <SectionCard
+          icon={CalendarX2}
+          title="Leaving early, half days and absence"
+          description="Deductions for the rest of the ways a day can fall short."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
             <FormSwitch
               control={form.control}
-              name="enabled"
-              label="Deduct pay for repeated lateness"
-              description="Turn this off to keep tracking lateness without any deduction."
+              name="earlyLeaveCountsAsLate"
+              label="Leaving early counts towards the tally"
             />
-
-            <div className="grid gap-4 sm:grid-cols-3">
+            {earlyLeaveCountsAsLate && (
               <FormInput
                 control={form.control}
-                name="lateAfterMinutes"
-                label="Late after (minutes)"
+                name="earlyLeaveAfterMinutes"
+                label="Early leave after (minutes)"
                 type="number"
-                description="An 8:00 shift set to 15 marks 8:16 as late."
               />
-              <FormInput
-                control={form.control}
-                name="graceLatesPerCycle"
-                label="Free lates per cycle"
-                type="number"
-                description="Ignored before any deduction applies."
-              />
-              <FormSelect
-                control={form.control}
-                name="resetCycle"
-                label="Tally resets"
-                options={CYCLE_OPTIONS}
-              />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            icon={Percent}
-            title="What lateness costs"
-            description="Add a step for each threshold. The highest step an employee reaches in the cycle is the one that applies."
-            action={
-              canEdit && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="cursor-pointer"
-                  disabled={fields.length >= MAX_RULES}
-                  onClick={() =>
-                    append({
-                      lateCount: (rules?.length ?? 0) * 3 + 3,
-                      deductionType: "BASIC_DAYS",
-                      value: 1,
-                    })
-                  }
-                >
-                  <Plus className="size-3.5" />
-                  Add step
-                </Button>
-              )
-            }
-          >
-            {fields.length === 0 ? (
-              <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-                No steps yet. Add one to say what happens after a number of late arrivals.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="grid items-end gap-3 rounded-lg border bg-muted/20 p-3 sm:grid-cols-[auto_1fr_1fr_auto]"
-                  >
-                    <FormInput
-                      control={form.control}
-                      name={`rules.${index}.lateCount`}
-                      label="After (lates)"
-                      type="number"
-                      className="sm:w-32"
-                    />
-                    <FormSelect
-                      control={form.control}
-                      name={`rules.${index}.deductionType`}
-                      label="Deduct"
-                      options={DEDUCTION_OPTIONS}
-                    />
-                    <FormInput
-                      control={form.control}
-                      name={`rules.${index}.value`}
-                      label="Amount"
-                      type="number"
-                      step="0.5"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 cursor-pointer text-destructive hover:text-destructive"
-                      aria-label={`Remove step ${index + 1}`}
-                      disabled={!canEdit}
-                      onClick={() => remove(index)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
             )}
+          </div>
 
-            {form.formState.errors.rules?.root?.message && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.rules.root.message}
-              </p>
-            )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormInput
+              control={form.control}
+              name="absentDeductionDays"
+              label="Days deducted for an absence"
+              type="number"
+              step="0.5"
+            />
+            <FormInput
+              control={form.control}
+              name="halfDayDeductionDays"
+              label="Days deducted for a half day"
+              type="number"
+              step="0.5"
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "limits",
+      label: "Safety limits",
+      fields: ["maxDeductionPercentOfBasic", "roundToNearest"],
+      content: (
+        <SectionCard
+          icon={Gauge}
+          title="Safety limits"
+          description="A ceiling on how much one payslip can lose to fines, and how amounts are rounded."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormInput
+              control={form.control}
+              name="maxDeductionPercentOfBasic"
+              label="Most that can be deducted (% of basic)"
+              type="number"
+            />
+            <FormInput
+              control={form.control}
+              name="roundToNearest"
+              label="Round deductions to the nearest"
+              type="number"
+              description="0 keeps the exact amount."
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+  ];
 
-            {enabled && (rules?.length ?? 0) > 0 && (
-              <div className="rounded-lg border border-dashed bg-muted/20 p-3">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">In plain English</p>
-                <ul className="space-y-1 text-sm">
-                  {rules.map((rule, index) => (
-                    <li key={index}>
-                      Clock in more than {toNumber(lateAfterMinutes)} minutes late{" "}
-                      <span className="font-medium">{toNumber(rule.lateCount)} times</span> in a{" "}
-                      {cycleWord} and{" "}
-                      <span className="font-medium">
-                        {describeDeduction(rule.deductionType, toNumber(rule.value))}
-                      </span>{" "}
-                      is deducted.
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </SectionCard>
+  const { tab, setTab, showFirstError } = useSettingsTabs(tabs);
 
-          <SectionCard
-            icon={CalendarX2}
-            title="Leaving early, half days and absence"
-            description="Deductions for the rest of the ways a day can fall short."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormSwitch
-                control={form.control}
-                name="earlyLeaveCountsAsLate"
-                label="Leaving early counts towards the tally"
-              />
-              {earlyLeaveCountsAsLate && (
-                <FormInput
-                  control={form.control}
-                  name="earlyLeaveAfterMinutes"
-                  label="Early leave after (minutes)"
-                  type="number"
-                />
-              )}
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormInput
-                control={form.control}
-                name="absentDeductionDays"
-                label="Days deducted for an absence"
-                type="number"
-                step="0.5"
-              />
-              <FormInput
-                control={form.control}
-                name="halfDayDeductionDays"
-                label="Days deducted for a half day"
-                type="number"
-                step="0.5"
-              />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            icon={Gauge}
-            title="Safety limits"
-            description="A ceiling on how much one payslip can lose to fines, and how amounts are rounded."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormInput
-                control={form.control}
-                name="maxDeductionPercentOfBasic"
-                label="Most that can be deducted (% of basic)"
-                type="number"
-              />
-              <FormInput
-                control={form.control}
-                name="roundToNearest"
-                label="Round deductions to the nearest"
-                type="number"
-                description="0 keeps the exact amount."
-              />
-            </div>
-          </SectionCard>
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit, showFirstError)} className="flex flex-col gap-4">
+        <SettingsFieldset canEdit={canEdit}>
+          <SettingsTabs tabs={tabs} value={tab} onValueChange={setTab} />
         </SettingsFieldset>
 
         <SettingsFormFooter

@@ -24,6 +24,11 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { SettingsFieldset } from "../components/SettingsFieldset";
 import { SettingsFormFooter } from "../components/SettingsFormFooter";
+import {
+  SettingsTabs,
+  useSettingsTabs,
+  type SettingsTab,
+} from "../components/SettingsTabs";
 
 const BASE_OPTIONS = OVERTIME_BASES.map((value) => ({
   value,
@@ -106,200 +111,251 @@ function OvertimeForm({
     }
   };
 
+  const tabs: SettingsTab[] = [
+    {
+      value: "thresholds",
+      label: "Thresholds",
+      fields: [
+        "enabled",
+        "dailyThresholdHours",
+        "dailyMultiplier",
+        "weeklyThresholdHours",
+        "weeklyMultiplier",
+        "monthlyThresholdHours",
+        "monthlyMultiplier",
+      ],
+      content: (
+        <SectionCard
+          icon={CalendarClock}
+          title="Thresholds and rates"
+          description="Anything worked past a threshold earns the matching rate. Daily is checked first, then weekly, then monthly."
+        >
+          <FormSwitch
+            control={form.control}
+            name="enabled"
+            label="Pay for overtime"
+            description="Turn this off to keep logging extra hours without paying for them."
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormInput
+              control={form.control}
+              name="dailyThresholdHours"
+              label="Daily threshold (hours)"
+              type="number"
+              step="0.5"
+            />
+            <FormInput
+              control={form.control}
+              name="dailyMultiplier"
+              label="Daily rate (x normal pay)"
+              type="number"
+              step="0.1"
+            />
+            <FormInput
+              control={form.control}
+              name="weeklyThresholdHours"
+              label="Weekly threshold (hours)"
+              type="number"
+              step="0.5"
+            />
+            <FormInput
+              control={form.control}
+              name="weeklyMultiplier"
+              label="Weekly rate (x normal pay)"
+              type="number"
+              step="0.1"
+            />
+            <FormInput
+              control={form.control}
+              name="monthlyThresholdHours"
+              label="Monthly threshold (hours)"
+              type="number"
+              step="0.5"
+            />
+            <FormInput
+              control={form.control}
+              name="monthlyMultiplier"
+              label="Monthly rate (x normal pay)"
+              type="number"
+              step="0.1"
+            />
+          </div>
+
+          {values.enabled && (
+            <div className="rounded-lg border border-dashed bg-muted/20 p-3 text-sm">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">In plain English</p>
+              <ul className="space-y-1">
+                <li>
+                  Work more than{" "}
+                  <span className="font-medium">
+                    {toNumber(values.dailyThresholdHours ?? 0)} hours in a day
+                  </span>{" "}
+                  and every extra hour pays{" "}
+                  <span className="font-medium">{toNumber(values.dailyMultiplier ?? 0)}x</span>.
+                </li>
+                <li>
+                  Pass{" "}
+                  <span className="font-medium">
+                    {toNumber(values.weeklyThresholdHours ?? 0)} hours in a week
+                  </span>{" "}
+                  and the rest of that week pays{" "}
+                  <span className="font-medium">{toNumber(values.weeklyMultiplier ?? 0)}x</span>.
+                </li>
+              </ul>
+            </div>
+          )}
+        </SectionCard>
+      ),
+    },
+    {
+      value: "premium",
+      label: "Premium hours",
+      fields: [
+        "weekOffMultiplier",
+        "holidayMultiplier",
+        "nightMultiplier",
+        "nightStartTime",
+        "nightEndTime",
+      ],
+      content: (
+        <SectionCard
+          icon={Moon}
+          title="Premium hours"
+          description="Higher rates for the hours nobody wants to work."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormInput
+              control={form.control}
+              name="weekOffMultiplier"
+              label="Weekly off day rate"
+              type="number"
+              step="0.1"
+            />
+            <FormInput
+              control={form.control}
+              name="holidayMultiplier"
+              label="Holiday rate"
+              type="number"
+              step="0.1"
+            />
+            <FormInput
+              control={form.control}
+              name="nightMultiplier"
+              label="Night rate"
+              type="number"
+              step="0.1"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormInput
+              control={form.control}
+              name="nightStartTime"
+              label="Night starts at"
+              type="time"
+            />
+            <FormInput
+              control={form.control}
+              name="nightEndTime"
+              label="Night ends at"
+              type="time"
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "counting",
+      label: "Counting hours",
+      fields: ["minMinutesToCount", "roundToMinutes"],
+      content: (
+        <SectionCard
+          icon={Sigma}
+          title="How hours are counted"
+          description="The smallest block that counts and how odd minutes are rounded."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormInput
+              control={form.control}
+              name="minMinutesToCount"
+              label="Least minutes that count"
+              type="number"
+              description="Anything shorter is ignored."
+            />
+            <FormInput
+              control={form.control}
+              name="roundToMinutes"
+              label="Round to (minutes)"
+              type="number"
+              description="15 rounds 1h07 down to 1h00."
+            />
+          </div>
+        </SectionCard>
+      ),
+    },
+    {
+      value: "approval",
+      label: "Approval",
+      fields: [
+        "calculationBase",
+        "payout",
+        "maxDailyHours",
+        "maxMonthlyHours",
+        "requireApproval",
+      ],
+      content: (
+        <SectionCard
+          icon={Shield}
+          title="Approval and limits"
+          description="Who signs it off, how it is paid, and the ceiling on how much can be claimed."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormSelect
+              control={form.control}
+              name="calculationBase"
+              label="Worked out from"
+              options={BASE_OPTIONS}
+            />
+            <FormSelect
+              control={form.control}
+              name="payout"
+              label="Paid as"
+              options={PAYOUT_OPTIONS}
+            />
+            <FormInput
+              control={form.control}
+              name="maxDailyHours"
+              label="Most overtime a day (hours)"
+              type="number"
+              step="0.5"
+            />
+            <FormInput
+              control={form.control}
+              name="maxMonthlyHours"
+              label="Most overtime a month (hours)"
+              type="number"
+              step="0.5"
+            />
+          </div>
+
+          <FormSwitch
+            control={form.control}
+            name="requireApproval"
+            label="Overtime needs approval before it is paid"
+          />
+        </SectionCard>
+      ),
+    },
+  ];
+
+  const { tab, setTab, showFirstError } = useSettingsTabs(tabs);
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit, showFirstError)} className="flex flex-col gap-4">
         <SettingsFieldset canEdit={canEdit}>
-          <SectionCard
-            icon={CalendarClock}
-            title="Thresholds and rates"
-            description="Anything worked past a threshold earns the matching rate. Daily is checked first, then weekly, then monthly."
-          >
-            <FormSwitch
-              control={form.control}
-              name="enabled"
-              label="Pay for overtime"
-              description="Turn this off to keep logging extra hours without paying for them."
-            />
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormInput
-                control={form.control}
-                name="dailyThresholdHours"
-                label="Daily threshold (hours)"
-                type="number"
-                step="0.5"
-              />
-              <FormInput
-                control={form.control}
-                name="dailyMultiplier"
-                label="Daily rate (x normal pay)"
-                type="number"
-                step="0.1"
-              />
-              <FormInput
-                control={form.control}
-                name="weeklyThresholdHours"
-                label="Weekly threshold (hours)"
-                type="number"
-                step="0.5"
-              />
-              <FormInput
-                control={form.control}
-                name="weeklyMultiplier"
-                label="Weekly rate (x normal pay)"
-                type="number"
-                step="0.1"
-              />
-              <FormInput
-                control={form.control}
-                name="monthlyThresholdHours"
-                label="Monthly threshold (hours)"
-                type="number"
-                step="0.5"
-              />
-              <FormInput
-                control={form.control}
-                name="monthlyMultiplier"
-                label="Monthly rate (x normal pay)"
-                type="number"
-                step="0.1"
-              />
-            </div>
-
-            {values.enabled && (
-              <div className="rounded-lg border border-dashed bg-muted/20 p-3 text-sm">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">In plain English</p>
-                <ul className="space-y-1">
-                  <li>
-                    Work more than{" "}
-                    <span className="font-medium">
-                      {toNumber(values.dailyThresholdHours ?? 0)} hours in a day
-                    </span>{" "}
-                    and every extra hour pays{" "}
-                    <span className="font-medium">{toNumber(values.dailyMultiplier ?? 0)}x</span>.
-                  </li>
-                  <li>
-                    Pass{" "}
-                    <span className="font-medium">
-                      {toNumber(values.weeklyThresholdHours ?? 0)} hours in a week
-                    </span>{" "}
-                    and the rest of that week pays{" "}
-                    <span className="font-medium">{toNumber(values.weeklyMultiplier ?? 0)}x</span>.
-                  </li>
-                </ul>
-              </div>
-            )}
-          </SectionCard>
-
-          <SectionCard
-            icon={Moon}
-            title="Premium hours"
-            description="Higher rates for the hours nobody wants to work."
-          >
-            <div className="grid gap-4 sm:grid-cols-3">
-              <FormInput
-                control={form.control}
-                name="weekOffMultiplier"
-                label="Weekly off day rate"
-                type="number"
-                step="0.1"
-              />
-              <FormInput
-                control={form.control}
-                name="holidayMultiplier"
-                label="Holiday rate"
-                type="number"
-                step="0.1"
-              />
-              <FormInput
-                control={form.control}
-                name="nightMultiplier"
-                label="Night rate"
-                type="number"
-                step="0.1"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormInput
-                control={form.control}
-                name="nightStartTime"
-                label="Night starts at"
-                type="time"
-              />
-              <FormInput
-                control={form.control}
-                name="nightEndTime"
-                label="Night ends at"
-                type="time"
-              />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            icon={Sigma}
-            title="How hours are counted"
-            description="The smallest block that counts and how odd minutes are rounded."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormInput
-                control={form.control}
-                name="minMinutesToCount"
-                label="Least minutes that count"
-                type="number"
-                description="Anything shorter is ignored."
-              />
-              <FormInput
-                control={form.control}
-                name="roundToMinutes"
-                label="Round to (minutes)"
-                type="number"
-                description="15 rounds 1h07 down to 1h00."
-              />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            icon={Shield}
-            title="Approval and limits"
-            description="Who signs it off, how it is paid, and the ceiling on how much can be claimed."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormSelect
-                control={form.control}
-                name="calculationBase"
-                label="Worked out from"
-                options={BASE_OPTIONS}
-              />
-              <FormSelect
-                control={form.control}
-                name="payout"
-                label="Paid as"
-                options={PAYOUT_OPTIONS}
-              />
-              <FormInput
-                control={form.control}
-                name="maxDailyHours"
-                label="Most overtime a day (hours)"
-                type="number"
-                step="0.5"
-              />
-              <FormInput
-                control={form.control}
-                name="maxMonthlyHours"
-                label="Most overtime a month (hours)"
-                type="number"
-                step="0.5"
-              />
-            </div>
-
-            <FormSwitch
-              control={form.control}
-              name="requireApproval"
-              label="Overtime needs approval before it is paid"
-            />
-          </SectionCard>
+          <SettingsTabs tabs={tabs} value={tab} onValueChange={setTab} />
         </SettingsFieldset>
 
         <SettingsFormFooter

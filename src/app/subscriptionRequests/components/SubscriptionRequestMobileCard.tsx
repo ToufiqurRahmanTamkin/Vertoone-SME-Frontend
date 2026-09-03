@@ -9,11 +9,11 @@ import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SubscriptionRequest } from "@/types/domain/subscriptionRequest";
 import { Flame } from "lucide-react";
+import { canReviewRequest, wipesDataOnApproval } from "../request-actions";
 import {
   SubscriptionRequestRowActions,
   type SubscriptionRequestColumnActions,
 } from "../subscription-requests.columns";
-import { canReviewRequest, wipesDataOnApproval } from "../request-actions";
 
 export function SubscriptionRequestMobileCard({
   record,

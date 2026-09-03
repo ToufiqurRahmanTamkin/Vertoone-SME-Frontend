@@ -38,17 +38,7 @@ export function HolidayRowMenu({
   actions: HolidayRowActions;
 }) {
   return (
-    <div className="flex justify-end gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        className="cursor-pointer"
-        onClick={() => actions.onEdit(holiday)}
-        disabled={!actions.canEdit}
-      >
-        <Pencil className="size-3.5" />
-        Edit
-      </Button>
+    <div className="flex justify-end">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
