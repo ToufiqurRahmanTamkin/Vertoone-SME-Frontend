@@ -171,6 +171,9 @@ export function InvoicePaymentReviewModal({
                 <Row label="Transaction ID">
                   <span className="font-mono">{invoice.transactionId || "—"}</span>
                 </Row>
+                <Row label="Paid on">
+                  {invoice.paymentPaidOn ? formatDate(invoice.paymentPaidOn) : "—"}
+                </Row>
                 <Row label="Submitted on">
                   {invoice.paymentSubmittedAt ? formatDate(invoice.paymentSubmittedAt) : "—"}
                 </Row>

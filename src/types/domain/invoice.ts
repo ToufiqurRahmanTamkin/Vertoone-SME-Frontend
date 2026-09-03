@@ -42,6 +42,7 @@ export interface Invoice {
   subscriptionId: string | null;
   transactionId: string;
   paymentNote: string;
+  paymentPaidOn: string | null;
   paymentSubmittedAt: string | null;
   paymentSubmittedBy: string | null;
   paymentReviewAction: InvoicePaymentReviewAction | null;

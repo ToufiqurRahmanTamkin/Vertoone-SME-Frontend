@@ -51,8 +51,8 @@ export function InvoicePaymentModal({ open, onOpenChange, invoice }: InvoicePaym
     form.reset({
       paymentMethod: invoice.paymentMethod,
       transactionId: invoice.transactionId ?? "",
-      paidAt: invoice.paymentSubmittedAt
-        ? invoice.paymentSubmittedAt.slice(0, 10)
+      paidAt: invoice.paymentPaidOn
+        ? invoice.paymentPaidOn.slice(0, 10)
         : toDateInput(new Date()),
       note: invoice.paymentNote ?? "",
     });
