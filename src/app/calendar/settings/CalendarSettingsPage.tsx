@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
@@ -18,11 +18,11 @@ import {
 } from "@/redux/apis/meetingRoomApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { MeetingRoom } from "@/types/domain/meetingRoom";
-import { DoorOpen, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { DoorOpen, Plus, Users } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { MeetingRoomFormModal } from "./components/MeetingRoomFormModal";
-import { meetingRoomColumns } from "./meetingRooms.columns";
+import { MeetingRoomRowActions, meetingRoomColumns } from "./meetingRooms.columns";
 
 const STATUS_FILTER: FilterConfig = {
   name: "isActive",
@@ -77,16 +77,17 @@ export default function CalendarSettingsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      meetingRoomColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => meetingRoomColumns(rowActions), [rowActions]);
 
   const tableFilters = React.useMemo<FilterConfig[]>(() => {
     const available = floors ?? [];
@@ -191,20 +192,8 @@ export default function CalendarSettingsPage() {
                   {room.capacity} {room.capacity === 1 ? "person" : "people"}
                 </span>
               </div>
-              <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-                <CardActionButton
-                  icon={Pencil}
-                  label="Edit"
-                  onClick={() => openEdit(room)}
-                  disabled={!access.canEdit}
-                />
-                <CardActionButton
-                  icon={Trash2}
-                  label="Delete"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => setPendingDelete(room)}
-                  disabled={!access.canDelete}
-                />
+              <div className="mt-3 border-t pt-3">
+                <MeetingRoomRowActions room={room} {...rowActions} />
               </div>
             </div>
           )}

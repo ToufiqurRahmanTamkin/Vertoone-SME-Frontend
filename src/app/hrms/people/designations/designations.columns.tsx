@@ -1,23 +1,49 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { Designation } from "@/types/domain/designation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface DesignationColumnActions {
+export interface DesignationColumnActions {
   onEdit: (designation: Designation) => void;
   onDelete: (designation: Designation) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const designationColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: DesignationColumnActions): ColumnDef<Designation>[] => [
+export function DesignationRowActions({
+  designation,
+  ...actions
+}: DesignationColumnActions & { designation: Designation }) {
+  return (
+    <RowActions
+      label={`Actions for ${designation.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(designation),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(designation),
+        },
+      ]}
+    />
+  );
+}
+
+export const designationColumns = (
+  rowActions: DesignationColumnActions
+): ColumnDef<Designation>[] => [
   {
     accessorKey: "name",
     header: "Designation",
@@ -70,29 +96,6 @@ export const designationColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <DesignationRowActions designation={row.original} {...rowActions} />,
   },
 ];

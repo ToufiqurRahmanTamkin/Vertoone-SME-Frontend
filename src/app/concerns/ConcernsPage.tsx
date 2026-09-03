@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +11,11 @@ import { useQueryFilters } from "@/hooks/use-query-filters";
 import { useDeleteConcernMutation, useGetConcernsQuery, useGetConcernSummaryQuery } from "@/redux/apis/concernApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { grantedMenuCount, type Concern } from "@/types/domain/concern";
-import { KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { ConcernFormModal, type ConcernFormStepId } from "./components/ConcernFormModal";
-import { concernColumns } from "./concerns.columns";
+import { ConcernRowActions, concernColumns } from "./concerns.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -87,17 +87,18 @@ export default function ConcernsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      concernColumns({
-        onEdit: openEdit,
-        onManageHead: openHead,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onManageHead: openHead,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => concernColumns(rowActions), [rowActions]);
 
   const concerns = data?.data ?? [];
   const meta = data?.meta;
@@ -205,26 +206,8 @@ export default function ConcernsPage() {
                 {grantedMenuCount(concern.head)} menus
               </Badge>
             </div>
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={KeyRound}
-                label="Head"
-                onClick={() => openHead(concern)}
-                disabled={!access.canEdit || !concern.head}
-              />
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(concern)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Remove"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(concern)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <ConcernRowActions concern={concern} {...rowActions} />
             </div>
           </div>
         )}

@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -20,11 +20,11 @@ import {
   type Warehouse,
   type WarehouseType,
 } from "@/types/domain/warehouse";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { WarehouseFormModal } from "./components/WarehouseFormModal";
-import { warehouseColumns } from "./warehouses.columns";
+import { WarehouseRowActions, warehouseColumns } from "./warehouses.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -88,16 +88,17 @@ export default function WarehousesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      warehouseColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => warehouseColumns(rowActions), [rowActions]);
 
   const warehouses = data?.data ?? [];
   const meta = data?.meta;
@@ -209,20 +210,8 @@ export default function WarehousesPage() {
               </div>
             </dl>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(warehouse)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(warehouse)}
-                disabled={!access.canDelete || warehouse.isDefault}
-              />
+            <div className="mt-3 border-t pt-3">
+              <WarehouseRowActions warehouse={warehouse} {...rowActions} />
             </div>
           </div>
         )}

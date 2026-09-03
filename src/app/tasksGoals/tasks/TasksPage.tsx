@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -23,11 +23,11 @@ import {
   type TaskBoardVisibility,
   type TaskBoardWithStats,
 } from "@/types/domain/task";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { boardColumns, boardProgress } from "./boards.columns";
+import { BoardRowActions, boardColumns, boardProgress } from "./boards.columns";
 import { BoardFormModal } from "./components/BoardFormModal";
 
 export default function TasksPage() {
@@ -108,16 +108,17 @@ export default function TasksPage() {
     setFormOpen(true);
   }, []);
 
-  const columns = React.useMemo(
-    () =>
-      boardColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [openEdit, access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => boardColumns(rowActions), [rowActions]);
 
   return (
     <>
@@ -247,20 +248,8 @@ export default function TasksPage() {
                 <Progress value={progress} className="h-1.5" />
               </div>
 
-              <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-                <CardActionButton
-                  icon={Pencil}
-                  label="Edit"
-                  onClick={() => openEdit(board)}
-                  disabled={!access.canEdit}
-                />
-                <CardActionButton
-                  icon={Trash2}
-                  label="Delete"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => setPendingDelete(board)}
-                  disabled={!access.canDelete}
-                />
+              <div className="mt-3 border-t pt-3">
+                <BoardRowActions board={board} {...rowActions} />
               </div>
             </div>
           );

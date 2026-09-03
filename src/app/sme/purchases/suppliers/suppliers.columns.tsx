@@ -1,23 +1,49 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { PAYMENT_TERM_LABELS, type Supplier } from "@/types/domain/supplier";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface SupplierColumnActions {
+export interface SupplierColumnActions {
   onEdit: (supplier: Supplier) => void;
   onDelete: (supplier: Supplier) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const supplierColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: SupplierColumnActions): ColumnDef<Supplier>[] => [
+export function SupplierRowActions({
+  supplier,
+  ...actions
+}: SupplierColumnActions & { supplier: Supplier }) {
+  return (
+    <RowActions
+      label={`Actions for ${supplier.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(supplier),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(supplier),
+        },
+      ]}
+    />
+  );
+}
+
+export const supplierColumns = (
+  rowActions: SupplierColumnActions
+): ColumnDef<Supplier>[] => [
   {
     accessorKey: "name",
     header: "Supplier",
@@ -82,29 +108,6 @@ export const supplierColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <SupplierRowActions supplier={row.original} {...rowActions} />,
   },
 ];

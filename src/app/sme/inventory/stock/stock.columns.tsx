@@ -1,6 +1,6 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatAmount, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
@@ -21,11 +21,32 @@ const DIRECTION_COLORS: Record<StockDirection, StatusColor> = {
   OUT: "red",
 };
 
-export const stockColumns = ({
-  onInspect,
-}: {
+export interface StockRowActionHandlers {
   onInspect: (row: StockRow) => void;
-}): ColumnDef<StockRow>[] => [
+}
+
+export function StockRowActions({
+  stock,
+  ...actions
+}: StockRowActionHandlers & { stock: StockRow }) {
+  return (
+    <RowActions
+      label={`Actions for ${stock.product?.name ?? "product"}`}
+      actions={[
+        {
+          key: "inspect",
+          label: "Warehouse breakdown",
+          icon: Layers,
+          onSelect: () => actions.onInspect(stock),
+        },
+      ]}
+    />
+  );
+}
+
+export const stockColumns = (
+  rowActions: StockRowActionHandlers
+): ColumnDef<StockRow>[] => [
   {
     id: "product",
     header: "Product",
@@ -97,19 +118,7 @@ export const stockColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onInspect(row.original)}
-          aria-label={`Warehouse breakdown for ${row.original.product?.name ?? "product"}`}
-        >
-          <Layers className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <StockRowActions stock={row.original} {...rowActions} />,
   },
 ];
 

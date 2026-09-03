@@ -1,26 +1,52 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { PipelineWithStats } from "@/types/domain/pipeline";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Star, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatMoney } from "./pipeline.helpers";
 
-interface PipelineColumnActions {
+export interface PipelineColumnActions {
   onEdit: (pipeline: PipelineWithStats) => void;
   onDelete: (pipeline: PipelineWithStats) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const pipelineColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: PipelineColumnActions): ColumnDef<PipelineWithStats>[] => [
+export function PipelineRowActions({
+  pipeline,
+  ...actions
+}: PipelineColumnActions & { pipeline: PipelineWithStats }) {
+  return (
+    <RowActions
+      label={`Actions for ${pipeline.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(pipeline),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(pipeline),
+        },
+      ]}
+    />
+  );
+}
+
+export const pipelineColumns = (
+  rowActions: PipelineColumnActions
+): ColumnDef<PipelineWithStats>[] => [
   {
     accessorKey: "name",
     header: "Pipeline",
@@ -123,29 +149,6 @@ export const pipelineColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <PipelineRowActions pipeline={row.original} {...rowActions} />,
   },
 ];

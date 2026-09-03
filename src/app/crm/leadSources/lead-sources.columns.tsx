@@ -1,24 +1,50 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date";
 import type { LeadSource } from "@/types/domain/leadSource";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface LeadSourceColumnActions {
+export interface LeadSourceColumnActions {
   onEdit: (source: LeadSource) => void;
   onDelete: (source: LeadSource) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const leadSourceColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: LeadSourceColumnActions): ColumnDef<LeadSource>[] => [
+export function LeadSourceRowActions({
+  source,
+  ...actions
+}: LeadSourceColumnActions & { source: LeadSource }) {
+  return (
+    <RowActions
+      label={`Actions for ${source.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(source),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(source),
+        },
+      ]}
+    />
+  );
+}
+
+export const leadSourceColumns = (
+  rowActions: LeadSourceColumnActions
+): ColumnDef<LeadSource>[] => [
   {
     accessorKey: "name",
     header: "Lead source",
@@ -60,29 +86,6 @@ export const leadSourceColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <LeadSourceRowActions source={row.original} {...rowActions} />,
   },
 ];

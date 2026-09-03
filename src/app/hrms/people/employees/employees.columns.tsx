@@ -1,8 +1,8 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TagList } from "@/components/shared/tag-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   EMPLOYEE_STATUS_COLORS,
   EMPLOYEE_STATUS_LABELS,
@@ -25,19 +25,45 @@ const initialsOf = (name: string): string =>
     .map((part) => part[0])
     .join("");
 
-interface EmployeeColumnActions {
+export interface EmployeeColumnActions {
   onEdit: (employee: Employee) => void;
   onDelete: (employee: Employee) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const employeeColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: EmployeeColumnActions): ColumnDef<Employee>[] => [
+export function EmployeeRowActions({
+  employee,
+  ...actions
+}: EmployeeColumnActions & { employee: Employee }) {
+  return (
+    <RowActions
+      label={`Actions for ${employee.fullName}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(employee),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(employee),
+        },
+      ]}
+    />
+  );
+}
+
+export const employeeColumns = (
+  rowActions: EmployeeColumnActions
+): ColumnDef<Employee>[] => [
   {
     accessorKey: "fullName",
     header: "Employee",
@@ -143,29 +169,6 @@ export const employeeColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.fullName}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.fullName}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <EmployeeRowActions employee={row.original} {...rowActions} />,
   },
 ];

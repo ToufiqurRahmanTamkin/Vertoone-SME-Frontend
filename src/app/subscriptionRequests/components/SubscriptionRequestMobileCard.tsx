@@ -1,4 +1,3 @@
-import { CardActionButton } from "@/components/shared/action-button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   SUBSCRIPTION_REQUEST_STATUS_COLORS,
@@ -9,20 +8,17 @@ import {
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SubscriptionRequest } from "@/types/domain/subscriptionRequest";
-import { CheckCircle2, Flame, XCircle } from "lucide-react";
+import { Flame } from "lucide-react";
+import {
+  SubscriptionRequestRowActions,
+  type SubscriptionRequestColumnActions,
+} from "../subscription-requests.columns";
 import { canReviewRequest, wipesDataOnApproval } from "../request-actions";
-
-interface SubscriptionRequestMobileCardProps {
-  record: SubscriptionRequest;
-  onApprove: (record: SubscriptionRequest) => void;
-  onReject: (record: SubscriptionRequest) => void;
-}
 
 export function SubscriptionRequestMobileCard({
   record,
-  onApprove,
-  onReject,
-}: SubscriptionRequestMobileCardProps) {
+  ...actions
+}: SubscriptionRequestColumnActions & { record: SubscriptionRequest }) {
   return (
     <div className="rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -89,19 +85,8 @@ export function SubscriptionRequestMobileCard({
       )}
 
       {canReviewRequest(record) && (
-        <div className="mt-3 flex flex-wrap justify-end gap-2 border-t pt-3">
-          <CardActionButton
-            icon={CheckCircle2}
-            label="Approve"
-            className="text-emerald-600 hover:text-emerald-600"
-            onClick={() => onApprove(record)}
-          />
-          <CardActionButton
-            icon={XCircle}
-            label="Reject"
-            className="text-destructive hover:text-destructive"
-            onClick={() => onReject(record)}
-          />
+        <div className="mt-3 border-t pt-3">
+          <SubscriptionRequestRowActions request={record} {...actions} />
         </div>
       )}
     </div>

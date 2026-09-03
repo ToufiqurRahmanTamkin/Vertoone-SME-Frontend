@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -18,11 +18,11 @@ import {
 } from "@/redux/apis/teamApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Team } from "@/types/domain/team";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { TeamFormModal } from "./components/TeamFormModal";
-import { teamColumns } from "./teams.columns";
+import { TeamRowActions, teamColumns } from "./teams.columns";
 
 export default function TeamsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -104,16 +104,17 @@ export default function TeamsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      teamColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => teamColumns(rowActions), [rowActions]);
 
   const teams = data?.data ?? [];
   const meta = data?.meta;
@@ -228,20 +229,8 @@ export default function TeamsPage() {
               </div>
             )}
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(team)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(team)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <TeamRowActions team={team} {...rowActions} />
             </div>
           </div>
         )}

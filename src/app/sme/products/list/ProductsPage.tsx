@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +24,11 @@ import {
   type ProductChannel,
   type ProductType,
 } from "@/types/domain/product";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { ProductFormModal } from "./components/ProductFormModal";
-import { productColumns } from "./products.columns";
+import { ProductRowActions, productColumns } from "./products.columns";
 
 export default function ProductsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -125,16 +125,17 @@ export default function ProductsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      productColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => productColumns(rowActions), [rowActions]);
 
   const products = data?.data ?? [];
   const meta = data?.meta;
@@ -291,20 +292,8 @@ export default function ProductsPage() {
               )}
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(product)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(product)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <ProductRowActions product={product} {...rowActions} />
             </div>
           </div>
         )}

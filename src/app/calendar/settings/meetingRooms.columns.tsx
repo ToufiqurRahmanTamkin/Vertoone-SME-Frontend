@@ -1,24 +1,53 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { MeetingRoom } from "@/types/domain/meetingRoom";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2, Users } from "lucide-react";
 
-interface MeetingRoomColumnActions {
+export interface MeetingRoomRowActionHandlers {
   onEdit: (room: MeetingRoom) => void;
   onDelete: (room: MeetingRoom) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const meetingRoomColumns = ({
+export function MeetingRoomRowActions({
+  room,
   onEdit,
   onDelete,
   canEdit,
   canDelete,
-}: MeetingRoomColumnActions): ColumnDef<MeetingRoom>[] => [
+}: MeetingRoomRowActionHandlers & { room: MeetingRoom }) {
+  return (
+    <RowActions
+      label={`Actions for ${room.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !canEdit,
+          onSelect: () => onEdit(room),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !canDelete,
+          onSelect: () => onDelete(room),
+        },
+      ]}
+    />
+  );
+}
+
+export const meetingRoomColumns = (
+  rowActions: MeetingRoomRowActionHandlers
+): ColumnDef<MeetingRoom>[] => [
   {
     accessorKey: "name",
     header: "Room",
@@ -75,29 +104,6 @@ export const meetingRoomColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <MeetingRoomRowActions room={row.original} {...rowActions} />,
   },
 ];

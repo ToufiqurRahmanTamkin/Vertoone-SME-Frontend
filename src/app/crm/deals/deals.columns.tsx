@@ -1,6 +1,6 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date";
 import {
   DEAL_PRIORITY_COLORS,
@@ -13,7 +13,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 import { formatMoney } from "./deal.helpers";
 
-interface DealColumnActions {
+export interface DealColumnActions {
   onOpen: (deal: Deal) => void;
   onEdit: (deal: Deal) => void;
   onDelete: (deal: Deal) => void;
@@ -21,13 +21,38 @@ interface DealColumnActions {
   canDelete: boolean;
 }
 
-export const dealColumns = ({
-  onOpen,
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: DealColumnActions): ColumnDef<Deal>[] => [
+export function DealRowActions({
+  deal,
+  ...actions
+}: DealColumnActions & { deal: Deal }) {
+  return (
+    <RowActions
+      label={`Actions for ${deal.title}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(deal),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(deal),
+        },
+      ]}
+    />
+  );
+}
+
+export const dealColumns = (
+  rowActions: DealColumnActions
+): ColumnDef<Deal>[] => [
   {
     accessorKey: "title",
     header: "Deal",
@@ -36,7 +61,7 @@ export const dealColumns = ({
         <button
           type="button"
           className="block max-w-full cursor-pointer truncate text-left font-medium hover:underline"
-          onClick={() => onOpen(row.original)}
+          onClick={() => rowActions.onOpen(row.original)}
         >
           {row.original.title}
         </button>
@@ -121,29 +146,6 @@ export const dealColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.title}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.title}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <DealRowActions deal={row.original} {...rowActions} />,
   },
 ];

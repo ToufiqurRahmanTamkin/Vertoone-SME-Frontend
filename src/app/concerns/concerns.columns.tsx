@@ -1,12 +1,12 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { USER_STATUS_COLORS, USER_STATUS_LABELS } from "@/constant";
 import { grantedMenuCount, type Concern } from "@/types/domain/concern";
 import type { ColumnDef } from "@tanstack/react-table";
 import { KeyRound, Pencil, Trash2 } from "lucide-react";
 
-interface ConcernColumnActions {
+export interface ConcernColumnActions {
   onEdit: (concern: Concern) => void;
   onManageHead: (concern: Concern) => void;
   onDelete: (concern: Concern) => void;
@@ -14,13 +14,45 @@ interface ConcernColumnActions {
   canDelete: boolean;
 }
 
-export const concernColumns = ({
-  onEdit,
-  onManageHead,
-  onDelete,
-  canEdit,
-  canDelete,
-}: ConcernColumnActions): ColumnDef<Concern>[] => [
+export function ConcernRowActions({
+  concern,
+  ...actions
+}: ConcernColumnActions & { concern: Concern }) {
+  return (
+    <RowActions
+      label={`Actions for ${concern.name}`}
+      actions={[
+        {
+          key: "head",
+          label: "Manage concern head",
+          icon: KeyRound,
+          disabled: !actions.canEdit || !concern.head,
+          onSelect: () => actions.onManageHead(concern),
+        },
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(concern),
+        },
+        {
+          key: "delete",
+          label: "Remove",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(concern),
+        },
+      ]}
+    />
+  );
+}
+
+export const concernColumns = (
+  rowActions: ConcernColumnActions
+): ColumnDef<Concern>[] => [
   {
     accessorKey: "name",
     header: "Concern",
@@ -103,40 +135,6 @@ export const concernColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onManageHead(row.original)}
-          disabled={!canEdit || !row.original.head}
-          aria-label={`Manage the head of ${row.original.name}`}
-          title="Manage concern head"
-        >
-          <KeyRound className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Remove ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <ConcernRowActions concern={row.original} {...rowActions} />,
   },
 ];

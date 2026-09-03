@@ -1,4 +1,3 @@
-import { CardActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +9,9 @@ import { useQueryFilters } from "@/hooks/use-query-filters";
 import { useGetAllUserCompaniesQuery, useGetAllUsersQuery } from "@/redux/apis/adminUserApis";
 import type { AdminUser, CompanyRole } from "@/types/domain/adminUser";
 import type { UserStatus } from "@/types/domain/auth";
-import { KeyRound } from "lucide-react";
+import {  } from "lucide-react";
 import * as React from "react";
-import { allUsersColumns } from "./all-users.columns";
+import { AllUsersRowActions, allUsersColumns } from "./all-users.columns";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 
 const ROLE_OPTIONS = [
@@ -61,10 +60,12 @@ export default function AllUsersPage() {
 
   const openReset = (user: AdminUser) => setResetting(user);
 
-  const columns = React.useMemo(
-    () => allUsersColumns({ onResetPassword: openReset, canEdit: access.canEdit }),
+  const rowActions = React.useMemo(
+    () => ({ onResetPassword: openReset, canEdit: access.canEdit }),
     [access.canEdit]
   );
+
+  const columns = React.useMemo(() => allUsersColumns(rowActions), [rowActions]);
 
   const users = data?.data ?? [];
   const meta = data?.meta;
@@ -129,13 +130,8 @@ export default function AllUsersPage() {
                 </dd>
               </div>
             </dl>
-            <div className="mt-3 flex justify-end border-t pt-3">
-              <CardActionButton
-                icon={KeyRound}
-                label="Reset password"
-                onClick={() => openReset(user)}
-                disabled={!access.canEdit}
-              />
+            <div className="mt-3 border-t pt-3">
+              <AllUsersRowActions user={user} {...rowActions} />
             </div>
           </div>
         )}

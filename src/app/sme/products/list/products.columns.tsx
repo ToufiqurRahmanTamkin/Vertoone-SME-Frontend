@@ -1,24 +1,50 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { PRODUCT_TYPE_LABELS, type Product } from "@/types/domain/product";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface ProductColumnActions {
+export interface ProductColumnActions {
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const productColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: ProductColumnActions): ColumnDef<Product>[] => [
+export function ProductRowActions({
+  product,
+  ...actions
+}: ProductColumnActions & { product: Product }) {
+  return (
+    <RowActions
+      label={`Actions for ${product.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(product),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(product),
+        },
+      ]}
+    />
+  );
+}
+
+export const productColumns = (
+  rowActions: ProductColumnActions
+): ColumnDef<Product>[] => [
   {
     accessorKey: "name",
     header: "Product",
@@ -134,29 +160,6 @@ export const productColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <ProductRowActions product={row.original} {...rowActions} />,
   },
 ];

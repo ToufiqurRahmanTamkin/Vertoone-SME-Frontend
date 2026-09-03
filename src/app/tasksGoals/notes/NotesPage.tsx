@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -27,12 +27,12 @@ import {
   type Note,
   type NoteVisibility,
 } from "@/types/domain/note";
-import { Pencil, Pin, PinOff, Plus, Trash2 } from "lucide-react";
+import { Pin, Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { NoteDetailSheet } from "./components/NoteDetailSheet";
 import { NoteFormModal } from "./components/NoteFormModal";
-import { noteColumns } from "./notes.columns";
+import { NoteRowActions, noteColumns } from "./notes.columns";
 
 export default function NotesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -168,18 +168,19 @@ export default function NotesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      noteColumns({
-        onOpen: openDetail,
-        onEdit: openEdit,
-        onTogglePin: (note) => void togglePin(note),
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onOpen: openDetail,
+      onEdit: openEdit,
+      onTogglePin: (note: Note) => void togglePin(note),
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [openDetail, openEdit, togglePin, access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => noteColumns(rowActions), [rowActions]);
 
   const notes = data?.data ?? [];
   const meta = data?.meta;
@@ -315,26 +316,8 @@ export default function NotesPage() {
               {note.isArchived && <StatusBadge color="zinc" label="Archived" />}
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={note.isPinned ? PinOff : Pin}
-                label={note.isPinned ? "Unpin" : "Pin"}
-                onClick={() => void togglePin(note)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(note)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(note)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <NoteRowActions note={note} {...rowActions} />
             </div>
           </div>
         )}

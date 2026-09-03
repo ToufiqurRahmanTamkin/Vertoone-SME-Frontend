@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -29,11 +29,11 @@ import {
   type LeadPriority,
   type LeadStatus,
 } from "@/types/domain/lead";
-import { Pencil, Plus, Trash2, UserRoundPlus } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { LeadFormModal } from "./components/LeadFormModal";
-import { leadColumns } from "./leads.columns";
+import { LeadRowActions, leadColumns } from "./leads.columns";
 
 export default function LeadsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -136,18 +136,19 @@ export default function LeadsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      leadColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        onConvert: setPendingConvert,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-        canConvert,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      onConvert: setPendingConvert,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+      canConvert,
+    }),
     [access.canEdit, access.canDelete, canConvert]
   );
+
+  const columns = React.useMemo(() => leadColumns(rowActions), [rowActions]);
 
   const leads = data?.data ?? [];
   const meta = data?.meta;
@@ -281,26 +282,8 @@ export default function LeadsPage() {
               <TagList tags={lead.tags} emptyLabel="" />
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={UserRoundPlus}
-                label="Convert"
-                onClick={() => setPendingConvert(lead)}
-                disabled={!canConvert || Boolean(lead.contactId)}
-              />
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(lead)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(lead)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <LeadRowActions lead={lead} {...rowActions} />
             </div>
           </div>
         )}

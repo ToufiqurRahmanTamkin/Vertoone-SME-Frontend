@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -34,13 +34,13 @@ import {
   type GoalPriority,
   type GoalStatus,
 } from "@/types/domain/goal";
-import { Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { GoalCheckInModal } from "./components/GoalCheckInModal";
 import { GoalDetailSheet } from "./components/GoalDetailSheet";
 import { GoalFormModal } from "./components/GoalFormModal";
-import { goalColumns } from "./goals.columns";
+import { GoalRowActions, goalColumns } from "./goals.columns";
 
 export default function GoalsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -179,18 +179,19 @@ export default function GoalsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      goalColumns({
-        onOpen: openDetail,
-        onEdit: openEdit,
-        onCheckIn: openCheckIn,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onOpen: openDetail,
+      onEdit: openEdit,
+      onCheckIn: openCheckIn,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [openDetail, openEdit, openCheckIn, access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => goalColumns(rowActions), [rowActions]);
 
   const goals = data?.data ?? [];
   const meta = data?.meta;
@@ -334,26 +335,8 @@ export default function GoalsPage() {
               <TagList tags={goal.tags} emptyLabel="" />
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={TrendingUp}
-                label="Check in"
-                onClick={() => openCheckIn(goal)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(goal)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(goal)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <GoalRowActions goal={goal} {...rowActions} />
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   SUBSCRIPTION_REQUEST_STATUS_COLORS,
   SUBSCRIPTION_REQUEST_STATUS_LABELS,
@@ -13,15 +13,51 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, Flame, XCircle } from "lucide-react";
 import { canReviewRequest, wipesDataOnApproval } from "./request-actions";
 
-interface SubscriptionRequestColumnActions {
+export interface SubscriptionRequestColumnActions {
   onApprove: (record: SubscriptionRequest) => void;
   onReject: (record: SubscriptionRequest) => void;
 }
 
-export const subscriptionRequestColumns = ({
-  onApprove,
-  onReject,
-}: SubscriptionRequestColumnActions): ColumnDef<SubscriptionRequest>[] => [
+export function SubscriptionRequestRowActions({
+  request,
+  ...actions
+}: SubscriptionRequestColumnActions & { request: SubscriptionRequest }) {
+  if (!canReviewRequest(request)) {
+    return (
+      <div className="flex justify-end">
+        <span className="text-xs text-muted-foreground">
+          {request.reviewedAt ? formatDate(request.reviewedAt) : "—"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <RowActions
+      label={`Actions for the request from ${request.companyName}`}
+      actions={[
+        {
+          key: "approve",
+          label: "Approve",
+          icon: CheckCircle2,
+          onSelect: () => actions.onApprove(request),
+        },
+        {
+          key: "reject",
+          label: "Reject",
+          icon: XCircle,
+          variant: "destructive",
+          separated: true,
+          onSelect: () => actions.onReject(request),
+        },
+      ]}
+    />
+  );
+}
+
+export const subscriptionRequestColumns = (
+  rowActions: SubscriptionRequestColumnActions
+): ColumnDef<SubscriptionRequest>[] => [
   {
     accessorKey: "companyName",
     header: "Company",
@@ -108,36 +144,8 @@ export const subscriptionRequestColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) =>
-      canReviewRequest(row.original) ? (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-pointer text-emerald-600 hover:text-emerald-600"
-            onClick={() => onApprove(row.original)}
-            aria-label={`Approve the request from ${row.original.companyName}`}
-            title="Approve request"
-          >
-            <CheckCircle2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-            onClick={() => onReject(row.original)}
-            aria-label={`Reject the request from ${row.original.companyName}`}
-            title="Reject request"
-          >
-            <XCircle className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <div className="flex justify-end">
-          <span className="text-xs text-muted-foreground">
-            {row.original.reviewedAt ? formatDate(row.original.reviewedAt) : "—"}
-          </span>
-        </div>
-      ),
+    cell: ({ row }) => (
+      <SubscriptionRequestRowActions request={row.original} {...rowActions} />
+    ),
   },
 ];

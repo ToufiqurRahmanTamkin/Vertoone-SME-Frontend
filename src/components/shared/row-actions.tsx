@@ -18,6 +18,7 @@ export interface RowAction {
   onSelect: () => void;
   disabled?: boolean;
   separated?: boolean;
+  title?: string;
   variant?: "default" | "destructive";
   className?: string;
 }
@@ -56,6 +57,7 @@ export function RowActions({ label, actions, className }: RowActionsProps) {
               {action.separated && <DropdownMenuSeparator />}
               <DropdownMenuItem
                 className={cn("cursor-pointer", action.className)}
+                title={action.title}
                 variant={action.variant ?? "default"}
                 disabled={action.disabled}
                 onClick={action.onSelect}

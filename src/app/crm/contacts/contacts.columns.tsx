@@ -1,7 +1,7 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TagList } from "@/components/shared/tag-list";
-import { Button } from "@/components/ui/button";
 import {
   CONTACT_STATUS_COLORS,
   CONTACT_STATUS_LABELS,
@@ -10,19 +10,45 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface ContactColumnActions {
+export interface ContactColumnActions {
   onEdit: (contact: Contact) => void;
   onDelete: (contact: Contact) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const contactColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: ContactColumnActions): ColumnDef<Contact>[] => [
+export function ContactRowActions({
+  contact,
+  ...actions
+}: ContactColumnActions & { contact: Contact }) {
+  return (
+    <RowActions
+      label={`Actions for ${contact.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(contact),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(contact),
+        },
+      ]}
+    />
+  );
+}
+
+export const contactColumns = (
+  rowActions: ContactColumnActions
+): ColumnDef<Contact>[] => [
   {
     accessorKey: "name",
     header: "Contact",
@@ -90,29 +116,6 @@ export const contactColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <ContactRowActions contact={row.original} {...rowActions} />,
   },
 ];

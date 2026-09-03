@@ -72,14 +72,15 @@ export default function SubscriptionRequestsPage() {
     []
   );
 
-  const columns = React.useMemo(
-    () =>
-      subscriptionRequestColumns({
-        onApprove: openReview("APPROVE"),
-        onReject: openReview("REJECT"),
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onApprove: openReview("APPROVE"),
+      onReject: openReview("REJECT"),
+    }),
     [openReview]
   );
+
+  const columns = React.useMemo(() => subscriptionRequestColumns(rowActions), [rowActions]);
 
   const records = data?.data ?? [];
   const meta = data?.meta;
@@ -223,11 +224,7 @@ export default function SubscriptionRequestsPage() {
           </div>
         )}
         mobileCard={(record) => (
-          <SubscriptionRequestMobileCard
-            record={record}
-            onApprove={openReview("APPROVE")}
-            onReject={openReview("REJECT")}
-          />
+          <SubscriptionRequestMobileCard record={record} {...rowActions} />
         )}
       />
 

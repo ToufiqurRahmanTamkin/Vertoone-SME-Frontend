@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -24,11 +24,11 @@ import {
   type Contact,
   type ContactStatus,
 } from "@/types/domain/contact";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { ContactFormModal } from "./components/ContactFormModal";
-import { contactColumns } from "./contacts.columns";
+import { ContactRowActions, contactColumns } from "./contacts.columns";
 
 export default function ContactsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -112,16 +112,17 @@ export default function ContactsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      contactColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => contactColumns(rowActions), [rowActions]);
 
   const contacts = data?.data ?? [];
   const meta = data?.meta;
@@ -247,20 +248,8 @@ export default function ContactsPage() {
               <TagList tags={contact.tags} emptyLabel="" />
             </div>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(contact)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(contact)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <ContactRowActions contact={contact} {...rowActions} />
             </div>
           </div>
         )}

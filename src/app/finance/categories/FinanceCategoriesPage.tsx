@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -13,12 +13,12 @@ import {
 import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { FinanceCategory, FinanceCategoryType } from "@/types/domain/finance";
-import { Pencil, Plus, Bot, Trash2 } from "lucide-react";
+import { Plus, Bot } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { AiCategoriesModal } from "./components/AiCategoriesModal";
 import { FinanceCategoryFormModal } from "./components/FinanceCategoryFormModal";
-import { financeCategoryColumns } from "./finance-categories.columns";
+import { FinanceCategoryRowActions, financeCategoryColumns } from "./finance-categories.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -79,10 +79,14 @@ export default function FinanceCategoriesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () => financeCategoryColumns({ onEdit: openEdit, onDelete: setPendingDelete }),
+  const rowActions = React.useMemo(
+    () => ({
+ onEdit: openEdit, onDelete: setPendingDelete
+    }),
     []
   );
+
+  const columns = React.useMemo(() => financeCategoryColumns(rowActions), [rowActions]);
 
   const categories = data?.data ?? [];
   const meta = data?.meta;
@@ -150,15 +154,8 @@ export default function FinanceCategoriesPage() {
                 {category.description}
               </p>
             )}
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(category)} />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(category)}
-                disabled={category.isSystem}
-              />
+            <div className="mt-3 border-t pt-3">
+              <FinanceCategoryRowActions category={category} {...rowActions} />
             </div>
           </div>
         )}

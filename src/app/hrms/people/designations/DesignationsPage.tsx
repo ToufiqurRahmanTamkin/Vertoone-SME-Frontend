@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,11 +14,11 @@ import {
 } from "@/redux/apis/designationApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Designation } from "@/types/domain/designation";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { DesignationFormModal } from "./components/DesignationFormModal";
-import { designationColumns } from "./designations.columns";
+import { DesignationRowActions, designationColumns } from "./designations.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -72,16 +72,17 @@ export default function DesignationsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      designationColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => designationColumns(rowActions), [rowActions]);
 
   const designations = data?.data ?? [];
   const meta = data?.meta;
@@ -191,20 +192,8 @@ export default function DesignationsPage() {
               <p className="mt-3 text-xs text-muted-foreground">{designation.description}</p>
             )}
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(designation)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(designation)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <DesignationRowActions designation={designation} {...rowActions} />
             </div>
           </div>
         )}

@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +15,11 @@ import {
 } from "@/redux/apis/roleApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { totalAssignments, type Role } from "@/types/domain/role";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { RoleFormModal } from "./components/RoleFormModal";
-import { roleColumns } from "./roles.columns";
+import { RoleRowActions, roleColumns } from "./roles.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -82,16 +82,17 @@ export default function RolesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      roleColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => roleColumns(rowActions), [rowActions]);
 
   const roles = data?.data ?? [];
   const meta = data?.meta;
@@ -179,20 +180,8 @@ export default function RolesPage() {
                 {totalAssignments(role.assignments)} assignments
               </Badge>
             </div>
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(role)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Remove"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(role)}
-                disabled={!access.canDelete || totalAssignments(role.assignments) > 0}
-              />
+            <div className="mt-3 border-t pt-3">
+              <RoleRowActions role={role} {...rowActions} />
             </div>
           </div>
         )}

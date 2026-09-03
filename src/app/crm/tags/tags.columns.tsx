@@ -1,24 +1,50 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date";
 import type { Tag } from "@/types/domain/tag";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface TagColumnActions {
+export interface TagColumnActions {
   onEdit: (tag: Tag) => void;
   onDelete: (tag: Tag) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const tagColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: TagColumnActions): ColumnDef<Tag>[] => [
+export function TagRowActions({
+  tag,
+  ...actions
+}: TagColumnActions & { tag: Tag }) {
+  return (
+    <RowActions
+      label={`Actions for ${tag.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(tag),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(tag),
+        },
+      ]}
+    />
+  );
+}
+
+export const tagColumns = (
+  rowActions: TagColumnActions
+): ColumnDef<Tag>[] => [
   {
     accessorKey: "name",
     header: "Tag",
@@ -60,29 +86,6 @@ export const tagColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <TagRowActions tag={row.original} {...rowActions} />,
   },
 ];

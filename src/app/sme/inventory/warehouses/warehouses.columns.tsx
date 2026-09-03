@@ -1,23 +1,50 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { WAREHOUSE_TYPE_LABELS, type Warehouse } from "@/types/domain/warehouse";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface WarehouseColumnActions {
+export interface WarehouseColumnActions {
   onEdit: (warehouse: Warehouse) => void;
   onDelete: (warehouse: Warehouse) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const warehouseColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: WarehouseColumnActions): ColumnDef<Warehouse>[] => [
+export function WarehouseRowActions({
+  warehouse,
+  ...actions
+}: WarehouseColumnActions & { warehouse: Warehouse }) {
+  return (
+    <RowActions
+      label={`Actions for ${warehouse.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(warehouse),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete || warehouse.isDefault,
+          title: warehouse.isDefault ? "The default warehouse cannot be deleted" : undefined,
+          onSelect: () => actions.onDelete(warehouse),
+        },
+      ]}
+    />
+  );
+}
+
+export const warehouseColumns = (
+  rowActions: WarehouseColumnActions
+): ColumnDef<Warehouse>[] => [
   {
     accessorKey: "name",
     header: "Warehouse",
@@ -86,29 +113,6 @@ export const warehouseColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete || row.original.isDefault}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <WarehouseRowActions warehouse={row.original} {...rowActions} />,
   },
 ];

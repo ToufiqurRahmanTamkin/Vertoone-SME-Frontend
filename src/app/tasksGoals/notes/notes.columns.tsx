@@ -1,7 +1,7 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TagList } from "@/components/shared/tag-list";
-import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/date";
 import {
   NOTE_VISIBILITY_COLORS,
@@ -11,7 +11,7 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 
-interface NoteColumnActions {
+export interface NoteColumnActions {
   onOpen: (note: Note) => void;
   onEdit: (note: Note) => void;
   onTogglePin: (note: Note) => void;
@@ -20,14 +20,45 @@ interface NoteColumnActions {
   canDelete: boolean;
 }
 
-export const noteColumns = ({
-  onOpen,
-  onEdit,
-  onTogglePin,
-  onDelete,
-  canEdit,
-  canDelete,
-}: NoteColumnActions): ColumnDef<Note>[] => [
+export function NoteRowActions({
+  note,
+  ...actions
+}: NoteColumnActions & { note: Note }) {
+  return (
+    <RowActions
+      label={`Actions for ${note.title}`}
+      actions={[
+        {
+          key: "pin",
+          label: note.isPinned ? "Unpin" : "Pin",
+          icon: note.isPinned ? PinOff : Pin,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onTogglePin(note),
+        },
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(note),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(note),
+        },
+      ]}
+    />
+  );
+}
+
+export const noteColumns = (
+  rowActions: NoteColumnActions
+): ColumnDef<Note>[] => [
   {
     accessorKey: "title",
     header: "Note",
@@ -35,7 +66,7 @@ export const noteColumns = ({
       <button
         type="button"
         className="min-w-0 cursor-pointer text-left"
-        onClick={() => onOpen(row.original)}
+        onClick={() => rowActions.onOpen(row.original)}
       >
         <span className="flex items-center gap-1.5">
           {row.original.isPinned && (
@@ -117,39 +148,6 @@ export const noteColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onTogglePin(row.original)}
-          disabled={!canEdit}
-          aria-label={row.original.isPinned ? `Unpin ${row.original.title}` : `Pin ${row.original.title}`}
-        >
-          {row.original.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.title}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.title}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <NoteRowActions note={row.original} {...rowActions} />,
   },
 ];

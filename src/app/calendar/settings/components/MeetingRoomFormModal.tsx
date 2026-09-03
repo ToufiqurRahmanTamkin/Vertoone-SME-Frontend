@@ -97,15 +97,14 @@ export function MeetingRoomFormModal({ open, onOpenChange, room }: MeetingRoomFo
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit meeting room" : "New meeting room"}</DialogTitle>
           <DialogDescription>
-            Rooms people can book for meetings. The colour is what the room looks like on the
-            calendar.
+            Rooms people can book, and the colour each one shows in on the calendar.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogBody className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <DialogBody className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <FormInput
                   control={form.control}
                   name="name"
@@ -117,11 +116,8 @@ export function MeetingRoomFormModal({ open, onOpenChange, room }: MeetingRoomFo
                   name="code"
                   label="Code"
                   placeholder="MR-01"
-                  description="A short code, unique in your company."
+                  description="Unique in your company."
                 />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
                 <FormInput
                   control={form.control}
                   name="floor"
@@ -135,7 +131,7 @@ export function MeetingRoomFormModal({ open, onOpenChange, room }: MeetingRoomFo
                   type="number"
                   min={1}
                   placeholder="8"
-                  description="How many people the room seats."
+                  description="How many people it seats."
                 />
               </div>
 

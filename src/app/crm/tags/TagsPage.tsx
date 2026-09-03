@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorLabelFormModal } from "@/components/shared/color-label-form-modal";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
@@ -12,10 +12,10 @@ import { useQueryFilters } from "@/hooks/use-query-filters";
 import { useDeleteTagMutation, useGetTagsQuery, useGetTagSummaryQuery } from "@/redux/apis/tagApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Tag } from "@/types/domain/tag";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { tagColumns } from "./tags.columns";
+import { TagRowActions, tagColumns } from "./tags.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -70,16 +70,17 @@ export default function TagsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      tagColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => tagColumns(rowActions), [rowActions]);
 
   const tags = data?.data ?? [];
   const meta = data?.meta;
@@ -174,20 +175,8 @@ export default function TagsPage() {
             {tag.description && (
               <p className="mt-3 text-xs text-muted-foreground">{tag.description}</p>
             )}
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(tag)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(tag)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <TagRowActions tag={tag} {...rowActions} />
             </div>
           </div>
         )}

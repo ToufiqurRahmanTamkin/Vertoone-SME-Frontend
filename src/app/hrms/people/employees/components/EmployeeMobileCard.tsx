@@ -1,4 +1,3 @@
-import { CardActionButton } from "@/components/shared/action-button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TagList } from "@/components/shared/tag-list";
 import {
@@ -8,23 +7,15 @@ import {
 } from "@/constant";
 import { formatDate } from "@/lib/date";
 import type { Employee } from "@/types/domain/employee";
-import { Pencil, Trash2 } from "lucide-react";
-
-interface EmployeeMobileCardProps {
-  employee: Employee;
-  onEdit: (employee: Employee) => void;
-  onDelete: (employee: Employee) => void;
-  canEdit: boolean;
-  canDelete: boolean;
-}
+import {
+  EmployeeRowActions,
+  type EmployeeColumnActions,
+} from "../employees.columns";
 
 export function EmployeeMobileCard({
   employee,
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: EmployeeMobileCardProps) {
+  ...actions
+}: EmployeeColumnActions & { employee: Employee }) {
   return (
     <div className="rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -74,20 +65,8 @@ export function EmployeeMobileCard({
         </div>
       )}
 
-      <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-        <CardActionButton
-          icon={Pencil}
-          label="Edit"
-          onClick={() => onEdit(employee)}
-          disabled={!canEdit}
-        />
-        <CardActionButton
-          icon={Trash2}
-          label="Delete"
-          className="text-destructive hover:text-destructive"
-          onClick={() => onDelete(employee)}
-          disabled={!canDelete}
-        />
+      <div className="mt-3 border-t pt-3">
+        <EmployeeRowActions employee={employee} {...actions} />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -15,10 +15,10 @@ import {
 } from "@/redux/apis/brandApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Brand } from "@/types/domain/brand";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { brandColumns } from "./brands.columns";
+import { BrandRowActions, brandColumns } from "./brands.columns";
 import { BrandFormModal } from "./components/BrandFormModal";
 
 const FILTERS: FilterConfig[] = [
@@ -73,16 +73,17 @@ export default function BrandsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      brandColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => brandColumns(rowActions), [rowActions]);
 
   const brands = data?.data ?? [];
   const meta = data?.meta;
@@ -198,20 +199,8 @@ export default function BrandsPage() {
               </div>
             </dl>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(brand)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(brand)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <BrandRowActions brand={brand} {...rowActions} />
             </div>
           </div>
         )}

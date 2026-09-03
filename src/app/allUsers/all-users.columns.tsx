@@ -1,21 +1,40 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ROLE_LABELS, USER_STATUS_COLORS, USER_STATUS_LABELS } from "@/constant";
 import { formatDate } from "@/lib/date";
 import type { AdminUser } from "@/types/domain/adminUser";
 import type { ColumnDef } from "@tanstack/react-table";
 import { KeyRound } from "lucide-react";
 
-interface AllUsersColumnActions {
+export interface AllUsersColumnActions {
   onResetPassword: (user: AdminUser) => void;
   canEdit: boolean;
 }
 
-export const allUsersColumns = ({
-  onResetPassword,
-  canEdit,
-}: AllUsersColumnActions): ColumnDef<AdminUser>[] => [
+export function AllUsersRowActions({
+  user,
+  ...actions
+}: AllUsersColumnActions & { user: AdminUser }) {
+  return (
+    <RowActions
+      label={`Actions for ${user.name}`}
+      actions={[
+        {
+          key: "reset-password",
+          label: "Reset password",
+          icon: KeyRound,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onResetPassword(user),
+        },
+      ]}
+    />
+  );
+}
+
+export const allUsersColumns = (
+  rowActions: AllUsersColumnActions
+): ColumnDef<AdminUser>[] => [
   {
     accessorKey: "name",
     header: "User",
@@ -69,20 +88,6 @@ export const allUsersColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          className="cursor-pointer"
-          onClick={() => onResetPassword(row.original)}
-          disabled={!canEdit}
-          aria-label={`Reset password for ${row.original.name}`}
-        >
-          <KeyRound className="mr-1.5 h-3.5 w-3.5" />
-          Reset password
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <AllUsersRowActions user={row.original} {...rowActions} />,
   },
 ];

@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorLabelFormModal } from "@/components/shared/color-label-form-modal";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
@@ -16,10 +16,10 @@ import {
 } from "@/redux/apis/leadSourceApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { LeadSource } from "@/types/domain/leadSource";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { leadSourceColumns } from "./lead-sources.columns";
+import { LeadSourceRowActions, leadSourceColumns } from "./lead-sources.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -74,16 +74,17 @@ export default function LeadSourcesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      leadSourceColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => leadSourceColumns(rowActions), [rowActions]);
 
   const sources = data?.data ?? [];
   const meta = data?.meta;
@@ -178,20 +179,8 @@ export default function LeadSourcesPage() {
             {source.description && (
               <p className="mt-3 text-xs text-muted-foreground">{source.description}</p>
             )}
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(source)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(source)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <LeadSourceRowActions source={source} {...rowActions} />
             </div>
           </div>
         )}

@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,11 +14,11 @@ import {
 } from "@/redux/apis/departmentApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Department } from "@/types/domain/department";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { DepartmentFormModal } from "./components/DepartmentFormModal";
-import { departmentColumns } from "./departments.columns";
+import { DepartmentRowActions, departmentColumns } from "./departments.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -72,16 +72,17 @@ export default function DepartmentsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      departmentColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => departmentColumns(rowActions), [rowActions]);
 
   const departments = data?.data ?? [];
   const meta = data?.meta;
@@ -191,20 +192,8 @@ export default function DepartmentsPage() {
               <p className="mt-3 text-xs text-muted-foreground">{department.description}</p>
             )}
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(department)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(department)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <DepartmentRowActions department={department} {...rowActions} />
             </div>
           </div>
         )}

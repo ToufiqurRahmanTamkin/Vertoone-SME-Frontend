@@ -1,24 +1,53 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date";
 import { totalAssignments, type Role } from "@/types/domain/role";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface RoleColumnActions {
+export interface RoleColumnActions {
   onEdit: (role: Role) => void;
   onDelete: (role: Role) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const roleColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: RoleColumnActions): ColumnDef<Role>[] => [
+export function RoleRowActions({
+  role,
+  ...actions
+}: RoleColumnActions & { role: Role }) {
+  return (
+    <RowActions
+      label={`Actions for ${role.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(role),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete || totalAssignments(role.assignments) > 0,
+          title: totalAssignments(role.assignments) > 0
+            ? "Unassign this role everywhere before deleting it"
+            : undefined,
+          onSelect: () => actions.onDelete(role),
+        },
+      ]}
+    />
+  );
+}
+
+export const roleColumns = (
+  rowActions: RoleColumnActions
+): ColumnDef<Role>[] => [
   {
     accessorKey: "name",
     header: "Role",
@@ -79,34 +108,6 @@ export const roleColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete || totalAssignments(row.original.assignments) > 0}
-          aria-label={`Delete ${row.original.name}`}
-          title={
-            totalAssignments(row.original.assignments) > 0
-              ? "Unassign this role everywhere before deleting it"
-              : undefined
-          }
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <RoleRowActions role={row.original} {...rowActions} />,
   },
 ];

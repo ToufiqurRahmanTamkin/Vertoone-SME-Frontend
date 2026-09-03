@@ -1,5 +1,5 @@
-import { CardActionButton } from "@/components/shared/action-button";
 import type { CompanyAction } from "@/app/companies/companies.columns";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   COMPANY_STATUS_COLORS,
@@ -87,45 +87,45 @@ export function CompanyMobileCard({ company, onAction }: CompanyMobileCardProps)
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {company.status === "PENDING" && (
-          <>
-            <CardActionButton
-              icon={CheckCircle2}
-              label="Approve"
-              onClick={() => onAction(company, "APPROVE")}
-            />
-            <CardActionButton
-              icon={XCircle}
-              label="Reject"
-              variant="destructive"
-              onClick={() => onAction(company, "REJECT")}
-            />
-          </>
-        )}
-        {company.status === "APPROVED" && (
-          <CardActionButton
-            icon={Ban}
-            label="Suspend"
-            onClick={() => onAction(company, "SUSPEND")}
-          />
-        )}
-        {company.status === "SUSPENDED" && (
-          <CardActionButton
-            icon={PlayCircle}
-            label="Reactivate"
-            onClick={() => onAction(company, "REACTIVATE")}
-          />
-        )}
-        {company.status !== "APPROVED" && (
-          <CardActionButton
-            icon={Trash2}
-            label="Delete"
-            variant="ghost"
-            className="text-destructive hover:text-destructive"
-            onClick={() => onAction(company, "DELETE")}
-          />
-        )}
+      <div className="mt-4 border-t pt-3">
+        <RowActions
+          label={`Actions for ${company.name}`}
+          actions={[
+            company.status === "PENDING" && {
+              key: "approve",
+              label: "Approve",
+              icon: CheckCircle2,
+              onSelect: () => onAction(company, "APPROVE"),
+            },
+            company.status === "PENDING" && {
+              key: "reject",
+              label: "Reject",
+              icon: XCircle,
+              variant: "destructive" as const,
+              onSelect: () => onAction(company, "REJECT"),
+            },
+            company.status === "APPROVED" && {
+              key: "suspend",
+              label: "Suspend",
+              icon: Ban,
+              onSelect: () => onAction(company, "SUSPEND"),
+            },
+            company.status === "SUSPENDED" && {
+              key: "reactivate",
+              label: "Reactivate",
+              icon: PlayCircle,
+              onSelect: () => onAction(company, "REACTIVATE"),
+            },
+            company.status !== "APPROVED" && {
+              key: "delete",
+              label: "Delete",
+              icon: Trash2,
+              variant: "destructive" as const,
+              separated: true,
+              onSelect: () => onAction(company, "DELETE"),
+            },
+          ]}
+        />
       </div>
     </div>
   );

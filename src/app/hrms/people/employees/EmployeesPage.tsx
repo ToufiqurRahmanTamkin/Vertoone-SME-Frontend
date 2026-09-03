@@ -117,16 +117,17 @@ export default function EmployeesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      employeeColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => employeeColumns(rowActions), [rowActions]);
 
   const employees = data?.data ?? [];
   const meta = data?.meta;
@@ -221,13 +222,7 @@ export default function EmployeesPage() {
         onLimitChange={(limit) => setFilter("limit", limit)}
         getRowId={(row) => row._id}
         mobileCard={(employee) => (
-          <EmployeeMobileCard
-            employee={employee}
-            onEdit={openEdit}
-            onDelete={setPendingDelete}
-            canEdit={access.canEdit}
-            canDelete={access.canDelete}
-          />
+          <EmployeeMobileCard employee={employee} {...rowActions} />
         )}
       />
 

@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -17,13 +17,13 @@ import {
 } from "@/redux/apis/pipelineApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { PipelineWithStats } from "@/types/domain/pipeline";
-import { Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { PipelineFormModal } from "./components/PipelineFormModal";
 import { formatMoney } from "./pipeline.helpers";
-import { pipelineColumns } from "./pipelines.columns";
+import { PipelineRowActions, pipelineColumns } from "./pipelines.columns";
 
 export default function PipelinesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
@@ -101,16 +101,17 @@ export default function PipelinesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      pipelineColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => pipelineColumns(rowActions), [rowActions]);
 
   const pipelines = data?.data ?? [];
   const meta = data?.meta;
@@ -259,23 +260,8 @@ export default function PipelinesPage() {
               </div>
             )}
 
-            <div
-              className="mt-3 flex justify-end gap-2 border-t pt-3"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(pipeline)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(pipeline)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3" onClick={(event) => event.stopPropagation()}>
+              <PipelineRowActions pipeline={pipeline} {...rowActions} />
             </div>
           </div>
         )}

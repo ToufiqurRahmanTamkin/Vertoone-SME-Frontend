@@ -1,6 +1,6 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatDate } from "@/lib/date";
 import {
@@ -14,7 +14,7 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, TrendingUp, Trash2 } from "lucide-react";
 
-interface GoalColumnActions {
+export interface GoalColumnActions {
   onOpen: (goal: Goal) => void;
   onEdit: (goal: Goal) => void;
   onCheckIn: (goal: Goal) => void;
@@ -23,14 +23,45 @@ interface GoalColumnActions {
   canDelete: boolean;
 }
 
-export const goalColumns = ({
-  onOpen,
-  onEdit,
-  onCheckIn,
-  onDelete,
-  canEdit,
-  canDelete,
-}: GoalColumnActions): ColumnDef<Goal>[] => [
+export function GoalRowActions({
+  goal,
+  ...actions
+}: GoalColumnActions & { goal: Goal }) {
+  return (
+    <RowActions
+      label={`Actions for ${goal.title}`}
+      actions={[
+        {
+          key: "check-in",
+          label: "Check in",
+          icon: TrendingUp,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onCheckIn(goal),
+        },
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(goal),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(goal),
+        },
+      ]}
+    />
+  );
+}
+
+export const goalColumns = (
+  rowActions: GoalColumnActions
+): ColumnDef<Goal>[] => [
   {
     accessorKey: "title",
     header: "Goal",
@@ -38,7 +69,7 @@ export const goalColumns = ({
       <button
         type="button"
         className="min-w-0 cursor-pointer text-left"
-        onClick={() => onOpen(row.original)}
+        onClick={() => rowActions.onOpen(row.original)}
       >
         <ColorChip color={row.original.color} label={row.original.title} />
         <p className="mt-1 text-xs text-muted-foreground">
@@ -113,39 +144,6 @@ export const goalColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onCheckIn(row.original)}
-          disabled={!canEdit}
-          aria-label={`Check in on ${row.original.title}`}
-        >
-          <TrendingUp className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.title}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.title}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <GoalRowActions goal={row.original} {...rowActions} />,
   },
 ];

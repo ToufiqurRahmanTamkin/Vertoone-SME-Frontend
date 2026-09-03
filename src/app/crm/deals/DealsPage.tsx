@@ -1,6 +1,7 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TagList } from "@/components/shared/tag-list";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ import {
   type DealPriority,
   type DealStatus,
 } from "@/types/domain/deal";
-import { Columns3, PanelRightOpen, Plus, Table2 } from "lucide-react";
+import { Columns3, PanelRightOpen, Pencil, Plus, Table2, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { formatMoney } from "./deal.helpers";
@@ -223,17 +224,18 @@ export default function DealsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      dealColumns({
-        onOpen: openDetail,
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onOpen: openDetail,
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => dealColumns(rowActions), [rowActions]);
 
   const deals = tableResult?.data ?? [];
   const meta = tableResult?.meta;
@@ -430,21 +432,44 @@ export default function DealsPage() {
                 <TagList tags={deal.tags} emptyLabel="" />
               </div>
 
-              <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-                <CardActionButton
-                  icon={Plus}
-                  label="Log activity"
-                  onClick={() => {
-                    setActivityDeal(deal);
-                    setEditingActivity(null);
-                    setActivityOpen(true);
-                  }}
-                  disabled={!access.canCreate}
-                />
-                <CardActionButton
-                  icon={PanelRightOpen}
-                  label="Open"
-                  onClick={() => openDetail(deal)}
+              <div className="mt-3 border-t pt-3">
+                <RowActions
+                  label={`Actions for ${deal.title}`}
+                  actions={[
+                    {
+                      key: "open",
+                      label: "Open",
+                      icon: PanelRightOpen,
+                      onSelect: () => openDetail(deal),
+                    },
+                    {
+                      key: "activity",
+                      label: "Log activity",
+                      icon: Plus,
+                      disabled: !access.canCreate,
+                      onSelect: () => {
+                        setActivityDeal(deal);
+                        setEditingActivity(null);
+                        setActivityOpen(true);
+                      },
+                    },
+                    {
+                      key: "edit",
+                      label: "Edit",
+                      icon: Pencil,
+                      disabled: !access.canEdit,
+                      onSelect: () => openEdit(deal),
+                    },
+                    {
+                      key: "delete",
+                      label: "Delete",
+                      icon: Trash2,
+                      variant: "destructive",
+                      separated: true,
+                      disabled: !access.canDelete,
+                      onSelect: () => setPendingDelete(deal),
+                    },
+                  ]}
                 />
               </div>
             </div>

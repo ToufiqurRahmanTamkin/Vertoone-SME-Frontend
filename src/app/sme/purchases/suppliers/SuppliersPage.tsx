@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -19,11 +19,11 @@ import {
   type Supplier,
   type SupplierPaymentTerm,
 } from "@/types/domain/supplier";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { SupplierFormModal } from "./components/SupplierFormModal";
-import { supplierColumns } from "./suppliers.columns";
+import { SupplierRowActions, supplierColumns } from "./suppliers.columns";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -87,16 +87,17 @@ export default function SuppliersPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      supplierColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+    }),
     [access.canEdit, access.canDelete]
   );
+
+  const columns = React.useMemo(() => supplierColumns(rowActions), [rowActions]);
 
   const suppliers = data?.data ?? [];
   const meta = data?.meta;
@@ -212,20 +213,8 @@ export default function SuppliersPage() {
               </div>
             </dl>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton
-                icon={Pencil}
-                label="Edit"
-                onClick={() => openEdit(supplier)}
-                disabled={!access.canEdit}
-              />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(supplier)}
-                disabled={!access.canDelete}
-              />
+            <div className="mt-3 border-t pt-3">
+              <SupplierRowActions supplier={supplier} {...rowActions} />
             </div>
           </div>
         )}

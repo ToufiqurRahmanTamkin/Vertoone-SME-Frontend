@@ -1,24 +1,50 @@
 import { ColorChip } from "@/components/shared/color-chip";
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { Brand } from "@/types/domain/brand";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface BrandColumnActions {
+export interface BrandColumnActions {
   onEdit: (brand: Brand) => void;
   onDelete: (brand: Brand) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const brandColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: BrandColumnActions): ColumnDef<Brand>[] => [
+export function BrandRowActions({
+  brand,
+  ...actions
+}: BrandColumnActions & { brand: Brand }) {
+  return (
+    <RowActions
+      label={`Actions for ${brand.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(brand),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(brand),
+        },
+      ]}
+    />
+  );
+}
+
+export const brandColumns = (
+  rowActions: BrandColumnActions
+): ColumnDef<Brand>[] => [
   {
     accessorKey: "name",
     header: "Brand",
@@ -66,29 +92,6 @@ export const brandColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <BrandRowActions brand={row.original} {...rowActions} />,
   },
 ];

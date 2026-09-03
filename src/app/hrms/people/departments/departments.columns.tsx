@@ -1,23 +1,49 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { Department } from "@/types/domain/department";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 
-interface DepartmentColumnActions {
+export interface DepartmentColumnActions {
   onEdit: (department: Department) => void;
   onDelete: (department: Department) => void;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-export const departmentColumns = ({
-  onEdit,
-  onDelete,
-  canEdit,
-  canDelete,
-}: DepartmentColumnActions): ColumnDef<Department>[] => [
+export function DepartmentRowActions({
+  department,
+  ...actions
+}: DepartmentColumnActions & { department: Department }) {
+  return (
+    <RowActions
+      label={`Actions for ${department.name}`}
+      actions={[
+        {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(department),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive",
+          separated: true,
+          disabled: !actions.canDelete,
+          onSelect: () => actions.onDelete(department),
+        },
+      ]}
+    />
+  );
+}
+
+export const departmentColumns = (
+  rowActions: DepartmentColumnActions
+): ColumnDef<Department>[] => [
   {
     accessorKey: "name",
     header: "Department",
@@ -71,29 +97,6 @@ export const departmentColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          disabled={!canEdit}
-          aria-label={`Edit ${row.original.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          disabled={!canDelete}
-          aria-label={`Delete ${row.original.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <DepartmentRowActions department={row.original} {...rowActions} />,
   },
 ];
