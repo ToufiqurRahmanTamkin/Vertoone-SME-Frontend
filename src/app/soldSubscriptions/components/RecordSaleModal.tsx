@@ -133,7 +133,7 @@ export function RecordSaleModal({ open, onOpenChange }: RecordSaleModalProps) {
       }).unwrap();
       toast.success("Plan assigned", {
         description: runningSubscription
-          ? "The previous plan was replaced and an invoice is awaiting payment on both sides of the ledger."
+          ? "The previous plan was ended, its auto renew switched off, and a fresh invoice is awaiting payment on both sides of the ledger."
           : "The invoice is awaiting payment on both sides of the ledger.",
       });
       onOpenChange(false);
@@ -181,7 +181,7 @@ export function RecordSaleModal({ open, onOpenChange }: RecordSaleModalProps) {
                 control={form.control}
                 name="autoRenew"
                 label="Auto renew"
-                description="Raise the next bill automatically when this term ends"
+                description="Raise the next bill automatically when this term ends, and keep the plan running until it is changed"
               />
 
               {runningSubscription && (
@@ -198,7 +198,11 @@ export function RecordSaleModal({ open, onOpenChange }: RecordSaleModalProps) {
                     <p className="text-muted-foreground">
                       That term runs to {formatDate(runningSubscription.endDate)} on invoice{" "}
                       {runningSubscription.invoiceNumber}. Assigning a plan here ends it
-                      immediately, whatever time is left, and the new plan takes over.
+                      immediately, whatever time is left, and the new plan takes over on a new
+                      invoice.
+                      {runningSubscription.autoRenew
+                        ? " Its auto renew is switched off, so it will never bill again."
+                        : ""}
                     </p>
                   </div>
                 </div>
