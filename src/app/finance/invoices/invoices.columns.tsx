@@ -1,5 +1,4 @@
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   INVOICE_ORIGIN_LABELS,
   INVOICE_STATUS_COLORS,
@@ -11,19 +10,15 @@ import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { isInvoiceLinked, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, Link2, Link2Off, Pencil, Trash2 } from "lucide-react";
+import { Link2, Link2Off } from "lucide-react";
+import {
+  InvoiceRowActions,
+  type InvoiceRowActionHandlers,
+} from "./components/InvoiceRowActions";
 
-interface InvoiceColumnActions {
-  onView: (invoice: Invoice) => void;
-  onEdit: (invoice: Invoice) => void;
-  onDelete: (invoice: Invoice) => void;
-}
-
-export const invoiceColumns = ({
-  onView,
-  onEdit,
-  onDelete,
-}: InvoiceColumnActions): ColumnDef<Invoice>[] => [
+export const invoiceColumns = (
+  rowActions: InvoiceRowActionHandlers
+): ColumnDef<Invoice>[] => [
   {
     accessorKey: "invoiceNumber",
     header: "Invoice",
@@ -102,36 +97,6 @@ export const invoiceColumns = ({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onView(row.original)}
-          aria-label={`View ${row.original.invoiceNumber}`}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          aria-label={`Edit ${row.original.invoiceNumber}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          aria-label={`Delete ${row.original.invoiceNumber}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <InvoiceRowActions invoice={row.original} {...rowActions} />,
   },
 ];

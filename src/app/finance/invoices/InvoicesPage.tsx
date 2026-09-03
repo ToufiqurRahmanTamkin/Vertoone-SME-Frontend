@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -38,20 +38,12 @@ import {
   type InvoiceStatus,
   type InvoiceType,
 } from "@/types/domain/invoice";
-import {
-  Clock3,
-  Eye,
-  FileText,
-  Pencil,
-  Plus,
-  TrendingDown,
-  TrendingUp,
-  Trash2,
-} from "lucide-react";
+import { Clock3, FileText, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { InvoiceDetailDialog } from "./components/InvoiceDetailDialog";
 import { InvoiceFormModal } from "./components/InvoiceFormModal";
+import { InvoiceRowActions } from "./components/InvoiceRowActions";
 import { invoiceColumns } from "./invoices.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -122,10 +114,12 @@ export default function InvoicesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () => invoiceColumns({ onView: setViewing, onEdit: openEdit, onDelete: setPendingDelete }),
+  const rowActions = React.useMemo(
+    () => ({ onView: setViewing, onEdit: openEdit, onDelete: setPendingDelete }),
     []
   );
+
+  const columns = React.useMemo(() => invoiceColumns(rowActions), [rowActions]);
 
   const invoices = data?.data ?? [];
   const meta = data?.meta;
@@ -222,9 +216,12 @@ export default function InvoicesPage() {
                 <p className="truncate font-mono text-xs font-semibold">{invoice.invoiceNumber}</p>
                 <p className="truncate text-sm font-medium">{invoice.title}</p>
               </div>
-              <span className="shrink-0 font-medium tabular-nums">
-                {formatAmountValue(invoice.amount)}
-              </span>
+              <div className="flex shrink-0 items-center gap-1">
+                <span className="font-medium tabular-nums">
+                  {formatAmountValue(invoice.amount)}
+                </span>
+                <InvoiceRowActions invoice={invoice} {...rowActions} />
+              </div>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -243,16 +240,6 @@ export default function InvoicesPage() {
               {isInvoiceLinked(invoice) ? INVOICE_ORIGIN_LABELS[invoice.origin] : "Not linked"}
             </p>
 
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton icon={Eye} label="View" onClick={() => setViewing(invoice)} />
-              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(invoice)} />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(invoice)}
-              />
-            </div>
           </div>
         )}
       />

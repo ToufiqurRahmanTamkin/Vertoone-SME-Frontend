@@ -482,6 +482,7 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   SUBSCRIPTION_SUSPENDED: "Subscription suspended",
   SUBSCRIPTION_UPGRADE_REQUESTED: "Upgrade requested",
   SUBSCRIPTION_UPGRADED: "Plan upgraded",
+  SUBSCRIPTION_SUPERSEDED: "Plan replaced",
   SUBSCRIPTION_REQUEST_REJECTED: "Request rejected",
   COMPANY_DATA_PURGED: "Company data erased",
   COMPANY_ACCESS_BLOCKED: "Company access blocked",
@@ -552,6 +553,15 @@ export const WIPE_SCOPE_DESCRIPTIONS: Record<WipeScope, string> = {
     "Permanently removes companies, users, invoices, ledgers, emails and logs. The plan catalog, finance categories, guides and settings stay.",
   FACTORY_RESET:
     "Permanently removes everything above plus the plan catalog, finance categories, guides and system settings. Only super admin logins survive.",
+};
+
+export const WIPE_SCOPE_COMPANY_DESCRIPTIONS: Record<WipeScope, string> = {
+  SOFT_DELETED:
+    "Permanently removes only this company's records that were already deleted from the UI. Its live data is untouched.",
+  OPERATIONAL:
+    "Permanently removes this company's users, subscriptions, ledgers, CRM, HRMS and inventory records, plus the company account itself.",
+  FACTORY_RESET:
+    "Everything above plus this company's holidays, shifts, leave types and HRMS settings. Platform-wide plans, guides and settings are never touched.",
 };
 
 export const WIPE_SCOPE_COLORS: Record<WipeScope, StatusColor> = {

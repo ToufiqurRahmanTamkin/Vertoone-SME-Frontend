@@ -1,10 +1,19 @@
-import type { DataWipePayload, DataWipePreview, DataWipeResult } from "@/types/domain/dataWipe";
+import type {
+  DataWipePayload,
+  DataWipePreview,
+  DataWipePreviewQuery,
+  DataWipeResult,
+} from "@/types/domain/dataWipe";
 import { ALL_TAG_TYPES, baseApi } from "../baseApi";
+import { buildQuery } from "./queryString";
 
 const dataWipeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getDataWipePreview: builder.query<DataWipePreview, void>({
-      query: () => ({ url: "/data-wipe/preview", method: "GET" }),
+    getDataWipePreview: builder.query<DataWipePreview, DataWipePreviewQuery | void>({
+      query: (params) => ({
+        url: `/data-wipe/preview${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
       providesTags: ["DataWipe"],
     }),
     executeDataWipe: builder.mutation<DataWipeResult, DataWipePayload>({

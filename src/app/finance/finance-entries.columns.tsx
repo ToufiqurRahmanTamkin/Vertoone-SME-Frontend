@@ -1,5 +1,4 @@
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   INCOME_SOURCE_TYPE_LABELS,
   INVOICE_STATUS_COLORS,
@@ -10,25 +9,22 @@ import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  FinanceEntryRowActions,
+  type FinanceEntryRowActionHandlers,
+} from "./components/FinanceEntryRowActions";
 import { FINANCE_ENTRY_COPY, type FinanceEntryKind } from "./finance-entry-copy";
 
-interface FinanceEntryColumnActions<T> {
+type FinanceEntryColumnActions<T> = FinanceEntryRowActionHandlers<T> & {
   kind: FinanceEntryKind;
-  onEdit: (entry: T) => void;
-  onDelete: (entry: T) => void;
-}
+};
 
 const entryParty = (entry: Income | Expense, kind: FinanceEntryKind): string =>
   (kind === "INCOME" ? (entry as Income).receivedFrom : (entry as Expense).paidTo) || "—";
 
-const isSystemGenerated = (entry: Income | Expense): boolean =>
-  "sourceType" in entry && entry.sourceType !== "MANUAL";
-
 export const financeEntryColumns = <T extends Income | Expense>({
   kind,
-  onEdit,
-  onDelete,
+  ...rowActions
 }: FinanceEntryColumnActions<T>): ColumnDef<T>[] => [
   {
     accessorKey: "title",
@@ -118,32 +114,6 @@ export const financeEntryColumns = <T extends Income | Expense>({
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const locked = isSystemGenerated(row.original);
-      return (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-pointer"
-            onClick={() => onEdit(row.original)}
-            disabled={locked}
-            aria-label={`Edit ${row.original.title}`}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-            onClick={() => onDelete(row.original)}
-            disabled={locked}
-            aria-label={`Delete ${row.original.title}`}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => <FinanceEntryRowActions entry={row.original} {...rowActions} />,
   },
 ];

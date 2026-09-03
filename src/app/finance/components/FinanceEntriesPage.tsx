@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -29,10 +29,11 @@ import { type ApiErrorResponse } from "@/redux/baseApi";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
 import type { InvoiceStatus } from "@/types/domain/invoice";
 import type { PaymentMethod } from "@/types/domain/soldSubscription";
-import { CalendarDays, Clock3, Pencil, Plus, Trash2, Wallet } from "lucide-react";
+import { CalendarDays, Clock3, Plus, Wallet } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { financeEntryColumns } from "../finance-entries.columns";
+import { FinanceEntryRowActions } from "./FinanceEntryRowActions";
 import { FINANCE_ENTRY_COPY, type FinanceEntryKind } from "../finance-entry-copy";
 import { FinanceEntryFormModal } from "./FinanceEntryFormModal";
 
@@ -134,14 +135,14 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
     [categories]
   );
 
+  const rowActions = React.useMemo(
+    () => ({ onEdit: openEdit, onDelete: setPendingDelete }),
+    []
+  );
+
   const columns = React.useMemo(
-    () =>
-      financeEntryColumns<Entry>({
-        kind,
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-      }),
-    [kind]
+    () => financeEntryColumns<Entry>({ kind, ...rowActions }),
+    [kind, rowActions]
   );
 
   const entries = (data?.data ?? []) as Entry[];
@@ -273,7 +274,6 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
           </div>
         )}
         mobileCard={(entry) => {
-          const locked = isIncome && (entry as Income).sourceType !== "MANUAL";
           return (
             <div className="rounded-xl border bg-card p-4">
               <div className="flex items-start justify-between gap-3">
@@ -283,9 +283,12 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
                     {categoryRefName(entry.categoryId)}
                   </p>
                 </div>
-                <span className="shrink-0 font-medium tabular-nums">
-                  {formatAmountValue(entry.amount)}
-                </span>
+                <div className="flex shrink-0 items-center gap-1">
+                  <span className="font-medium tabular-nums">
+                    {formatAmountValue(entry.amount)}
+                  </span>
+                  <FinanceEntryRowActions entry={entry} {...rowActions} />
+                </div>
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusBadge
@@ -302,21 +305,6 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
                   {entry.invoice.invoiceNumber}
                 </p>
               )}
-              <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-                <CardActionButton
-                  icon={Pencil}
-                  label="Edit"
-                  onClick={() => openEdit(entry)}
-                  disabled={locked}
-                />
-                <CardActionButton
-                  icon={Trash2}
-                  label="Delete"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => setPendingDelete(entry)}
-                  disabled={locked}
-                />
-              </div>
             </div>
           );
         }}

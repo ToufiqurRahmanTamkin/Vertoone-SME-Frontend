@@ -1,11 +1,26 @@
 "use client";
 
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type RowData,
+} from "@tanstack/react-table";
 import { Fragment, type ReactNode, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { DataTablePagination } from "./data-table-pagination.tsx";
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
+}
 
 interface PaginationData {
   page: number;
@@ -25,6 +40,7 @@ interface DataTableProps<TData, TValue> {
   expandableContent?: (row: TData) => ReactNode;
   getRowId?: (row: TData) => string;
   onRowClick?: (row: TData) => void;
+  fixedLayout?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -38,6 +54,7 @@ export function DataTable<TData, TValue>({
   expandableContent,
   getRowId,
   onRowClick,
+  fixedLayout = false,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -65,14 +82,17 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       <div className={mobileCard ? "hidden md:block" : undefined}>
         <div className="overflow-x-auto rounded-xl border">
-          <table data-slot="table" className="w-full caption-bottom text-sm">
+          <table
+            data-slot="table"
+            className={cn("w-full caption-bottom text-sm", fixedLayout && "table-fixed")}
+          >
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="bg-background"
+                      className={cn("bg-background", header.column.columnDef.meta?.headerClassName)}
                     >
                       {header.isPlaceholder
                         ? null
@@ -112,7 +132,10 @@ export function DataTable<TData, TValue>({
                         }}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
+                          <TableCell
+                            key={cell.id}
+                            className={cell.column.columnDef.meta?.cellClassName}
+                          >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </TableCell>
                         ))}

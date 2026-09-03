@@ -8,6 +8,7 @@ export interface WipeTargetPreview {
   liveCount: number;
   softDeletedCount: number;
   scopes: WipeScope[];
+  companyScoped: boolean;
 }
 
 export interface DataWipePreview {
@@ -16,6 +17,12 @@ export interface DataWipePreview {
   totalSoftDeleted: number;
   protectedSuperAdmins: number;
   confirmationPhrase: string;
+  companyId: string | null;
+  companyName: string | null;
+}
+
+export interface DataWipePreviewQuery {
+  companyId?: string;
 }
 
 export interface DataWipeEntry {
@@ -29,10 +36,13 @@ export interface DataWipeResult {
   executedAt: string;
   totalDeleted: number;
   entries: DataWipeEntry[];
+  companyId: string | null;
+  companyName: string | null;
 }
 
 export interface DataWipePayload {
   scope: WipeScope;
   password: string;
   confirmation: string;
+  companyId?: string;
 }

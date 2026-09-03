@@ -109,18 +109,19 @@ export default function SoldSubscriptionsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      soldSubscriptionColumns({
-        onEdit: openEdit,
-        onDelete: setPendingDelete,
-        onApprove: openReview("APPROVE"),
-        onReject: openReview("REJECT"),
-        onRefund: openReview("REFUND"),
-        onSuspend: openReview("SUSPEND"),
-      }),
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: openEdit,
+      onDelete: setPendingDelete,
+      onApprove: openReview("APPROVE"),
+      onReject: openReview("REJECT"),
+      onRefund: openReview("REFUND"),
+      onSuspend: openReview("SUSPEND"),
+    }),
     []
   );
+
+  const columns = React.useMemo(() => soldSubscriptionColumns(rowActions), [rowActions]);
 
   const records = data?.data ?? [];
   const meta = data?.meta;
@@ -175,7 +176,7 @@ export default function SoldSubscriptionsPage() {
     <>
       <PageHeader
         title="Sold Subscriptions"
-        description="Every subscription sold, with its invoice, term and payment state."
+        description="Every plan assigned to a company, with its invoice, term and payment state."
       />
 
       <StatGrid className="xl:grid-cols-5">
@@ -204,7 +205,7 @@ export default function SoldSubscriptionsPage() {
         onClear={clearFilters}
         isLoading={isFetching}
         actions={
-          <ActionButton icon={Plus} label="Record sale" onClick={() => setCreateOpen(true)} />
+          <ActionButton icon={Plus} label="Assign plan" onClick={() => setCreateOpen(true)} />
         }
       />
 
@@ -299,17 +300,7 @@ export default function SoldSubscriptionsPage() {
             )}
           </div>
         )}
-        mobileCard={(record) => (
-          <SoldSubscriptionMobileCard
-            record={record}
-            onEdit={openEdit}
-            onDelete={setPendingDelete}
-            onApprove={openReview("APPROVE")}
-            onReject={openReview("REJECT")}
-            onRefund={openReview("REFUND")}
-            onSuspend={openReview("SUSPEND")}
-          />
-        )}
+        mobileCard={(record) => <SoldSubscriptionMobileCard record={record} {...rowActions} />}
       />
 
       <PaymentReviewModal

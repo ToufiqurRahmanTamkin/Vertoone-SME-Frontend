@@ -1,4 +1,4 @@
-import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -9,10 +9,11 @@ import { useQueryFilters } from "@/hooks/use-query-filters";
 import { useDeleteGuideMutation, useGetGuidesQuery } from "@/redux/apis/guideApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { GuideAudience, GuideCategory, UserGuide } from "@/types/domain/guide";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { GuideFormModal } from "./components/GuideFormModal";
+import { GuideRowActions } from "./components/GuideRowActions";
 import { guideColumns } from "./guides.columns";
 
 const FILTERS: FilterConfig[] = [
@@ -79,10 +80,12 @@ export default function GuidesPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () => guideColumns({ onEdit: openEdit, onDelete: setPendingDelete }),
+  const rowActions = React.useMemo(
+    () => ({ onEdit: openEdit, onDelete: setPendingDelete }),
     []
   );
+
+  const columns = React.useMemo(() => guideColumns(rowActions), [rowActions]);
 
   const guides = data?.data ?? [];
   const meta = data?.meta;
@@ -133,11 +136,14 @@ export default function GuidesPage() {
                   /{guide.slug}
                 </p>
               </div>
-              {guide.isPublished ? (
-                <StatusBadge color="green" label="Published" />
-              ) : (
-                <StatusBadge color="amber" label="Draft" />
-              )}
+              <div className="flex shrink-0 items-center gap-1">
+                {guide.isPublished ? (
+                  <StatusBadge color="green" label="Published" />
+                ) : (
+                  <StatusBadge color="amber" label="Draft" />
+                )}
+                <GuideRowActions guide={guide} {...rowActions} />
+              </div>
             </div>
             {guide.summary && (
               <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{guide.summary}</p>
@@ -145,15 +151,6 @@ export default function GuidesPage() {
             <p className="mt-2 text-xs text-muted-foreground">
               {GUIDE_CATEGORY_LABELS[guide.category]} · {GUIDE_AUDIENCE_LABELS[guide.audience]}
             </p>
-            <div className="mt-3 flex justify-end gap-2 border-t pt-3">
-              <CardActionButton icon={Pencil} label="Edit" onClick={() => openEdit(guide)} />
-              <CardActionButton
-                icon={Trash2}
-                label="Delete"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setPendingDelete(guide)}
-              />
-            </div>
           </div>
         )}
       />

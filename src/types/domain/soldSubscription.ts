@@ -21,6 +21,8 @@ export const CASH_PAYMENT_METHOD: PaymentMethod = "CASH";
 export const requiresTransactionId = (method: PaymentMethod): boolean =>
   method !== CASH_PAYMENT_METHOD;
 
+export const RUNNING_SUBSCRIPTION_STATUSES = ["PENDING", "TRIALING", "ACTIVE"] as const;
+
 export const BILLING_ORIGINS = ["MANUAL", "AUTO_RENEWAL", "SELF_SERVICE", "UPGRADE"] as const;
 export type BillingOrigin = (typeof BILLING_ORIGINS)[number];
 
@@ -92,6 +94,9 @@ export interface RefundBreakdown {
   refundAmount: number;
   currency: string;
 }
+
+export const isRunningSubscription = (record: SoldSubscription): boolean =>
+  (RUNNING_SUBSCRIPTION_STATUSES as readonly string[]).includes(record.status);
 
 export interface SoldSubscriptionSummary {
   totalSold: number;

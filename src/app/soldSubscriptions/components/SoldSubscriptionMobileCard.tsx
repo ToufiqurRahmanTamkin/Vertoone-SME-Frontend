@@ -1,4 +1,3 @@
-import { CardActionButton } from "@/components/shared/action-button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   PAYMENT_STATUS_COLORS,
@@ -9,33 +8,15 @@ import {
 import { formatAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { SoldSubscription } from "@/types/domain/soldSubscription";
-import { Ban, CheckCircle2, Pencil, RotateCcw, Trash2, XCircle } from "lucide-react";
 import {
-  canApprovePayment,
-  canRefundPayment,
-  canRejectPayment,
-  canSuspendSubscription,
-} from "../payment-actions";
-
-interface SoldSubscriptionMobileCardProps {
-  record: SoldSubscription;
-  onEdit: (record: SoldSubscription) => void;
-  onDelete: (record: SoldSubscription) => void;
-  onApprove: (record: SoldSubscription) => void;
-  onReject: (record: SoldSubscription) => void;
-  onRefund: (record: SoldSubscription) => void;
-  onSuspend: (record: SoldSubscription) => void;
-}
+  SoldSubscriptionRowActions,
+  type SoldSubscriptionRowActionHandlers,
+} from "./SoldSubscriptionRowActions";
 
 export function SoldSubscriptionMobileCard({
   record,
-  onEdit,
-  onDelete,
-  onApprove,
-  onReject,
-  onRefund,
-  onSuspend,
-}: SoldSubscriptionMobileCardProps) {
+  ...rowActions
+}: SoldSubscriptionRowActionHandlers & { record: SoldSubscription }) {
   return (
     <div className="rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -43,9 +24,12 @@ export function SoldSubscriptionMobileCard({
           <p className="truncate font-semibold">{record.customerName}</p>
           <p className="truncate text-xs text-muted-foreground">{record.customerEmail}</p>
         </div>
-        <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
-          {record.invoiceNumber}
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          <span className="font-mono text-[11px] text-muted-foreground">
+            {record.invoiceNumber}
+          </span>
+          <SoldSubscriptionRowActions record={record} {...rowActions} />
+        </div>
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -77,43 +61,6 @@ export function SoldSubscriptionMobileCard({
           </dd>
         </div>
       </dl>
-
-      <div className="mt-3 flex flex-wrap justify-end gap-2 border-t pt-3">
-        {canApprovePayment(record) && (
-          <CardActionButton
-            icon={CheckCircle2}
-            label="Approve"
-            className="text-emerald-600 hover:text-emerald-600"
-            onClick={() => onApprove(record)}
-          />
-        )}
-        {canRejectPayment(record) && (
-          <CardActionButton
-            icon={XCircle}
-            label="Reject"
-            className="text-destructive hover:text-destructive"
-            onClick={() => onReject(record)}
-          />
-        )}
-        {canSuspendSubscription(record) && (
-          <CardActionButton
-            icon={Ban}
-            label="Suspend"
-            className="text-orange-600 hover:text-orange-600"
-            onClick={() => onSuspend(record)}
-          />
-        )}
-        {canRefundPayment(record) && (
-          <CardActionButton icon={RotateCcw} label="Refund" onClick={() => onRefund(record)} />
-        )}
-        <CardActionButton icon={Pencil} label="Edit" onClick={() => onEdit(record)} />
-        <CardActionButton
-          icon={Trash2}
-          label="Delete"
-          className="text-destructive hover:text-destructive"
-          onClick={() => onDelete(record)}
-        />
-      </div>
     </div>
   );
 }

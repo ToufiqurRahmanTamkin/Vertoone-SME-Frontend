@@ -1,18 +1,14 @@
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { GUIDE_AUDIENCE_LABELS, GUIDE_CATEGORY_LABELS } from "@/constant";
 import { formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import type { UserGuide } from "@/types/domain/guide";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import { GuideRowActions, type GuideRowActionHandlers } from "./components/GuideRowActions";
 
-interface GuideColumnActions {
-  onEdit: (guide: UserGuide) => void;
-  onDelete: (guide: UserGuide) => void;
-}
-
-export const guideColumns = ({ onEdit, onDelete }: GuideColumnActions): ColumnDef<UserGuide>[] => [
+export const guideColumns = (
+  rowActions: GuideRowActionHandlers
+): ColumnDef<UserGuide>[] => [
   {
     accessorKey: "title",
     header: "Guide",
@@ -89,27 +85,6 @@ export const guideColumns = ({ onEdit, onDelete }: GuideColumnActions): ColumnDe
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer"
-          onClick={() => onEdit(row.original)}
-          aria-label={`Edit ${row.original.title}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
-          onClick={() => onDelete(row.original)}
-          aria-label={`Delete ${row.original.title}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <GuideRowActions guide={row.original} {...rowActions} />,
   },
 ];

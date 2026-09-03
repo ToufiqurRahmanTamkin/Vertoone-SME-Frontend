@@ -137,6 +137,7 @@ export default function EmailsPage() {
         columns={columns}
         data={emails}
         isLoading={isLoading}
+        fixedLayout
         pagination={
           meta
             ? { page: meta.page, limit: meta.limit, total: meta.total, pages: meta.totalPages }
