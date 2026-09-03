@@ -1,4 +1,5 @@
 import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -13,7 +14,7 @@ import {
   toOptions,
 } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import {
   useDeleteExpenseMutation,
   useDeleteIncomeMutation,
@@ -150,27 +151,26 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
   const stats = [
     {
       label: copy.totalLabel,
-      value: formatAmount(summary?.totalAmount, currency),
+      value: formatAmountValue(summary?.totalAmount),
       icon: Wallet,
       color: isIncome ? ("success" as const) : ("warning" as const),
     },
     {
       label: copy.thisMonthLabel,
-      value: formatAmount(summary?.thisMonthAmount, currency),
+      value: formatAmountValue(summary?.thisMonthAmount),
       icon: CalendarDays,
       color: "info" as const,
     },
     {
       label: copy.outstandingLabel,
-      value: formatAmount(summary?.unpaidAmount, currency),
+      value: formatAmountValue(summary?.unpaidAmount),
       icon: Clock3,
       color: "warning" as const,
     },
     {
       label: copy.countLabel,
-      value: `${formatNumber(summary?.totalCount)} · ${formatAmount(
-        summary?.paidAmount,
-        currency
+      value: `${formatNumber(summary?.totalCount)} · ${formatAmountValue(
+        summary?.paidAmount
       )} settled`,
       icon: Wallet,
       color: "info" as const,
@@ -179,7 +179,11 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
 
   return (
     <>
-      <PageHeader title={copy.pageTitle} description={copy.pageDescription} />
+      <PageHeader
+        title={copy.pageTitle}
+        description={copy.pageDescription}
+        actions={<CurrencyNote currency={currency} />}
+      />
 
       <StatGrid className="xl:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
@@ -280,7 +284,7 @@ export function FinanceEntriesPage({ kind }: FinanceEntriesPageProps) {
                   </p>
                 </div>
                 <span className="shrink-0 font-medium tabular-nums">
-                  {formatAmount(entry.amount, entry.currency)}
+                  {formatAmountValue(entry.amount)}
                 </span>
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -17,7 +17,7 @@ import {
   PAYMENT_METHOD_LABELS,
   toOptions,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
   useCreateInvoiceMutation,
@@ -93,7 +93,7 @@ const toFormValues = (invoice: Invoice): InvoiceFormValues => ({
 });
 
 const entryOptionLabel = (entry: LinkableEntry): string =>
-  `${entry.title} · ${formatAmount(entry.amount, entry.currency)} · ${formatDate(entry.date)}`;
+  `${entry.title} · ${formatAmountValue(entry.amount)} · ${formatDate(entry.date)}`;
 
 export function InvoiceFormModal({
   open,

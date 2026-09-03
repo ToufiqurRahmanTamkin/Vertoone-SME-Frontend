@@ -18,7 +18,7 @@ import {
   INVOICE_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { categoryRefName, type Expense, type Income } from "@/types/domain/finance";
 import { invoiceEntry, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
@@ -83,9 +83,9 @@ export function InvoiceDetailDialog({ open, onOpenChange, invoice }: InvoiceDeta
           </p>
 
           <div className="rounded-lg border bg-muted/30 p-4">
-            <p className="text-xs text-muted-foreground">Amount</p>
+            <p className="text-xs text-muted-foreground">Amount ({invoice.currency})</p>
             <p className="mt-0.5 text-2xl font-semibold tabular-nums">
-              {formatAmount(invoice.amount, invoice.currency)}
+              {formatAmountValue(invoice.amount)}
             </p>
           </div>
 

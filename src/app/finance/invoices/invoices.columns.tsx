@@ -7,7 +7,7 @@ import {
   INVOICE_TYPE_COLORS,
   INVOICE_TYPE_LABELS,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { isInvoiceLinked, isInvoiceOverdue, type Invoice } from "@/types/domain/invoice";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -49,7 +49,7 @@ export const invoiceColumns = ({
     header: "Amount",
     cell: ({ row }) => (
       <span className="font-medium tabular-nums">
-        {formatAmount(row.original.amount, row.original.currency)}
+        {formatAmountValue(row.original.amount)}
       </span>
     ),
   },

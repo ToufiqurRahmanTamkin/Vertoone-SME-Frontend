@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Globe2, Loader2, Power, RotateCcw, Save, Wallet } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PaymentsTab } from "./components/PaymentsTab";
 
@@ -36,6 +37,13 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+const TAB_PARAM = "tab";
+
+const DEFAULT_TAB: TabId = "identity";
+
+const isTabId = (value: string | null): value is TabId =>
+  TABS.some((tab) => tab.id === value);
 
 const TAB_FIELDS: Record<TabId, readonly (keyof SystemConfigFormValues)[]> = {
   identity: ["appName", "supportEmail", "supportPhone"],
@@ -78,7 +86,7 @@ const tabOf = (field: string): TabId => {
   const match = TABS.find((tab) =>
     TAB_FIELDS[tab.id].includes(field as keyof SystemConfigFormValues)
   );
-  return match?.id ?? "identity";
+  return match?.id ?? DEFAULT_TAB;
 };
 
 const toFormValues = (config: SystemConfig): SystemConfigFormValues => {
@@ -187,7 +195,24 @@ export default function SystemConfigPage() {
   const { data: config, isLoading } = useGetSystemConfigQuery();
   const [updateConfig, { isLoading: isSaving }] = useUpdateSystemConfigMutation();
 
-  const [tab, setTab] = React.useState<TabId>("identity");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tabParam = searchParams.get(TAB_PARAM);
+  const tab: TabId = isTabId(tabParam) ? tabParam : DEFAULT_TAB;
+
+  const setTab = React.useCallback(
+    (next: TabId) => {
+      setSearchParams(
+        (current) => {
+          const params = new URLSearchParams(current);
+          params.set(TAB_PARAM, next);
+          return params;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
   const form = useForm<SystemConfigFormValues>({
     resolver: zodResolver(SystemConfigSchema),

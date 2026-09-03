@@ -16,7 +16,7 @@ import {
   PAYMENT_METHOD_LABELS,
   toOptions,
 } from "@/constant";
-import { formatAmount } from "@/lib/amount";
+import { formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
   useCreateExpenseMutation,
@@ -108,7 +108,7 @@ const partyOptionLabel = (user: UserOption): string =>
   `${user.name} · ${user.email} · ${user.companyName}`;
 
 const invoiceOptionLabel = (invoice: LinkableInvoice): string =>
-  `${invoice.invoiceNumber} · ${formatAmount(invoice.amount, invoice.currency)} · ${
+  `${invoice.invoiceNumber} · ${formatAmountValue(invoice.amount)} · ${
     INVOICE_STATUS_LABELS[invoice.status]
   } · ${formatDate(invoice.issueDate)}`;
 

@@ -1,10 +1,10 @@
 import { BreakdownBars, type BreakdownRow } from "@/app/dashboard/components/BreakdownBars";
 import { FinanceTrendChart } from "@/app/dashboard/components/FinanceTrendChart";
 import { KpiCard } from "@/app/dashboard/components/KpiCard";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatGrid } from "@/components/ui/stat";
 import {
@@ -24,7 +24,6 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   CalendarClock,
-  Coins,
   CreditCard,
   FileText,
   Layers,
@@ -188,12 +187,7 @@ export default function FinanceDashboardPage() {
             ? `Money in, money out and what is still owed · updated ${formatDateTime(data.generatedAt)}`
             : "Money in, money out and what is still owed."
         }
-        actions={
-          <Badge variant="secondary" className="gap-1.5 px-2.5 py-1 font-normal">
-            <Coins className="size-3.5" />
-            Amounts in <span className="font-semibold">{currency}</span>
-          </Badge>
-        }
+        actions={<CurrencyNote currency={currency} />}
       />
 
       {!isLoading && hasAlerts && (

@@ -1,4 +1,5 @@
 import { ActionButton, CardActionButton } from "@/components/shared/action-button";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -22,7 +23,7 @@ import {
   toOptions,
 } from "@/constant";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
   useDeleteInvoiceMutation,
@@ -142,21 +143,21 @@ export default function InvoicesPage() {
     },
     {
       label: "Receivable",
-      value: formatAmount(summary?.incomeAmount, currency),
+      value: formatAmountValue(summary?.incomeAmount),
       description: "Billed to customers, cancellations aside",
       icon: TrendingUp,
       color: "success" as const,
     },
     {
       label: "Payable",
-      value: formatAmount(summary?.expenseAmount, currency),
+      value: formatAmountValue(summary?.expenseAmount),
       description: "Billed to you, cancellations aside",
       icon: TrendingDown,
       color: "warning" as const,
     },
     {
       label: "Outstanding",
-      value: formatAmount(summary?.outstandingAmount, currency),
+      value: formatAmountValue(summary?.outstandingAmount),
       description: `${formatNumber(summary?.overdueCount)} overdue`,
       icon: Clock3,
       color: (summary?.overdueCount ?? 0) > 0 ? ("error" as const) : ("info" as const),
@@ -168,6 +169,7 @@ export default function InvoicesPage() {
       <PageHeader
         title="Invoices"
         description="Every invoice sits against one income or expense entry. Bill an entry you already recorded, or let the invoice create one. Marking an invoice paid marks its entry paid."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="xl:grid-cols-4">
@@ -221,7 +223,7 @@ export default function InvoicesPage() {
                 <p className="truncate text-sm font-medium">{invoice.title}</p>
               </div>
               <span className="shrink-0 font-medium tabular-nums">
-                {formatAmount(invoice.amount, invoice.currency)}
+                {formatAmountValue(invoice.amount)}
               </span>
             </div>
 
