@@ -9,6 +9,7 @@ import {
   type MultiSelectOption,
 } from "@/components/shared/form-fields";
 import { Button } from "@/components/ui/button";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import {
   Dialog,
   DialogBody,
@@ -46,7 +47,7 @@ import {
 } from "@/types/domain/goal";
 import { GoalSchema, type GoalFormValues } from "@/validations/goal";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import * as React from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -58,6 +59,25 @@ interface GoalFormModalProps {
   goal?: Goal | null;
   onCreated?: (goalId: string) => void;
 }
+
+const STEPS: readonly StepperStep[] = [
+  { id: "details", label: "Goal details" },
+  { id: "progress", label: "Progress tracking" },
+  { id: "organization", label: "Organization" },
+];
+
+const STEP_FIELDS: readonly (keyof GoalFormValues)[][] = [
+  ["title", "color", "description", "category", "status", "priority", "startDate", "dueDate", "isArchived"],
+  ["progressMode", "metricType", "unit", "startValue", "targetValue", "currentValue", "keyResults"],
+  ["ownerId", "departmentId", "memberIds", "parentGoalId", "boardId", "tagIds"],
+];
+
+const LAST_STEP = STEPS.length - 1;
+
+const stepOf = (field: string): number => {
+  const index = STEP_FIELDS.findIndex((fields) => fields.includes(field as keyof GoalFormValues));
+  return index === -1 ? 0 : index;
+};
 
 const CATEGORY_OPTIONS = GOAL_CATEGORIES.map((category) => ({
   label: GOAL_CATEGORY_LABELS[category],
@@ -124,6 +144,9 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
   const [updateGoal, { isLoading: isUpdating }] = useUpdateGoalMutation();
   const isSaving = isCreating || isUpdating;
 
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
+
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(GoalSchema),
     defaultValues: emptyValues(),
@@ -132,7 +155,11 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
   const progressMode = useWatch({ control: form.control, name: "progressMode" });
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setStep(0);
+      setFurthestStep(0);
+      return;
+    }
 
     form.reset(
       goal
@@ -278,9 +305,35 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
     }
   };
 
+  const goToStep = (next: number) => {
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
+
+  const goNext = async () => {
+    const fields = STEP_FIELDS[step];
+    const isValid = fields.length === 0 || (await form.trigger(fields, { shouldFocus: true }));
+    if (!isValid) return;
+    goToStep(Math.min(step + 1, LAST_STEP));
+  };
+
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const firstStep = Object.keys(errors).map(stepOf).sort((a, b) => a - b)[0];
+    if (firstStep !== undefined) setStep(firstStep);
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step < LAST_STEP) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto md:max-w-4xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit goal" : "New goal"}</DialogTitle>
           <DialogDescription>
@@ -290,14 +343,17 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            className="flex min-h-0 flex-1 flex-col"
-            onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
-          >
-            <DialogBody className="flex flex-col gap-0 p-4 sm:p-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Left Column: Basic Details */}
-                <div className="flex flex-col gap-3">
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleFormSubmit}>
+            <DialogBody className="space-y-6">
+              <Stepper
+                steps={STEPS}
+                current={step}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
+
+              {step === 0 && (
+                <div className="flex flex-col gap-4">
                   <FormInput
                     control={form.control}
                     name="title"
@@ -314,7 +370,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                     placeholder="Why this matters and what changes once it is met"
                   />
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <FormSelect
                       control={form.control}
                       name="category"
@@ -329,7 +385,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <FormSelect
                       control={form.control}
                       name="priority"
@@ -339,7 +395,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                     <FormDate control={form.control} name="startDate" label="Starts" dateOnly />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <FormDate control={form.control} name="dueDate" label="Due by" dateOnly />
                   </div>
 
@@ -350,9 +406,10 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                     description="Archived goals stay searchable but drop off the main list."
                   />
                 </div>
+              )}
 
-                {/* Right Column: Progress & Organization */}
-                <div className="flex flex-col gap-3">
+              {step === 1 && (
+                <div className="flex flex-col gap-4">
                   <FormSelect
                     control={form.control}
                     name="progressMode"
@@ -361,7 +418,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                   />
 
                   {progressMode === "MANUAL" ? (
-                    <div className="grid grid-cols-2 gap-3 rounded-md border bg-muted/20 p-3 shadow-sm">
+                    <div className="grid grid-cols-2 gap-4 rounded-md border bg-muted/20 p-4 shadow-sm">
                       <FormSelect
                         control={form.control}
                         name="metricType"
@@ -395,7 +452,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                       />
                     </div>
                   ) : (
-                    <div className="space-y-2 rounded-md border bg-muted/20 p-3 shadow-sm">
+                    <div className="space-y-2 rounded-md border bg-muted/20 p-4 shadow-sm">
                       <Controller
                         control={form.control}
                         name="keyResults"
@@ -414,8 +471,12 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                       )}
                     </div>
                   )}
+                </div>
+              )}
 
-                  <div className="mt-1 grid grid-cols-2 gap-3">
+              {step === 2 && (
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <FormSelect
                       control={form.control}
                       name="ownerId"
@@ -444,7 +505,7 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                     emptyText="No employees yet. Add them under Directory · Employees."
                   />
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <FormSelect
                       control={form.control}
                       name="parentGoalId"
@@ -473,22 +534,41 @@ export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormM
                     emptyText="No tags yet. Add them under Customers · Tags."
                   />
                 </div>
-              </div>
+              )}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Create goal"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}
+                  disabled={isSaving}
+                >
+                  {step === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {step < LAST_STEP ? (
+                  <Button key="wizard-next" type="button" onClick={() => void goNext()}>
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button key="wizard-submit" type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? "Save changes" : "Create goal"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>
