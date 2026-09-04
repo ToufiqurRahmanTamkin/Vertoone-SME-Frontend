@@ -1,6 +1,9 @@
 import type { Pagination } from "@/types";
 import type {
   CopyHolidaysPayload,
+  CountryHolidayQuery,
+  CountryHolidayResult,
+  ImportCountryHolidaysPayload,
   Holiday,
   HolidayListQuery,
   HolidayPayload,
@@ -32,6 +35,17 @@ const holidayApi = baseApi.injectEndpoints({
       }),
       providesTags: ["HolidaySummary"],
     }),
+    getCountryHolidays: builder.query<CountryHolidayResult, CountryHolidayQuery>({
+      query: (params) => ({
+        url: `/hrms/holidays/country-suggestions${buildQuery({ ...params })}`,
+        method: "GET",
+      }),
+      providesTags: ["CountryHolidays"],
+    }),
+    importCountryHolidays: builder.mutation<Holiday[], ImportCountryHolidaysPayload>({
+      query: (body) => ({ url: "/hrms/holidays/import-country", method: "POST", body }),
+      invalidatesTags: [...HOLIDAY_TAGS, "CountryHolidays"],
+    }),
     createHoliday: builder.mutation<Holiday, HolidayPayload>({
       query: (body) => ({ url: "/hrms/holidays", method: "POST", body }),
       invalidatesTags: [...HOLIDAY_TAGS],
@@ -54,6 +68,8 @@ const holidayApi = baseApi.injectEndpoints({
 export const {
   useGetHolidaysQuery,
   useGetHolidaySummaryQuery,
+  useGetCountryHolidaysQuery,
+  useImportCountryHolidaysMutation,
   useCreateHolidayMutation,
   useCopyHolidayYearMutation,
   useUpdateHolidayMutation,

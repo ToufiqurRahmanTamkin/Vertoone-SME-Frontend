@@ -1,10 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useDeleteUploadMutation, useUploadImageMutation } from "@/redux/apis/uploadApis";
+import { FilePickerDialog } from "@/components/shared/file-picker-dialog";
+import { useUploadManagedFileMutation } from "@/redux/apis/fileManagerApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import type { UploadedAsset } from "@/types/domain/upload";
-import { ImageUp, Loader2, Trash2, UserRound } from "lucide-react";
+import { FolderOpen, ImageUp, Loader2, Trash2, UserRound } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -22,7 +22,6 @@ export interface AvatarUploaderProps {
 
 export function AvatarUploader({
   value,
-  publicId,
   fallback,
   disabled = false,
   onChange,
@@ -30,9 +29,9 @@ export function AvatarUploader({
 }: AvatarUploaderProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [uploadImage, { isLoading: isUploading }] = useUploadImageMutation();
-  const [deleteUpload, { isLoading: isDeleting }] = useDeleteUploadMutation();
-  const busy = isUploading || isDeleting || disabled;
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [uploadFile, { isLoading: isUploading }] = useUploadManagedFileMutation();
+  const busy = isUploading || disabled;
 
   const handleFile = async (file: File) => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -45,7 +44,7 @@ export function AvatarUploader({
     }
 
     try {
-      const asset: UploadedAsset = await uploadImage({ file, folder: "avatars" }).unwrap();
+      const asset = await uploadFile({ file }).unwrap();
       await onChange({ url: asset.url, publicId: asset.publicId });
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
@@ -55,9 +54,6 @@ export function AvatarUploader({
 
   const handleRemove = async () => {
     try {
-      if (publicId) {
-        await deleteUpload(publicId).unwrap().catch(() => undefined);
-      }
       await onChange(null);
     } catch {
       toast.error("Could not remove the photo");
@@ -130,6 +126,17 @@ export function AvatarUploader({
             )}
             {value ? "Replace" : "Upload photo"}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            onClick={() => setPickerOpen(true)}
+            disabled={busy}
+          >
+            <FolderOpen className="mr-1.5 size-3.5" />
+            Browse files
+          </Button>
           {value && (
             <Button
               type="button"
@@ -139,11 +146,7 @@ export function AvatarUploader({
               onClick={() => void handleRemove()}
               disabled={busy}
             >
-              {isDeleting ? (
-                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="mr-1.5 size-3.5" />
-              )}
+              <Trash2 className="mr-1.5 size-3.5" />
               Remove
             </Button>
           )}
@@ -159,6 +162,18 @@ export function AvatarUploader({
           const file = event.target.files?.[0];
           event.target.value = "";
           if (file) void handleFile(file);
+        }}
+      />
+
+      <FilePickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        accept={ACCEPTED_TYPES.join(",")}
+        maxSizeMb={MAX_SIZE_MB}
+        title="Choose a profile photo"
+        onSelect={(files) => {
+          const picked = files[0];
+          if (picked) void onChange({ url: picked.url, publicId: picked.publicId });
         }}
       />
     </div>

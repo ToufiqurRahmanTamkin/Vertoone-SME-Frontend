@@ -70,3 +70,43 @@ export interface CopyHolidaysPayload {
   fromYear: number;
   toYear: number;
 }
+
+export interface CountryHolidaySuggestion {
+  name: string;
+  localName: string;
+  description: string;
+  date: string;
+  endDate: string;
+  type: HolidayType;
+  isRecurringYearly: boolean;
+  isOptional: boolean;
+  alreadyAdded: boolean;
+}
+
+export interface CountryHolidayResult {
+  year: number;
+  country: string;
+  countryCode: string;
+  source: "CALENDAR" | "AI";
+  isCompanyCountry: boolean;
+  suggestions: CountryHolidaySuggestion[];
+}
+
+export interface CountryHolidayQuery {
+  year: number;
+  country?: string;
+}
+
+export interface ImportCountryHolidaysPayload {
+  year: number;
+  country?: string;
+  holidays: {
+    name: string;
+    description?: string;
+    date: string;
+    endDate?: string;
+    type?: HolidayType;
+    isRecurringYearly?: boolean;
+    isOptional?: boolean;
+  }[];
+}

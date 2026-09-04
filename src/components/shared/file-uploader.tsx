@@ -1,10 +1,11 @@
+import { FilePickerDialog } from "@/components/shared/file-picker-dialog";
 import { ImageCropperDialog } from "@/components/shared/image-cropper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useUploadManagedFileMutation } from "@/redux/apis/fileManagerApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import { useDeleteUploadMutation, useUploadImageMutation } from "@/redux/apis/uploadApis";
-import type { UploadFolder, UploadedAsset } from "@/types/domain/upload";
-import { Crop, ImageUp, Loader2, Trash2, UploadCloud } from "lucide-react";
+import type { UploadFolder } from "@/types/domain/upload";
+import { Crop, FolderOpen, ImageUp, Loader2, Trash2, UploadCloud } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -39,9 +40,7 @@ export interface FileUploaderProps {
 
 export function FileUploader({
   value,
-  publicId,
   onChange,
-  folder = "general",
   label = "Image",
   description,
   accept = DEFAULT_ACCEPT,
@@ -56,10 +55,10 @@ export function FileUploader({
 }: FileUploaderProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
   const [cropSource, setCropSource] = React.useState<CropSource | null>(null);
-  const [uploadImage, { isLoading: isUploading }] = useUploadImageMutation();
-  const [deleteUpload, { isLoading: isDeleting }] = useDeleteUploadMutation();
-  const busy = isUploading || isDeleting || disabled;
+  const [uploadFile, { isLoading: isUploading }] = useUploadManagedFileMutation();
+  const busy = isUploading || disabled;
 
   const acceptedTypes = React.useMemo(
     () => accept.split(",").map((entry) => entry.trim()).filter(Boolean),
@@ -74,9 +73,9 @@ export function FileUploader({
 
   const upload = async (file: File) => {
     try {
-      const asset: UploadedAsset = await uploadImage({ file, folder }).unwrap();
+      const asset = await uploadFile({ file }).unwrap();
       onChange({ url: asset.url, publicId: asset.publicId });
-      toast.success("File uploaded");
+      toast.success("File uploaded to your file manager");
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not upload that file");
@@ -130,15 +129,6 @@ export function FileUploader({
     void upload(file);
   };
 
-  const onRemove = async () => {
-    if (publicId) {
-      await deleteUpload(publicId)
-        .unwrap()
-        .catch(() => undefined);
-    }
-    onChange(null);
-  };
-
   const isWidePreview = Boolean(cropAspect && cropAspect > 1.5);
 
   return (
@@ -151,14 +141,10 @@ export function FileUploader({
             variant="ghost"
             size="sm"
             className="h-7 cursor-pointer text-destructive hover:text-destructive"
-            onClick={() => void onRemove()}
+            onClick={() => onChange(null)}
             disabled={busy}
           >
-            {isDeleting ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-            )}
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
             Remove
           </Button>
         )}
@@ -196,6 +182,17 @@ export function FileUploader({
                 )}
                 Replace
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                onClick={() => setPickerOpen(true)}
+                disabled={busy}
+              >
+                <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+                Browse files
+              </Button>
               {cropAspect && (
                 <Button
                   type="button"
@@ -213,37 +210,53 @@ export function FileUploader({
           </div>
         </div>
       ) : (
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => !busy && inputRef.current?.click()}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
+        <div className="space-y-2">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => !busy && inputRef.current?.click()}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                if (!busy) inputRef.current?.click();
+              }
+            }}
+            onDragOver={(event) => {
               event.preventDefault();
-              if (!busy) inputRef.current?.click();
-            }
-          }}
-          onDragOver={(event) => {
-            event.preventDefault();
-            if (!busy) setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={onDrop}
-          className={cn(
-            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors",
-            isDragging ? "border-primary bg-primary/5" : "hover:border-primary/50 hover:bg-muted/40",
-            busy && "pointer-events-none opacity-60"
-          )}
-        >
-          {isUploading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          ) : (
-            <UploadCloud className="h-6 w-6 text-muted-foreground" />
-          )}
-          <p className="text-sm font-medium">
-            {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
-          </p>
-          <p className="text-xs text-muted-foreground">Up to {maxSizeMb}MB</p>
+              if (!busy) setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={onDrop}
+            className={cn(
+              "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors",
+              isDragging
+                ? "border-primary bg-primary/5"
+                : "hover:border-primary/50 hover:bg-muted/40",
+              busy && "pointer-events-none opacity-60"
+            )}
+          >
+            {isUploading ? (
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            ) : (
+              <UploadCloud className="h-6 w-6 text-muted-foreground" />
+            )}
+            <p className="text-sm font-medium">
+              {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
+            </p>
+            <p className="text-xs text-muted-foreground">Up to {maxSizeMb}MB</p>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full cursor-pointer"
+            onClick={() => setPickerOpen(true)}
+            disabled={busy}
+          >
+            <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+            Choose from your file manager
+          </Button>
         </div>
       )}
 
@@ -255,6 +268,18 @@ export function FileUploader({
         accept={accept}
         className="hidden"
         onChange={onInputChange}
+      />
+
+      <FilePickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        accept={accept}
+        maxSizeMb={maxSizeMb}
+        title={typeof label === "string" ? `Choose ${label.toLowerCase()}` : "Choose a file"}
+        onSelect={(files) => {
+          const picked = files[0];
+          if (picked) onChange({ url: picked.url, publicId: picked.publicId });
+        }}
       />
 
       {cropAspect && (

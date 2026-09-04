@@ -17,11 +17,12 @@ import {
 } from "@/redux/apis/holidayApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import { HOLIDAY_TYPES, HOLIDAY_TYPE_LABELS, type Holiday } from "@/types/domain/holiday";
-import { CopyPlus, Plus } from "lucide-react";
+import { CopyPlus, Globe2, Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { CopyYearDialog } from "./components/CopyYearDialog";
 import { HolidayFormModal } from "./components/HolidayFormModal";
+import { ImportCountryHolidaysDialog } from "./components/ImportCountryHolidaysDialog";
 import { HolidayRowMenu, formatRange, holidayColumns } from "./holidays.columns";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -76,6 +77,7 @@ export default function HolidayCalendarPage() {
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [copyOpen, setCopyOpen] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Holiday | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<Holiday | null>(null);
   const [deleteHoliday, { isLoading: isDeleting }] = useDeleteHolidayMutation();
@@ -121,6 +123,17 @@ export default function HolidayCalendarPage() {
         actions={
           <>
             <BackLink to="/hrms/settings/overview" label="All settings" />
+            {access.canCreate && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                onClick={() => setImportOpen(true)}
+              >
+                <Globe2 className="size-4" />
+                Import {year} holidays
+              </Button>
+            )}
             {access.canCreate && (
               <Button
                 variant="outline"
@@ -260,6 +273,12 @@ export default function HolidayCalendarPage() {
         onOpenChange={setFormOpen}
         holiday={editing}
         defaultYear={year}
+      />
+
+      <ImportCountryHolidaysDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        year={year}
       />
 
       <CopyYearDialog

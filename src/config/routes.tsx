@@ -92,6 +92,20 @@ const OvertimeSettings = lazy(
 const ProvidentFundSettings = lazy(
   () => import("@/app/hrms/settings/providentFund/ProvidentFundSettingsPage")
 );
+const PoliciesOverview = lazy(() => import("@/app/hrms/policies/overview/PoliciesOverviewPage"));
+const PoliciesHandbook = lazy(() => import("@/app/hrms/policies/handbook/PoliciesPage"));
+const PolicyAcknowledgements = lazy(
+  () => import("@/app/hrms/policies/acknowledgements/PolicyAcknowledgementsPage")
+);
+const Announcements = lazy(() => import("@/app/hrms/announcements/AnnouncementsPage"));
+const MyPolicies = lazy(() => import("@/app/hrms/myRecords/MyPoliciesPage"));
+const MyAnnouncements = lazy(() => import("@/app/hrms/myRecords/MyAnnouncementsPage"));
+const AssetsOverview = lazy(() => import("@/app/hrms/assets/overview/AssetsOverviewPage"));
+const AssetRegister = lazy(() => import("@/app/hrms/assets/register/AssetsPage"));
+const AssetAssignments = lazy(() => import("@/app/hrms/assets/assignments/AssetAssignmentsPage"));
+const AssetMaintenance = lazy(() => import("@/app/hrms/assets/maintenance/AssetMaintenancePage"));
+const AssetCategories = lazy(() => import("@/app/hrms/assets/categories/AssetCategoriesPage"));
+const MyAssets = lazy(() => import("@/app/hrms/myRecords/MyAssetsPage"));
 const HolidayCalendar = lazy(
   () => import("@/app/hrms/settings/holidays/HolidayCalendarPage")
 );
@@ -145,6 +159,7 @@ const FormResponses = lazy(() => import("@/app/businessTools/formBuilder/FormRes
 const BusinessToolsSettings = lazy(
   () => import("@/app/businessTools/settings/BusinessToolsSettingsPage")
 );
+const FileManager = lazy(() => import("@/app/fileManager/FileManagerPage"));
 const DocumentsOverview = lazy(
   () => import("@/app/documents/overview/DocumentsOverviewPage")
 );
@@ -205,6 +220,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "company/finance/expenses", element: <FinanceExpense /> },
   { path: "company/finance/invoices", element: <FinanceInvoices /> },
   { path: "company/finance/categories", element: <FinanceCategories /> },
+  { path: "company/file-manager", element: <FileManager /> },
   { path: "company/documents/overview", element: <DocumentsOverview /> },
   { path: "company/documents/all-documents", element: <AllDocuments /> },
   { path: "company/documents/digital-contracts", element: <DigitalContracts /> },
@@ -275,6 +291,18 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/settings/attendance-rules", element: <AttendanceRuleSettings /> },
   { path: "hrms/settings/late-fine-rules", element: <LateFineSettings /> },
   { path: "hrms/settings/overtime", element: <OvertimeSettings /> },
+  { path: "hrms/policies/overview", element: <PoliciesOverview /> },
+  { path: "hrms/policies/handbook", element: <PoliciesHandbook /> },
+  { path: "hrms/policies/acknowledgements", element: <PolicyAcknowledgements /> },
+  { path: "hrms/announcements", element: <Announcements /> },
+  { path: "hrms/my-records/policies", element: <MyPolicies /> },
+  { path: "hrms/my-records/announcements", element: <MyAnnouncements /> },
+  { path: "hrms/assets/overview", element: <AssetsOverview /> },
+  { path: "hrms/assets/register", element: <AssetRegister /> },
+  { path: "hrms/assets/assignments", element: <AssetAssignments /> },
+  { path: "hrms/assets/maintenance", element: <AssetMaintenance /> },
+  { path: "hrms/assets/categories", element: <AssetCategories /> },
+  { path: "hrms/my-records/assets", element: <MyAssets /> },
   { path: "hrms/settings/holiday-calendar", element: <HolidayCalendar /> },
   { path: "hrms/settings/provident-fund", element: <ProvidentFundSettings /> },
   { path: "hrms/settings/payroll", element: <PayrollSettings /> },
