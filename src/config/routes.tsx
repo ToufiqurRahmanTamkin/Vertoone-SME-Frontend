@@ -80,6 +80,7 @@ const CommunityFeeds = lazy(() => import("@/app/community/feeds/FeedsPage"));
 const CommunityMembers = lazy(() => import("@/app/community/members/MembersPage"));
 const CommunityGroups = lazy(() => import("@/app/community/groups/GroupsPage"));
 const CommunityChats = lazy(() => import("@/app/community/chats/ChatsPage"));
+const JobOpenings = lazy(() => import("@/app/hrms/recruitment/jobOpenings/JobOpeningsPage"));
 const CommunitySettings = lazy(
   () => import("@/app/community/settings/CommunitySettingsPage")
 );
@@ -253,6 +254,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "company/community/members", element: <CommunityMembers /> },
   { path: "company/community/groups", element: <CommunityGroups /> },
   { path: "company/community/chats", element: <CommunityChats /> },
+  { path: "hrms/recruitment/job-openings", element: <JobOpenings /> },
   { path: "company/community/settings", element: <CommunitySettings /> },
   { path: "crm/business-tools/overview", element: <BusinessToolsDashboard /> },
   { path: "crm/business-tools/email-builder", element: <EmailTemplates /> },
