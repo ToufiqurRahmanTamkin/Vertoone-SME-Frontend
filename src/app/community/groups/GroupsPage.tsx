@@ -18,14 +18,17 @@ import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatNumber } from "@/lib/amount";
 import {
+  useCancelCommunityJoinRequestMutation,
   useDeleteCommunityGroupMutation,
   useGetCommunityGroupSummaryQuery,
   useGetCommunityGroupsQuery,
+  useGetCommunityJoinRequestsQuery,
   useJoinCommunityGroupMutation,
   useLeaveCommunityGroupMutation,
 } from "@/redux/apis/communityApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import {
+  COMMUNITY_GROUP_JOIN_MODE_LABELS,
   COMMUNITY_GROUP_VISIBILITIES,
   COMMUNITY_GROUP_VISIBILITY_COLORS,
   COMMUNITY_GROUP_VISIBILITY_LABELS,
@@ -33,10 +36,25 @@ import {
   type CommunityGroupVisibility,
 } from "@/types/domain/community";
 import type { ColumnDef } from "@tanstack/react-table";
-import { LogIn, LogOut, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Inbox,
+  LogIn,
+  LogOut,
+  MessageCircle,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import * as React from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { GroupAvatar } from "./components/GroupAvatar";
 import { GroupFormModal } from "./components/GroupFormModal";
+import { JoinRequestsModal } from "./components/JoinRequestsModal";
+import { RequestToJoinModal } from "./components/RequestToJoinModal";
 
 const FILTERS: FilterConfig[] = [
   {
@@ -68,6 +86,7 @@ const FILTERS: FilterConfig[] = [
 export default function CommunityGroupsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/company/community/groups");
+  const chatAccess = useModulePermission("/company/community/chats");
 
   const { data, isLoading, isFetching } = useGetCommunityGroupsQuery({
     page: filters.page,
@@ -79,14 +98,28 @@ export default function CommunityGroupsPage() {
   });
 
   const { data: summary } = useGetCommunityGroupSummaryQuery();
+  const { data: myRequests } = useGetCommunityJoinRequestsQuery({
+    mineOnly: true,
+    status: "PENDING",
+    limit: 100,
+  });
+
+  const requestIdByGroup = React.useMemo(() => {
+    const entries = new Map<string, string>();
+    (myRequests?.data ?? []).forEach((request) => entries.set(request.groupId, request._id));
+    return entries;
+  }, [myRequests]);
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<CommunityGroup | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<CommunityGroup | null>(null);
+  const [requestingFor, setRequestingFor] = React.useState<CommunityGroup | null>(null);
+  const [reviewing, setReviewing] = React.useState<CommunityGroup | null>(null);
 
   const [deleteGroup, { isLoading: isDeleting }] = useDeleteCommunityGroupMutation();
   const [joinGroup] = useJoinCommunityGroupMutation();
   const [leaveGroup] = useLeaveCommunityGroupMutation();
+  const [cancelRequest] = useCancelCommunityJoinRequestMutation();
 
   const onEdit = React.useCallback((group: CommunityGroup) => {
     setEditing(group);
@@ -111,19 +144,89 @@ export default function CommunityGroupsPage() {
     [joinGroup, leaveGroup]
   );
 
+  const withdrawRequest = React.useCallback(
+    async (group: CommunityGroup) => {
+      const requestId = requestIdByGroup.get(group._id);
+      if (!requestId) return;
+
+      try {
+        await cancelRequest(requestId).unwrap();
+        toast.success(`Withdrew your request to join ${group.name}`);
+      } catch (error: unknown) {
+        const err = error as ApiErrorResponse;
+        toast.error(err?.data?.message || "Could not withdraw your request");
+      }
+    },
+    [cancelRequest, requestIdByGroup]
+  );
+
+  const membershipButton = React.useCallback(
+    (group: CommunityGroup) => {
+      if (group.isJoined) {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            disabled={group.isArchived}
+            onClick={() => void toggleMembership(group)}
+          >
+            <LogOut className="size-4" />
+            Leave
+          </Button>
+        );
+      }
+
+      if (group.hasPendingRequest) {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            disabled={!requestIdByGroup.has(group._id)}
+            onClick={() => void withdrawRequest(group)}
+          >
+            <Undo2 className="size-4" />
+            Withdraw
+          </Button>
+        );
+      }
+
+      if (group.canRequestToJoin) {
+        return (
+          <Button size="sm" className="cursor-pointer" onClick={() => setRequestingFor(group)}>
+            <Send className="size-4" />
+            Request
+          </Button>
+        );
+      }
+
+      return (
+        <Button
+          size="sm"
+          className="cursor-pointer"
+          disabled={!group.canJoin}
+          title={
+            group.canJoin
+              ? undefined
+              : group.isArchived
+                ? "This group is archived"
+                : "A moderator has to add you to this group"
+          }
+          onClick={() => void toggleMembership(group)}
+        >
+          <LogIn className="size-4" />
+          Join
+        </Button>
+      );
+    },
+    [requestIdByGroup, toggleMembership, withdrawRequest]
+  );
+
   const rowMenu = React.useCallback(
     (group: CommunityGroup) => (
       <div className="flex items-center justify-end gap-2">
-        <Button
-          variant={group.isJoined ? "outline" : "default"}
-          size="sm"
-          className="cursor-pointer"
-          disabled={group.isArchived}
-          onClick={() => void toggleMembership(group)}
-        >
-          {group.isJoined ? <LogOut className="size-4" /> : <LogIn className="size-4" />}
-          {group.isJoined ? "Leave" : "Join"}
-        </Button>
+        {membershipButton(group)}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -137,6 +240,25 @@ export default function CommunityGroupsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {group.isJoined && chatAccess.canView && (
+              <DropdownMenuItem asChild>
+                <Link to={`/company/community/chats?groupId=${group._id}`}>
+                  <MessageCircle className="size-4" />
+                  Open chat
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {group.isModerator && (
+              <DropdownMenuItem onSelect={() => setReviewing(group)}>
+                <Inbox className="size-4" />
+                Requests
+                {group.pendingRequestCount > 0 && (
+                  <Badge variant="secondary" className="ml-auto text-[10px]">
+                    {group.pendingRequestCount}
+                  </Badge>
+                )}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem disabled={!access.canEdit} onSelect={() => onEdit(group)}>
               <Pencil className="size-4" />
               Edit
@@ -153,7 +275,7 @@ export default function CommunityGroupsPage() {
         </DropdownMenu>
       </div>
     ),
-    [access.canEdit, access.canDelete, onEdit, toggleMembership]
+    [access.canEdit, access.canDelete, chatAccess.canView, membershipButton, onEdit]
   );
 
   const columns = React.useMemo<ColumnDef<CommunityGroup>[]>(
@@ -163,9 +285,10 @@ export default function CommunityGroupsPage() {
         header: "Group",
         cell: ({ row }) => (
           <div className="flex min-w-0 items-center gap-2">
-            <span
-              className="size-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: row.original.color }}
+            <GroupAvatar
+              name={row.original.name}
+              color={row.original.color}
+              logoUrl={row.original.logoUrl}
             />
             <div className="min-w-0">
               <p className="truncate font-medium">{row.original.name}</p>
@@ -180,10 +303,15 @@ export default function CommunityGroupsPage() {
         accessorKey: "visibility",
         header: "Visibility",
         cell: ({ row }) => (
-          <StatusBadge
-            color={COMMUNITY_GROUP_VISIBILITY_COLORS[row.original.visibility]}
-            label={COMMUNITY_GROUP_VISIBILITY_LABELS[row.original.visibility]}
-          />
+          <div className="space-y-1">
+            <StatusBadge
+              color={COMMUNITY_GROUP_VISIBILITY_COLORS[row.original.visibility]}
+              label={COMMUNITY_GROUP_VISIBILITY_LABELS[row.original.visibility]}
+            />
+            <p className="text-xs text-muted-foreground">
+              {COMMUNITY_GROUP_JOIN_MODE_LABELS[row.original.joinMode]}
+            </p>
+          </div>
         ),
       },
       {
@@ -204,10 +332,17 @@ export default function CommunityGroupsPage() {
         id: "state",
         header: "State",
         cell: ({ row }) => (
-          <StatusBadge
-            color={row.original.isArchived ? "zinc" : "green"}
-            label={row.original.isArchived ? "Archived" : "Active"}
-          />
+          <div className="space-y-1">
+            <StatusBadge
+              color={row.original.isArchived ? "zinc" : "green"}
+              label={row.original.isArchived ? "Archived" : "Active"}
+            />
+            {row.original.isModerator && row.original.pendingRequestCount > 0 && (
+              <p className="text-xs text-amber-600 dark:text-amber-500">
+                {row.original.pendingRequestCount} waiting
+              </p>
+            )}
+          </div>
         ),
       },
       {
@@ -266,9 +401,11 @@ export default function CommunityGroupsPage() {
           </StatDescription>
         </Stat>
         <Stat>
-          <StatLabel>Average size</StatLabel>
-          <StatValue>{summary?.averageMembers ?? 0}</StatValue>
-          <StatDescription>Members per active group</StatDescription>
+          <StatLabel>Waiting to join</StatLabel>
+          <StatValue>{formatNumber(summary?.pendingRequestCount)}</StatValue>
+          <StatDescription>
+            Average of {summary?.averageMembers ?? 0} members per active group
+          </StatDescription>
         </Stat>
       </StatGrid>
 
@@ -321,56 +458,87 @@ export default function CommunityGroupsPage() {
         onLimitChange={(nextLimit) => setFilter("limit", nextLimit)}
         getRowId={(row) => row._id}
         mobileCard={(group) => (
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2">
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: group.color }}
-                />
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{group.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">/{group.slug}</p>
+          <div className="overflow-hidden rounded-xl border bg-card">
+            <div
+              className="h-20 w-full bg-cover bg-center"
+              style={{
+                backgroundColor: group.color,
+                backgroundImage: group.bannerUrl ? `url(${group.bannerUrl})` : undefined,
+              }}
+            />
+            <div className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <GroupAvatar
+                    name={group.name}
+                    color={group.color}
+                    logoUrl={group.logoUrl}
+                    className="-mt-8 size-12 border-2 border-background"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{group.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">/{group.slug}</p>
+                  </div>
                 </div>
+                <StatusBadge
+                  color={COMMUNITY_GROUP_VISIBILITY_COLORS[group.visibility]}
+                  label={COMMUNITY_GROUP_VISIBILITY_LABELS[group.visibility]}
+                />
               </div>
-              <StatusBadge
-                color={COMMUNITY_GROUP_VISIBILITY_COLORS[group.visibility]}
-                label={COMMUNITY_GROUP_VISIBILITY_LABELS[group.visibility]}
-              />
-            </div>
 
-            {group.description && (
-              <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
-                {group.description}
-              </p>
-            )}
-
-            <div className="mt-3 flex flex-wrap gap-1">
-              <Badge variant="secondary" className="text-[10px]">
-                {group.memberCount} member{group.memberCount === 1 ? "" : "s"}
-              </Badge>
-              <Badge variant="outline" className="text-[10px]">
-                {group.postCount} post{group.postCount === 1 ? "" : "s"}
-              </Badge>
-              {group.isArchived && (
-                <Badge variant="outline" className="text-[10px]">
-                  Archived
-                </Badge>
+              {group.description && (
+                <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                  {group.description}
+                </p>
               )}
-            </div>
 
-            <div className="mt-3 border-t pt-3">{rowMenu(group)}</div>
+              <div className="mt-3 flex flex-wrap gap-1">
+                <Badge variant="secondary" className="text-[10px]">
+                  {group.memberCount} member{group.memberCount === 1 ? "" : "s"}
+                </Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  {group.postCount} post{group.postCount === 1 ? "" : "s"}
+                </Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  {COMMUNITY_GROUP_JOIN_MODE_LABELS[group.joinMode]}
+                </Badge>
+                {group.isArchived && (
+                  <Badge variant="outline" className="text-[10px]">
+                    Archived
+                  </Badge>
+                )}
+                {group.isModerator && group.pendingRequestCount > 0 && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    {group.pendingRequestCount} waiting
+                  </Badge>
+                )}
+              </div>
+
+              <div className="mt-3 border-t pt-3">{rowMenu(group)}</div>
+            </div>
           </div>
         )}
       />
 
       <GroupFormModal open={formOpen} onOpenChange={setFormOpen} group={editing} />
 
+      <RequestToJoinModal
+        open={Boolean(requestingFor)}
+        onOpenChange={(open) => !open && setRequestingFor(null)}
+        group={requestingFor}
+      />
+
+      <JoinRequestsModal
+        open={Boolean(reviewing)}
+        onOpenChange={(open) => !open && setReviewing(null)}
+        group={reviewing}
+      />
+
       <ConfirmDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title={`Delete "${pendingDelete?.name ?? ""}"?`}
-        description="The group goes, and its posts stop showing in the feed."
+        description="The group goes, along with its posts, its chat and any waiting requests."
         confirmText="Delete"
         variant="destructive"
         isLoading={isDeleting}

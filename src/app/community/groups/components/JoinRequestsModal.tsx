@@ -37,6 +37,29 @@ interface JoinRequestsModalProps {
 const SKELETON_ROWS = Array.from({ length: 3 });
 
 export function JoinRequestsModal({ open, onOpenChange, group }: JoinRequestsModalProps) {
+  const [session, setSession] = React.useState(0);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setSession((current) => current + 1);
+        onOpenChange(next);
+      }}
+    >
+      {open && (
+        <JoinRequestsBody
+          key={session}
+          open={open}
+          onOpenChange={onOpenChange}
+          group={group}
+        />
+      )}
+    </Dialog>
+  );
+}
+
+function JoinRequestsBody({ open, onOpenChange, group }: JoinRequestsModalProps) {
   const { data, isLoading } = useGetCommunityJoinRequestsQuery(
     group ? { groupId: group._id, status: "PENDING", limit: 50 } : { limit: 50 },
     { skip: !open || !group }
@@ -47,13 +70,6 @@ export function JoinRequestsModal({ open, onOpenChange, group }: JoinRequestsMod
 
   const [notes, setNotes] = React.useState<Record<string, string>>({});
   const [busyId, setBusyId] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (!open) {
-      setNotes({});
-      setBusyId(null);
-    }
-  }, [open]);
 
   const requests = data?.data ?? [];
 
@@ -79,8 +95,7 @@ export function JoinRequestsModal({ open, onOpenChange, group }: JoinRequestsMod
   const busy = isApproving || isDeclining;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+    <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Requests to join {group?.name ?? "this group"}</DialogTitle>
           <DialogDescription>
@@ -190,7 +205,6 @@ export function JoinRequestsModal({ open, onOpenChange, group }: JoinRequestsMod
             Close
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   );
 }

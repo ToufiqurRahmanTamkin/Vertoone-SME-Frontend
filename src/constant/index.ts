@@ -314,6 +314,12 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   COMPANY_DATA_PURGED: "Company data erased",
   FINANCE_ENTRY: "Finance",
   SECURITY_LOGIN: "Security",
+  COMMUNITY_POST: "Community post",
+  COMMUNITY_COMMENT: "Community comment",
+  COMMUNITY_MESSAGE: "Community message",
+  COMMUNITY_JOIN_REQUESTED: "Group join request",
+  COMMUNITY_JOIN_APPROVED: "Group request approved",
+  COMMUNITY_JOIN_DECLINED: "Group request declined",
   SYSTEM: "System",
 };
 

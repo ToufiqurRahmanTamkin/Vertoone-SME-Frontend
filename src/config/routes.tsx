@@ -79,6 +79,7 @@ const CommunityOverview = lazy(
 const CommunityFeeds = lazy(() => import("@/app/community/feeds/FeedsPage"));
 const CommunityMembers = lazy(() => import("@/app/community/members/MembersPage"));
 const CommunityGroups = lazy(() => import("@/app/community/groups/GroupsPage"));
+const CommunityChats = lazy(() => import("@/app/community/chats/ChatsPage"));
 const CommunitySettings = lazy(
   () => import("@/app/community/settings/CommunitySettingsPage")
 );
@@ -251,6 +252,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "company/community/feeds", element: <CommunityFeeds /> },
   { path: "company/community/members", element: <CommunityMembers /> },
   { path: "company/community/groups", element: <CommunityGroups /> },
+  { path: "company/community/chats", element: <CommunityChats /> },
   { path: "company/community/settings", element: <CommunitySettings /> },
   { path: "crm/business-tools/overview", element: <BusinessToolsDashboard /> },
   { path: "crm/business-tools/email-builder", element: <EmailTemplates /> },
