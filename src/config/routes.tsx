@@ -73,6 +73,15 @@ const MeetingRegistrations = lazy(
   () => import("@/app/calendar/meetings/MeetingRegistrationsPage")
 );
 const Bookings = lazy(() => import("@/app/calendar/bookings/BookingsPage"));
+const CommunityOverview = lazy(
+  () => import("@/app/community/overview/CommunityOverviewPage")
+);
+const CommunityFeeds = lazy(() => import("@/app/community/feeds/FeedsPage"));
+const CommunityMembers = lazy(() => import("@/app/community/members/MembersPage"));
+const CommunityGroups = lazy(() => import("@/app/community/groups/GroupsPage"));
+const CommunitySettings = lazy(
+  () => import("@/app/community/settings/CommunitySettingsPage")
+);
 const BookingRequests = lazy(() => import("@/app/calendar/bookings/BookingRequestsPage"));
 const Salaries = lazy(() => import("@/app/hrms/payroll/salaries/SalariesPage"));
 const HrmsSettingsOverview = lazy(
@@ -238,6 +247,11 @@ const builtRoutes: RouteConfig[] = [
   { path: "company/calendar/bookings", element: <Bookings /> },
   { path: "company/calendar/bookings/:id/requests", element: <BookingRequests /> },
   { path: "company/calendar/settings", element: <CalendarSettings /> },
+  { path: "company/community/overview", element: <CommunityOverview /> },
+  { path: "company/community/feeds", element: <CommunityFeeds /> },
+  { path: "company/community/members", element: <CommunityMembers /> },
+  { path: "company/community/groups", element: <CommunityGroups /> },
+  { path: "company/community/settings", element: <CommunitySettings /> },
   { path: "crm/business-tools/overview", element: <BusinessToolsDashboard /> },
   { path: "crm/business-tools/email-builder", element: <EmailTemplates /> },
   { path: "crm/business-tools/email-builder/deliveries", element: <EmailDeliveries /> },

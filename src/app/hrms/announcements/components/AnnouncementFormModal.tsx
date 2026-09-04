@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import {
   useCreateAnnouncementMutation,
   useUpdateAnnouncementMutation,
@@ -37,7 +37,7 @@ import {
 import type { AudienceType } from "@/types/domain/policy";
 import { AnnouncementSchema, type AnnouncementFormValues } from "@/validations/policy";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -47,6 +47,27 @@ interface AnnouncementFormModalProps {
   onOpenChange: (open: boolean) => void;
   announcement?: Announcement | null;
 }
+
+const STEPS: readonly StepperStep[] = [
+  { id: "message", label: "Message" },
+  { id: "timing", label: "Timing" },
+  { id: "audience", label: "Who sees it" },
+];
+
+const STEP_FIELDS: readonly (keyof AnnouncementFormValues)[][] = [
+  ["title", "summary", "body", "type", "priority", "coverImageUrl"],
+  ["status", "authorEmployeeId", "publishAt", "expiresAt", "isPinned"],
+  ["audience", "departmentIds", "designationIds", "employeeIds", "userIds"],
+];
+
+const LAST_STEP = STEPS.length - 1;
+
+const stepOf = (field: string): number => {
+  const index = STEP_FIELDS.findIndex((fields) =>
+    fields.includes(field as keyof AnnouncementFormValues)
+  );
+  return index === -1 ? 0 : index;
+};
 
 const TYPE_OPTIONS = ANNOUNCEMENT_TYPES.map((value) => ({
   value,
@@ -117,13 +138,20 @@ export function AnnouncementFormModal({
     [employees]
   );
 
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
+
   const form = useForm<AnnouncementFormValues>({
     resolver: zodResolver(AnnouncementSchema),
     defaultValues: emptyValues(),
   });
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setStep(0);
+      setFurthestStep(0);
+      return;
+    }
     form.reset(announcement ? toFormValues(announcement) : emptyValues());
   }, [open, announcement, form]);
 
@@ -165,11 +193,39 @@ export function AnnouncementFormModal({
     }
   };
 
+  const goToStep = (next: number) => {
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
+
+  const goNext = async () => {
+    const fields = STEP_FIELDS[step];
+    const isValid = fields.length === 0 || (await form.trigger(fields, { shouldFocus: true }));
+    if (!isValid) return;
+    goToStep(Math.min(step + 1, LAST_STEP));
+  };
+
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const firstStep = Object.keys(errors)
+      .map(stepOf)
+      .sort((a, b) => a - b)[0];
+    if (firstStep !== undefined) setStep(firstStep);
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step < LAST_STEP) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={handleFormSubmit}>
             <DialogHeader>
               <DialogTitle>
                 {announcement ? "Edit announcement" : "New announcement"}
@@ -179,21 +235,16 @@ export function AnnouncementFormModal({
               </DialogDescription>
             </DialogHeader>
 
-            <DialogBody>
-              <Tabs defaultValue="message">
-                <TabsList className="w-full">
-                  <TabsTrigger value="message" className="flex-1 cursor-pointer">
-                    Message
-                  </TabsTrigger>
-                  <TabsTrigger value="timing" className="flex-1 cursor-pointer">
-                    Timing
-                  </TabsTrigger>
-                  <TabsTrigger value="audience" className="flex-1 cursor-pointer">
-                    Who sees it
-                  </TabsTrigger>
-                </TabsList>
+            <DialogBody className="space-y-6">
+              <Stepper
+                steps={STEPS}
+                current={step}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
 
-                <TabsContent value="message" className="mt-4 space-y-4">
+              {step === 0 && (
+                <div className="space-y-4">
                   <FormInput control={form.control} name="title" label="Title" />
                   <FormTextarea
                     control={form.control}
@@ -233,9 +284,11 @@ export function AnnouncementFormModal({
                     description="Optional. Shows at the top of the announcement."
                     cropAspect={16 / 9}
                   />
-                </TabsContent>
+                </div>
+              )}
 
-                <TabsContent value="timing" className="mt-4 space-y-4">
+              {step === 1 && (
+                <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormSelect
                       control={form.control}
@@ -272,31 +325,61 @@ export function AnnouncementFormModal({
                     label="Pin it to the top"
                     description="Pinned announcements sit above everything else in the feed."
                   />
-                </TabsContent>
+                </div>
+              )}
 
-                <TabsContent value="audience" className="mt-4">
-                  <AudienceFields
-                    control={form.control}
-                    audience={audience}
-                    description="Everyone in the company, unless you narrow it down."
-                  />
-                </TabsContent>
-              </Tabs>
+              {step === 2 && (
+                <AudienceFields
+                  control={form.control}
+                  audience={audience}
+                  description="Everyone in the company, unless you narrow it down."
+                />
+              )}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                className="cursor-pointer"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="cursor-pointer" disabled={isSaving}>
-                {isSaving && <Loader2 className="size-4 animate-spin" />}
-                {announcement ? "Save changes" : "Add announcement"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}
+                  disabled={isSaving}
+                >
+                  {step === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {step < LAST_STEP ? (
+                  <Button
+                    key="wizard-next"
+                    type="button"
+                    className="cursor-pointer"
+                    onClick={() => void goNext()}
+                  >
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    key="wizard-submit"
+                    type="submit"
+                    className="cursor-pointer"
+                    disabled={isSaving}
+                  >
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {announcement ? "Save changes" : "Add announcement"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>

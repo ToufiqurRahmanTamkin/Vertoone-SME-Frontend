@@ -167,6 +167,19 @@ export interface AiLeaveTypeDraft {
   noticeDays: number;
 }
 
+export interface AiAssetCategoryDraft {
+  name: string;
+  code: string;
+  color: string;
+  description: string;
+  usefulLifeMonths: number;
+}
+
+export interface GenerateAssetCategoriesPayload {
+  count: number;
+  context?: string;
+}
+
 export interface GenerateLeaveTypesPayload {
   count: number;
   context?: string;

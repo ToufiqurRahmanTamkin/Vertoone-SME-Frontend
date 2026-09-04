@@ -1,5 +1,6 @@
 import type {
   AiAllowance,
+  AiAssetCategoryDraft,
   AiBoardDraft,
   AiCompanyDraft,
   AiDepartmentDraft,
@@ -9,6 +10,7 @@ import type {
   AiLeaveTypeDraft,
   AiNoteDraft,
   AiPlanCopy,
+  GenerateAssetCategoriesPayload,
   GenerateBoardPayload,
   GenerateCategoriesPayload,
   GenerateDepartmentsPayload,
@@ -62,6 +64,13 @@ const aiApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/ai/leave-types", method: "POST", body }),
       invalidatesTags: ["AiAllowance"],
     }),
+    generateAssetCategories: builder.mutation<
+      AiAssetCategoryDraft[],
+      GenerateAssetCategoriesPayload
+    >({
+      query: (body) => ({ url: "/ai/asset-categories", method: "POST", body }),
+      invalidatesTags: ["AiAllowance"],
+    }),
   }),
 });
 
@@ -76,4 +85,5 @@ export const {
   useGenerateDepartmentsMutation,
   useGenerateDesignationsMutation,
   useGenerateLeaveTypesMutation,
+  useGenerateAssetCategoriesMutation,
 } = aiApi;

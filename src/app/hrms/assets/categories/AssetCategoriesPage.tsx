@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { useGetAiAllowanceQuery } from "@/redux/apis/aiApis";
 import {
   useDeleteAssetCategoryMutation,
   useGetAssetCategoriesQuery,
@@ -22,9 +23,10 @@ import {
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { AssetCategory } from "@/types/domain/asset";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { Bot, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { AiAssetCategoriesModal } from "./components/AiAssetCategoriesModal";
 import { AssetCategoryFormModal } from "./components/AssetCategoryFormModal";
 
 const FILTERS: FilterConfig[] = [
@@ -50,7 +52,15 @@ export default function AssetCategoriesPage() {
     isActive: filters.isActive === undefined ? undefined : filters.isActive === "true",
   });
 
+  const { data: ai } = useGetAiAllowanceQuery();
+
+  const { data: unfiltered } = useGetAssetCategoriesQuery(
+    { page: 1, limit: 1 },
+    { skip: !ai?.isConfigured || access.limit === null }
+  );
+
   const [formOpen, setFormOpen] = React.useState(false);
+  const [aiOpen, setAiOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<AssetCategory | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState<AssetCategory | null>(null);
   const [deleteCategory, { isLoading: isDeleting }] = useDeleteAssetCategoryMutation();
@@ -184,14 +194,24 @@ export default function AssetCategoriesPage() {
         isLoading={isFetching}
         actions={
           access.canCreate && (
-            <ActionButton
-              icon={Plus}
-              label="New category"
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            />
+            <>
+              {ai?.isConfigured && (
+                <ActionButton
+                  icon={Bot}
+                  label="Generate with AI"
+                  variant="outline"
+                  onClick={() => setAiOpen(true)}
+                />
+              )}
+              <ActionButton
+                icon={Plus}
+                label="New category"
+                onClick={() => {
+                  setEditing(null);
+                  setFormOpen(true);
+                }}
+              />
+            </>
           )
         }
       />
@@ -242,6 +262,12 @@ export default function AssetCategoriesPage() {
       />
 
       <AssetCategoryFormModal open={formOpen} onOpenChange={setFormOpen} category={editing} />
+
+      <AiAssetCategoriesModal
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        remaining={access.remaining(unfiltered?.meta?.total ?? 0)}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
