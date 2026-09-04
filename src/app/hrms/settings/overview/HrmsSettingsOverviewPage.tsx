@@ -10,6 +10,8 @@ import {
   ATTENDANCE_CAPTURE_METHOD_LABELS,
   PAYROLL_DAY_BASIS_LABELS,
   PAY_CYCLE_LABELS,
+  PF_CONTRIBUTION_BASE_LABELS,
+  PF_ELIGIBILITY_MODE_LABELS,
   type HrmsSettingsSummary,
 } from "@/types/domain/hrmsSettings";
 import {
@@ -19,6 +21,7 @@ import {
   Clock,
   Coins,
   KeyRound,
+  Landmark,
   Percent,
   Plane,
 } from "lucide-react";
@@ -170,9 +173,37 @@ const buildSections = (summary: HrmsSettingsSummary): SectionSpec[] => [
       { label: "Pay day", value: `Day ${summary.payroll.payDay}` },
       { label: "Day basis", value: PAYROLL_DAY_BASIS_LABELS[summary.payroll.dayBasis] },
       { label: "Tax", value: summary.payroll.taxEnabled ? "Deducted" : "Off" },
+    ],
+  },
+  {
+    path: "/hrms/settings/provident-fund",
+    icon: Landmark,
+    title: "Provident fund",
+    description:
+      "Contribution rates, who joins and when, vesting, loans and the reasons money may be drawn out.",
+    status: {
+      label: summary.providentFund.enabled
+        ? `${summary.providentFund.totalPercent}% a month`
+        : "Off",
+      color: summary.providentFund.enabled ? "green" : "zinc",
+    },
+    facts: [
       {
-        label: "Provident fund",
-        value: summary.payroll.providentFundEnabled ? "Deducted" : "Off",
+        label: "Employee share",
+        value: `${summary.providentFund.employeePercent}% of ${PF_CONTRIBUTION_BASE_LABELS[
+          summary.providentFund.contributionBase
+        ].toLowerCase()}`,
+      },
+      { label: "Employer share", value: `${summary.providentFund.employerPercent}%` },
+      {
+        label: "Employees join",
+        value: PF_ELIGIBILITY_MODE_LABELS[summary.providentFund.eligibilityMode],
+      },
+      {
+        label: "Loans",
+        value: summary.providentFund.loansEnabled
+          ? `Allowed · ${summary.providentFund.withdrawalRules} withdrawal reason(s)`
+          : `Off · ${summary.providentFund.withdrawalRules} withdrawal reason(s)`,
       },
     ],
   },

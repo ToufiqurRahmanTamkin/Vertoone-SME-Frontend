@@ -28,6 +28,7 @@ import { PayrollSchema, toNumber, type PayrollFormValues } from "@/validations/h
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calculator, CalendarClock, Landmark, Receipt } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { SettingsFieldset } from "../components/SettingsFieldset";
 import { SettingsFormFooter } from "../components/SettingsFormFooter";
@@ -63,9 +64,6 @@ const toFormValues = (payroll: PayrollSettings): PayrollFormValues => ({
   includeUnpaidLeaveDeduction: payroll.includeUnpaidLeaveDeduction,
   taxEnabled: payroll.taxEnabled,
   taxPercent: payroll.taxPercent,
-  providentFundEnabled: payroll.providentFundEnabled,
-  pfEmployeePercent: payroll.pfEmployeePercent,
-  pfEmployerPercent: payroll.pfEmployerPercent,
   festivalBonusEnabled: payroll.festivalBonusEnabled,
   festivalBonusPerYear: payroll.festivalBonusPerYear,
   payslipPrefix: payroll.payslipPrefix,
@@ -92,7 +90,6 @@ function PayrollForm({
   const dayBasis = useWatch({ control: form.control, name: "dayBasis" });
   const roundingMode = useWatch({ control: form.control, name: "roundingMode" });
   const taxEnabled = useWatch({ control: form.control, name: "taxEnabled" });
-  const providentFundEnabled = useWatch({ control: form.control, name: "providentFundEnabled" });
   const festivalBonusEnabled = useWatch({ control: form.control, name: "festivalBonusEnabled" });
 
   const onSubmit = async (values: PayrollFormValues) => {
@@ -111,9 +108,6 @@ function PayrollForm({
         includeUnpaidLeaveDeduction: values.includeUnpaidLeaveDeduction,
         taxEnabled: values.taxEnabled,
         taxPercent: toNumber(values.taxPercent),
-        providentFundEnabled: values.providentFundEnabled,
-        pfEmployeePercent: toNumber(values.pfEmployeePercent),
-        pfEmployerPercent: toNumber(values.pfEmployerPercent),
         festivalBonusEnabled: values.festivalBonusEnabled,
         festivalBonusPerYear: toNumber(values.festivalBonusPerYear),
         payslipPrefix: values.payslipPrefix,
@@ -271,28 +265,15 @@ function PayrollForm({
     {
       value: "deductions",
       label: "Deductions",
-      fields: [
-        "taxEnabled",
-        "providentFundEnabled",
-        "festivalBonusEnabled",
-        "taxPercent",
-        "pfEmployeePercent",
-        "pfEmployerPercent",
-        "festivalBonusPerYear",
-      ],
+      fields: ["taxEnabled", "festivalBonusEnabled", "taxPercent", "festivalBonusPerYear"],
       content: (
         <SectionCard
           icon={Landmark}
           title="Statutory deductions"
-          description="Tax and provident fund rates applied to every payslip."
+          description="Tax and bonus rules applied to every payslip."
         >
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <FormSwitch control={form.control} name="taxEnabled" label="Deduct income tax" />
-            <FormSwitch
-              control={form.control}
-              name="providentFundEnabled"
-              label="Deduct provident fund"
-            />
             <FormSwitch
               control={form.control}
               name="festivalBonusEnabled"
@@ -300,7 +281,7 @@ function PayrollForm({
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             {taxEnabled && (
               <FormInput
                 control={form.control}
@@ -309,24 +290,6 @@ function PayrollForm({
                 type="number"
                 step="0.1"
               />
-            )}
-            {providentFundEnabled && (
-              <>
-                <FormInput
-                  control={form.control}
-                  name="pfEmployeePercent"
-                  label="Employee share (%)"
-                  type="number"
-                  step="0.1"
-                />
-                <FormInput
-                  control={form.control}
-                  name="pfEmployerPercent"
-                  label="Employer share (%)"
-                  type="number"
-                  step="0.1"
-                />
-              </>
             )}
             {festivalBonusEnabled && (
               <FormInput
@@ -337,6 +300,17 @@ function PayrollForm({
               />
             )}
           </div>
+
+          <p className="rounded-lg border border-dashed bg-muted/20 p-3 text-sm text-muted-foreground">
+            Provident fund contributions have their own rules.{" "}
+            <Link
+              to="/hrms/settings/provident-fund"
+              className="font-medium text-primary hover:underline"
+            >
+              Open provident fund settings
+            </Link>
+            .
+          </p>
         </SectionCard>
       ),
     },

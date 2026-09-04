@@ -89,6 +89,9 @@ const LateFineSettings = lazy(
 const OvertimeSettings = lazy(
   () => import("@/app/hrms/settings/overtime/OvertimeSettingsPage")
 );
+const ProvidentFundSettings = lazy(
+  () => import("@/app/hrms/settings/providentFund/ProvidentFundSettingsPage")
+);
 const HolidayCalendar = lazy(
   () => import("@/app/hrms/settings/holidays/HolidayCalendarPage")
 );
@@ -273,6 +276,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/settings/late-fine-rules", element: <LateFineSettings /> },
   { path: "hrms/settings/overtime", element: <OvertimeSettings /> },
   { path: "hrms/settings/holiday-calendar", element: <HolidayCalendar /> },
+  { path: "hrms/settings/provident-fund", element: <ProvidentFundSettings /> },
   { path: "hrms/settings/payroll", element: <PayrollSettings /> },
   {
     path: "hrms/settings/employee-roles-and-permissions",
