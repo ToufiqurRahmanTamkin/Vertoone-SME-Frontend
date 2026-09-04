@@ -25,6 +25,28 @@ export type PayrollDayBasis = (typeof PAYROLL_DAY_BASES)[number];
 export const ROUNDING_MODES = ["NONE", "NEAREST", "UP", "DOWN"] as const;
 export type RoundingMode = (typeof ROUNDING_MODES)[number];
 
+export const PF_CONTRIBUTION_BASES = ["BASIC", "GROSS", "BASIC_PLUS_ALLOWANCES"] as const;
+export type PfContributionBase = (typeof PF_CONTRIBUTION_BASES)[number];
+
+export const PF_ELIGIBILITY_MODES = [
+  "ALL_EMPLOYEES",
+  "AFTER_PROBATION",
+  "AFTER_MONTHS",
+] as const;
+export type PfEligibilityMode = (typeof PF_ELIGIBILITY_MODES)[number];
+
+export const PF_WITHDRAWAL_TYPES = [
+  "RESIGNATION",
+  "RETIREMENT",
+  "MEDICAL",
+  "EDUCATION",
+  "HOUSING",
+  "MARRIAGE",
+] as const;
+export type PfWithdrawalType = (typeof PF_WITHDRAWAL_TYPES)[number];
+
+export const MAX_PF_WITHDRAWAL_RULES = 10;
+
 export const WEEK_DAYS = [
   { value: 0, label: "Sunday", short: "Sun" },
   { value: 1, label: "Monday", short: "Mon" },
@@ -89,6 +111,27 @@ export const ROUNDING_MODE_LABELS: Record<RoundingMode, string> = {
   NEAREST: "To the nearest",
   UP: "Always up",
   DOWN: "Always down",
+};
+
+export const PF_CONTRIBUTION_BASE_LABELS: Record<PfContributionBase, string> = {
+  BASIC: "Basic salary",
+  GROSS: "Gross salary",
+  BASIC_PLUS_ALLOWANCES: "Basic plus allowances",
+};
+
+export const PF_ELIGIBILITY_MODE_LABELS: Record<PfEligibilityMode, string> = {
+  ALL_EMPLOYEES: "Everyone from day one",
+  AFTER_PROBATION: "Once probation is passed",
+  AFTER_MONTHS: "After a set number of months",
+};
+
+export const PF_WITHDRAWAL_TYPE_LABELS: Record<PfWithdrawalType, string> = {
+  RESIGNATION: "Resignation",
+  RETIREMENT: "Retirement",
+  MEDICAL: "Medical need",
+  EDUCATION: "Education",
+  HOUSING: "Housing",
+  MARRIAGE: "Marriage",
 };
 
 export interface WeekSettings {
@@ -199,15 +242,56 @@ export interface PayrollSettings {
   includeUnpaidLeaveDeduction: boolean;
   taxEnabled: boolean;
   taxPercent: number;
-  providentFundEnabled: boolean;
-  pfEmployeePercent: number;
-  pfEmployerPercent: number;
   festivalBonusEnabled: boolean;
   festivalBonusPerYear: number;
   payslipPrefix: string;
   payslipNote: string;
   autoGeneratePayslips: boolean;
   lockAfterApproval: boolean;
+}
+
+export interface PfWithdrawalRule {
+  type: PfWithdrawalType;
+  minMonthsOfService: number;
+  maxPercentOfBalance: number;
+  requiresApproval: boolean;
+}
+
+export interface ProvidentFundSettings {
+  enabled: boolean;
+  schemeName: string;
+  registrationNumber: string;
+  trustName: string;
+  contributionBase: PfContributionBase;
+  employeePercent: number;
+  employerPercent: number;
+  wageCeilingEnabled: boolean;
+  wageCeilingAmount: number;
+  minMonthlyContribution: number;
+  roundingMode: RoundingMode;
+  roundTo: number;
+  allowVoluntaryTopUp: boolean;
+  maxVoluntaryPercent: number;
+  eligibilityMode: PfEligibilityMode;
+  eligibilityAfterMonths: number;
+  minAgeYears: number;
+  excludeContractStaff: boolean;
+  excludeInterns: boolean;
+  employerContributionVests: boolean;
+  vestingAfterMonths: number;
+  forfeitUnvestedOnExit: boolean;
+  interestEnabled: boolean;
+  annualInterestPercent: number;
+  interestCreditMonth: number;
+  loansEnabled: boolean;
+  maxLoanPercentOfBalance: number;
+  maxLoanTenureMonths: number;
+  minMonthsBetweenLoans: number;
+  withdrawalRules: PfWithdrawalRule[];
+  requireNominee: boolean;
+  maxNominees: number;
+  statementFrequencyMonths: number;
+  notes: string;
 }
 
 export interface HrmsSettings {
@@ -218,12 +302,13 @@ export interface HrmsSettings {
   lateFine: LateFineSettings;
   overtime: OvertimeSettings;
   payroll: PayrollSettings;
+  providentFund: ProvidentFundSettings;
   updatedAt: string;
 }
 
 export type HrmsSettingsSection = keyof Pick<
   HrmsSettings,
-  "week" | "leave" | "attendance" | "lateFine" | "overtime" | "payroll"
+  "week" | "leave" | "attendance" | "lateFine" | "overtime" | "payroll" | "providentFund"
 >;
 
 export interface HrmsSettingsSummary {
@@ -272,7 +357,16 @@ export interface HrmsSettingsSummary {
     payDay: number;
     dayBasis: PayrollDayBasis;
     taxEnabled: boolean;
-    providentFundEnabled: boolean;
+  };
+  providentFund: {
+    enabled: boolean;
+    employeePercent: number;
+    employerPercent: number;
+    contributionBase: PfContributionBase;
+    eligibilityMode: PfEligibilityMode;
+    loansEnabled: boolean;
+    withdrawalRules: number;
+    totalPercent: number;
   };
   employeeRoles: {
     total: number;

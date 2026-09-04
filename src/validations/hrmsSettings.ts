@@ -6,8 +6,12 @@ import {
   LEAVE_ACCRUAL_CYCLES,
   OVERTIME_BASES,
   OVERTIME_PAYOUTS,
+  MAX_PF_WITHDRAWAL_RULES,
   PAYROLL_DAY_BASES,
   PAY_CYCLES,
+  PF_CONTRIBUTION_BASES,
+  PF_ELIGIBILITY_MODES,
+  PF_WITHDRAWAL_TYPES,
   ROUNDING_MODES,
 } from "@/types/domain/hrmsSettings";
 
@@ -169,9 +173,6 @@ export const PayrollSchema = z
     includeUnpaidLeaveDeduction: z.boolean(),
     taxEnabled: z.boolean(),
     taxPercent: numberField(0, 100),
-    providentFundEnabled: z.boolean(),
-    pfEmployeePercent: numberField(0, 100),
-    pfEmployerPercent: numberField(0, 100),
     festivalBonusEnabled: z.boolean(),
     festivalBonusPerYear: numberField(0, 12),
     payslipPrefix: z.string().trim().max(8),
@@ -182,12 +183,81 @@ export const PayrollSchema = z
   .refine((values) => !values.taxEnabled || toNumber(values.taxPercent) > 0, {
     path: ["taxPercent"],
     message: "Set the tax rate you deduct",
+  });
+
+export type PayrollFormValues = z.infer<typeof PayrollSchema>;
+
+export const PfWithdrawalRuleSchema = z.object({
+  type: z.enum(PF_WITHDRAWAL_TYPES),
+  minMonthsOfService: numberField(0, 600),
+  maxPercentOfBalance: numberField(0, 100),
+  requiresApproval: z.boolean(),
+});
+
+export const ProvidentFundSchema = z
+  .object({
+    enabled: z.boolean(),
+    schemeName: z.string().trim().max(120),
+    registrationNumber: z.string().trim().max(60),
+    trustName: z.string().trim().max(120),
+    contributionBase: z.enum(PF_CONTRIBUTION_BASES),
+    employeePercent: numberField(0, 100),
+    employerPercent: numberField(0, 100),
+    wageCeilingEnabled: z.boolean(),
+    wageCeilingAmount: numberField(0, 100_000_000),
+    minMonthlyContribution: numberField(0, 100_000_000),
+    roundingMode: z.enum(ROUNDING_MODES),
+    roundTo: numberField(0, 1000),
+    allowVoluntaryTopUp: z.boolean(),
+    maxVoluntaryPercent: numberField(0, 100),
+    eligibilityMode: z.enum(PF_ELIGIBILITY_MODES),
+    eligibilityAfterMonths: numberField(0, 60),
+    minAgeYears: numberField(0, 70),
+    excludeContractStaff: z.boolean(),
+    excludeInterns: z.boolean(),
+    employerContributionVests: z.boolean(),
+    vestingAfterMonths: numberField(0, 120),
+    forfeitUnvestedOnExit: z.boolean(),
+    interestEnabled: z.boolean(),
+    annualInterestPercent: numberField(0, 100),
+    interestCreditMonth: z.string().trim().min(1, "Pick the month interest is credited"),
+    loansEnabled: z.boolean(),
+    maxLoanPercentOfBalance: numberField(0, 100),
+    maxLoanTenureMonths: numberField(1, 120),
+    minMonthsBetweenLoans: numberField(0, 120),
+    withdrawalRules: z.array(PfWithdrawalRuleSchema).max(MAX_PF_WITHDRAWAL_RULES),
+    requireNominee: z.boolean(),
+    maxNominees: numberField(1, 10),
+    statementFrequencyMonths: numberField(1, 12),
+    notes: z.string().trim().max(1000),
   })
   .refine(
     (values) =>
-      !values.providentFundEnabled ||
-      toNumber(values.pfEmployeePercent) + toNumber(values.pfEmployerPercent) > 0,
-    { path: ["pfEmployeePercent"], message: "Set at least one provident fund rate" }
+      !values.enabled ||
+      toNumber(values.employeePercent) + toNumber(values.employerPercent) > 0,
+    { path: ["employeePercent"], message: "Set an employee or employer rate" }
+  )
+  .refine(
+    (values) => !values.wageCeilingEnabled || toNumber(values.wageCeilingAmount) > 0,
+    { path: ["wageCeilingAmount"], message: "A ceiling needs an amount above zero" }
+  )
+  .refine(
+    (values) => !values.allowVoluntaryTopUp || toNumber(values.maxVoluntaryPercent) > 0,
+    { path: ["maxVoluntaryPercent"], message: "Set how much extra an employee may add" }
+  )
+  .refine((values) => !values.interestEnabled || toNumber(values.annualInterestPercent) > 0, {
+    path: ["annualInterestPercent"],
+    message: "Set the annual interest rate you credit",
+  })
+  .refine(
+    (values) => !values.employerContributionVests || toNumber(values.vestingAfterMonths) > 0,
+    { path: ["vestingAfterMonths"], message: "Set how long the employer share takes to vest" }
+  )
+  .refine(
+    (values) =>
+      new Set(values.withdrawalRules.map((rule) => rule.type)).size ===
+      values.withdrawalRules.length,
+    { path: ["withdrawalRules"], message: "Each reason can only be listed once" }
   );
 
-export type PayrollFormValues = z.infer<typeof PayrollSchema>;
+export type ProvidentFundFormValues = z.infer<typeof ProvidentFundSchema>;

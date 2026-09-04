@@ -6,6 +6,7 @@ import type {
   LeaveSettings,
   OvertimeSettings,
   PayrollSettings,
+  ProvidentFundSettings,
   WeekSettings,
 } from "@/types/domain/hrmsSettings";
 import { baseApi } from "../baseApi";
@@ -46,6 +47,13 @@ const hrmsSettingsApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/hrms/settings/payroll", method: "PATCH", body }),
       invalidatesTags: [...SETTINGS_TAGS],
     }),
+    updateProvidentFundSettings: builder.mutation<
+      HrmsSettings,
+      Partial<ProvidentFundSettings>
+    >({
+      query: (body) => ({ url: "/hrms/settings/provident-fund", method: "PATCH", body }),
+      invalidatesTags: [...SETTINGS_TAGS],
+    }),
   }),
 });
 
@@ -58,4 +66,5 @@ export const {
   useUpdateLateFineSettingsMutation,
   useUpdateOvertimeSettingsMutation,
   useUpdatePayrollSettingsMutation,
+  useUpdateProvidentFundSettingsMutation,
 } = hrmsSettingsApi;
