@@ -1,6 +1,6 @@
-import { FileUploader } from "@/components/shared/file-uploader";
 import {
   FormColor,
+  FormImage,
   FormInput,
   FormMultiSelect,
   FormSelect,
@@ -242,29 +242,90 @@ export function GroupFormModal({ open, onOpenChange, group }: GroupFormModalProp
                     name="visibility"
                     label="Who can find it"
                     options={VISIBILITY_OPTIONS}
-                    description="Open lets anyone join. Closed needs a moderator. Secret is hidden from anybody outside it."
+                    description={COMMUNITY_GROUP_VISIBILITY_HINTS[visibility]}
                   />
 
-                  <FileUploader
-                    value={coverImageUrl || undefined}
-                    onChange={(asset) =>
-                      form.setValue("coverImageUrl", asset?.url ?? "", { shouldDirty: true })
-                    }
-                    label="Cover image"
-                    description="Optional. Sits at the top of the group."
-                    cropAspect={16 / 6}
-                  />
+                  {visibility === "OPEN" && (
+                    <FormSwitch
+                      control={form.control}
+                      name="requiresApproval"
+                      label="Approve people before they join"
+                      description="Leave this off and anybody can join straight away. Turn it on and they send a request a moderator answers."
+                    />
+                  )}
+
+                  {visibility === "CLOSED" && (
+                    <p className="rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                      Private groups always ask a moderator to approve new members.
+                    </p>
+                  )}
+
+                  {visibility === "SECRET" && (
+                    <p className="rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                      Hidden groups take no requests — add people yourself on the next step.
+                    </p>
+                  )}
 
                   <FormSwitch
                     control={form.control}
                     name="isArchived"
                     label="Archived"
-                    description="Archived groups stay readable but nobody can post in them."
+                    description="Archived groups stay readable but nobody can post or chat in them."
                   />
                 </div>
               )}
 
               {step === 1 && (
+                <div className="space-y-4">
+                  <FormImage
+                    control={form.control}
+                    name="logoUrl"
+                    label="Logo"
+                    description="Square works best. It shows beside the group everywhere it appears."
+                    cropAspect={1}
+                    previewClassName="size-24 rounded-xl"
+                  />
+
+                  <FormImage
+                    control={form.control}
+                    name="bannerUrl"
+                    label="Banner"
+                    description="A wide image for the top of the group."
+                    cropAspect={16 / 6}
+                  />
+
+                  {(logoUrl || bannerUrl) && (
+                    <div className="overflow-hidden rounded-xl border">
+                      <div
+                        className="h-24 w-full bg-cover bg-center"
+                        style={{
+                          backgroundColor: form.watch("color"),
+                          backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined,
+                        }}
+                      />
+                      <div className="flex items-center gap-3 px-4 pb-4">
+                        <span
+                          className="-mt-6 size-12 shrink-0 overflow-hidden rounded-xl border-2 border-background bg-muted bg-cover bg-center"
+                          style={{
+                            backgroundColor: form.watch("color"),
+                            backgroundImage: logoUrl ? `url(${logoUrl})` : undefined,
+                          }}
+                        />
+                        <div className="min-w-0 pt-2">
+                          <p className="truncate text-sm font-semibold">
+                            {form.watch("name") || "Your group"}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {COMMUNITY_GROUP_VISIBILITY_LABELS[visibility]}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {step === 2 && (
                 <div className="space-y-4">
                   <FormMultiSelect
                     control={form.control}
