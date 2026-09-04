@@ -164,12 +164,7 @@ export function CorrectionRequestModal({ open, onOpenChange }: CorrectionRequest
           >
             Cancel
           </Button>
-          <Button
-            type="button"
-            className="cursor-pointer"
-            onClick={onSubmit}
-            disabled={isSaving}
-          >
+          <Button type="button" className="cursor-pointer" onClick={onSubmit} disabled={isSaving}>
             {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
             Send request
           </Button>

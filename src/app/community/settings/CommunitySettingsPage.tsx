@@ -145,23 +145,24 @@ function SettingsForm({ settings, canEdit }: { settings: CommunitySettings; canE
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <Tabs defaultValue="branding" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="branding" className="cursor-pointer">
+        <Tabs defaultValue="branding" className="flex flex-col lg:flex-row gap-6">
+          <TabsList className="flex h-auto w-full flex-row justify-start gap-1 overflow-x-auto bg-transparent p-0 lg:w-48 lg:flex-col lg:overflow-visible border-b lg:border-b-0 lg:border-r lg:pr-4 pb-2 lg:pb-0">
+            <TabsTrigger value="branding" className="w-full cursor-pointer justify-start px-3 py-2 text-left data-[state=active]:bg-muted data-[state=active]:shadow-none">
               Look
             </TabsTrigger>
-            <TabsTrigger value="posting" className="cursor-pointer">
+            <TabsTrigger value="posting" className="w-full cursor-pointer justify-start px-3 py-2 text-left data-[state=active]:bg-muted data-[state=active]:shadow-none">
               Rules
             </TabsTrigger>
-            <TabsTrigger value="points" className="cursor-pointer">
+            <TabsTrigger value="points" className="w-full cursor-pointer justify-start px-3 py-2 text-left data-[state=active]:bg-muted data-[state=active]:shadow-none">
               Points
             </TabsTrigger>
-            <TabsTrigger value="badges" className="cursor-pointer">
+            <TabsTrigger value="badges" className="w-full cursor-pointer justify-start px-3 py-2 text-left data-[state=active]:bg-muted data-[state=active]:shadow-none">
               Badges
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="branding" className="space-y-4">
+          <div className="flex-1 min-w-0">
+            <TabsContent value="branding" className="mt-0 space-y-4">
             <SectionCard
               icon={Palette}
               title="How the community presents itself"
@@ -216,7 +217,7 @@ function SettingsForm({ settings, canEdit }: { settings: CommunitySettings; canE
             </SectionCard>
           </TabsContent>
 
-          <TabsContent value="posting" className="space-y-4">
+          <TabsContent value="posting" className="mt-0 space-y-4">
             <SectionCard
               icon={ShieldCheck}
               title="Who may post and what they may do"
@@ -278,7 +279,7 @@ function SettingsForm({ settings, canEdit }: { settings: CommunitySettings; canE
             </SectionCard>
           </TabsContent>
 
-          <TabsContent value="points" className="space-y-4">
+          <TabsContent value="points" className="mt-0 space-y-4">
             <SectionCard
               icon={Coins}
               title="What each action is worth"
@@ -355,7 +356,7 @@ function SettingsForm({ settings, canEdit }: { settings: CommunitySettings; canE
             </SectionCard>
           </TabsContent>
 
-          <TabsContent value="badges" className="space-y-4">
+          <TabsContent value="badges" className="mt-0 space-y-4">
             <SectionCard
               icon={Award}
               title="Badges"
@@ -374,6 +375,7 @@ function SettingsForm({ settings, canEdit }: { settings: CommunitySettings; canE
               />
             </SectionCard>
           </TabsContent>
+          </div>
         </Tabs>
 
         <div className="flex justify-end">

@@ -47,26 +47,27 @@ export function FormColor<TFieldValues extends FieldValues>({
           <FormItem className={className}>
             <FormLabel>{label}</FormLabel>
             <div className="flex items-center gap-2">
+              <Input
+                type="color"
+                className="h-9 w-12 shrink-0 cursor-pointer p-1 [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-sm [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-sm"
+                value={/^#[0-9a-f]{6}$/.test(value) ? value : "#6366f1"}
+                disabled={disabled}
+                onChange={(event) => field.onChange(normalize(event.target.value))}
+                tabIndex={-1}
+              />
               <FormControl>
                 <Input
-                  type="color"
-                  className="h-9 w-12 cursor-pointer p-1"
-                  value={/^#[0-9a-f]{6}$/.test(value) ? value : "#6366f1"}
+                  {...field}
+                  value={field.value ?? ""}
+                  placeholder="#6366f1"
+                  maxLength={7}
                   disabled={disabled}
                   onChange={(event) => field.onChange(normalize(event.target.value))}
                 />
               </FormControl>
-              <Input
-                value={field.value ?? ""}
-                placeholder="#6366f1"
-                maxLength={7}
-                disabled={disabled}
-                onChange={(event) => field.onChange(normalize(event.target.value))}
-                onBlur={field.onBlur}
-              />
             </div>
 
-            <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="flex flex-wrap gap-2 pt-1">
               {COLOR_PRESETS.map((preset) => (
                 <button
                   key={preset}

@@ -34,7 +34,8 @@ import {
 } from "@/types/domain/note";
 import { NoteSchema, type NoteFormValues } from "@/validations/note";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,6 +50,23 @@ const VISIBILITY_OPTIONS = NOTE_VISIBILITIES.map((visibility) => ({
   label: NOTE_VISIBILITY_LABELS[visibility],
   value: visibility,
 }));
+
+const STEPS: StepperStep[] = [
+  { id: "details", label: "Note details" },
+  { id: "settings", label: "Settings" },
+];
+
+const STEP_FIELDS: readonly (keyof NoteFormValues)[][] = [
+  ["title", "content", "color"],
+  ["visibility", "ownerId", "sharedWithIds", "boardId", "reminderAt", "tagIds", "isPinned", "isArchived"],
+];
+
+const LAST_STEP = STEPS.length - 1;
+
+const stepOf = (field: string): number => {
+  const index = STEP_FIELDS.findIndex((fields) => fields.includes(field as keyof NoteFormValues));
+  return index === -1 ? 0 : index;
+};
 
 const emptyValues = (): NoteFormValues => ({
   title: "",
@@ -66,6 +84,8 @@ const emptyValues = (): NoteFormValues => ({
 
 export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) {
   const isEdit = Boolean(note);
+  const [step, setStep] = React.useState(0);
+  const [furthestStep, setFurthestStep] = React.useState(0);
 
   // A share holder has no company-wide read on these lists, so do not even ask.
   const ownsModule = useModulePermission("/company/tasks-and-goals/notes").canView;
@@ -90,7 +110,11 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
   const visibility = useWatch({ control: form.control, name: "visibility" });
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setStep(0);
+      setFurthestStep(0);
+      return;
+    }
 
     form.reset(
       note
@@ -167,9 +191,35 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
     }
   };
 
+  const goToStep = (next: number) => {
+    setStep(next);
+    setFurthestStep((previous) => Math.max(previous, next));
+  };
+
+  const goNext = async () => {
+    const fields = STEP_FIELDS[step];
+    const isValid = fields.length === 0 || (await form.trigger(fields, { shouldFocus: true }));
+    if (!isValid) return;
+    goToStep(Math.min(step + 1, LAST_STEP));
+  };
+
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const firstStep = Object.keys(errors).map(stepOf).sort((a, b) => a - b)[0];
+    if (firstStep !== undefined) setStep(firstStep);
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step < LAST_STEP) {
+      void goNext();
+      return;
+    }
+    void form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto md:max-w-4xl">
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit note" : "New note"}</DialogTitle>
           <DialogDescription>
@@ -179,39 +229,24 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            className="flex min-h-0 flex-1 flex-col"
-            onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
-          >
-            <DialogBody className="flex flex-col gap-0 p-4 sm:p-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Left Column: Note Content */}
-                <div className="flex flex-col gap-3">
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleFormSubmit}>
+            <DialogBody className="space-y-6">
+              <Stepper
+                steps={STEPS}
+                current={step}
+                reachable={furthestStep}
+                onStepSelect={setStep}
+              />
+
+              {step === 0 && (
+                <div className="flex flex-col gap-4">
                   <FormInput
                     control={form.control}
                     name="title"
                     label="Title"
                     placeholder="Supplier call — pricing agreed"
                   />
-
                   <FormColor control={form.control} name="color" label="Colour" />
-
-                  <FormSelect
-                    control={form.control}
-                    name="visibility"
-                    label="Who can read it"
-                    options={VISIBILITY_OPTIONS}
-                  />
-
-                  <FormSelect
-                    control={form.control}
-                    name="ownerId"
-                    label="Owner"
-                    placeholder="Unassigned"
-                    options={ownerChoices}
-                    searchable
-                  />
-
                   <FormTextarea
                     control={form.control}
                     name="content"
@@ -220,9 +255,26 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
                     rows={12}
                   />
                 </div>
+              )}
 
-                {/* Right Column: Meta & Settings */}
-                <div className="flex flex-col gap-3">
+              {step === 1 && (
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormSelect
+                      control={form.control}
+                      name="visibility"
+                      label="Who can read it"
+                      options={VISIBILITY_OPTIONS}
+                    />
+                    <FormSelect
+                      control={form.control}
+                      name="ownerId"
+                      label="Owner"
+                      placeholder="Unassigned"
+                      options={ownerChoices}
+                      searchable
+                    />
+                  </div>
 
                   {visibility === "SHARED" && (
                     <FormMultiSelect
@@ -236,7 +288,7 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
                     />
                   )}
 
-                  <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <FormSelect
                       control={form.control}
                       name="boardId"
@@ -244,9 +296,7 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
                       placeholder="Not linked to a board"
                       options={boardChoices}
                       searchable
-                      description="Keeps the note next to the work it belongs to."
                     />
-
                     <FormDate
                       control={form.control}
                       name="reminderAt"
@@ -265,14 +315,13 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
                     emptyText="No tags yet. Add them under Customers · Tags."
                   />
 
-                  <div className="mt-2 flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <FormSwitch
                       control={form.control}
                       name="isPinned"
                       label="Pinned"
                       description="Pinned notes sit at the top of the list."
                     />
-
                     <FormSwitch
                       control={form.control}
                       name="isArchived"
@@ -281,22 +330,41 @@ export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) 
                     />
                   </div>
                 </div>
-              </div>
+              )}
             </DialogBody>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Create note"}
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <div className="flex flex-1 items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}
+                  disabled={isSaving}
+                >
+                  {step === 0 ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </>
+                  )}
+                </Button>
+                {step < LAST_STEP ? (
+                  <Button key="wizard-next" type="button" onClick={() => void goNext()}>
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button key="wizard-submit" type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? "Save changes" : "Create note"}
+                  </Button>
+                )}
+              </div>
             </DialogFooter>
           </form>
         </Form>

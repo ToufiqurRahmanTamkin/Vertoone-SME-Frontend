@@ -243,17 +243,7 @@ export function DataTableToolbar({
             </div>
           ))}
 
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              onClick={handleClear}
-              disabled={isLoading}
-              className="h-8 px-2 lg:px-3"
-            >
-              Reset
-              <X className="ml-2 h-4 w-4" />
-            </Button>
-          )}
+
         </div>
 
         {useDrawer && (
@@ -320,16 +310,7 @@ export function DataTableToolbar({
               )}
             </div>
             <div className="mt-auto flex flex-row gap-2 p-4 pb-6">
-              {filters.length > 0 && (
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setPendingFilters({})}
-                  disabled={isLoading || !hasPendingFilters}
-                >
-                  Reset
-                </Button>
-              )}
+
               <Button className="flex-1" onClick={applyPendingAndClose}>
                 Done
               </Button>

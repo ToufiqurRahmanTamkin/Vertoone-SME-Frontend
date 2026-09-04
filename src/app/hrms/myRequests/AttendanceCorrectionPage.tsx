@@ -33,8 +33,7 @@ export default function AttendanceCorrectionPage() {
     limit: 20,
   });
   const { data: summary } = useGetMyAttendanceCorrectionSummaryQuery();
-  const [cancelCorrection, { isLoading: isCancelling }] =
-    useCancelAttendanceCorrectionMutation();
+  const [cancelCorrection, { isLoading: isCancelling }] = useCancelAttendanceCorrectionMutation();
 
   const requests = data?.data ?? [];
   const meta = data?.meta;
@@ -107,8 +106,7 @@ export default function AttendanceCorrectionPage() {
 
       {summary?.regularizationEnabled === false && (
         <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-          Your company has switched attendance corrections off. Speak to HR if a punch needs
-          fixing.
+          Your company has switched attendance corrections off. Speak to HR if a punch needs fixing.
         </p>
       )}
 

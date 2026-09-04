@@ -117,6 +117,17 @@ const WorkHistory = lazy(() => import("@/app/hrms/workHistory/WorkHistoryPage"))
 const MyAttendanceCorrections = lazy(
   () => import("@/app/hrms/myRequests/AttendanceCorrectionPage")
 );
+const MyRequestsOverview = lazy(() => import("@/app/hrms/myRequests/MyRequestsOverviewPage"));
+const MyLeave = lazy(() => import("@/app/hrms/myRequests/MyLeavePage"));
+const MyOvertime = lazy(() => import("@/app/hrms/myRequests/MyOvertimePage"));
+const MyMovement = lazy(() => import("@/app/hrms/myRequests/MyMovementPage"));
+const MyTravel = lazy(() => import("@/app/hrms/myRequests/MyTravelPage"));
+const MyExpenseClaims = lazy(() => import("@/app/hrms/myRequests/MyExpenseClaimsPage"));
+const MyLoansAndAdvances = lazy(() => import("@/app/hrms/myRequests/MyLoansAndAdvancesPage"));
+const MyAssetRequests = lazy(() => import("@/app/hrms/myRequests/MyAssetRequestsPage"));
+const MyLetters = lazy(() => import("@/app/hrms/myRequests/MyLettersPage"));
+const MyProfileUpdate = lazy(() => import("@/app/hrms/myRequests/MyProfileUpdatePage"));
+const MyHelpdesk = lazy(() => import("@/app/hrms/myRequests/MyHelpdeskPage"));
 const AttendanceApprovals = lazy(
   () => import("@/app/hrms/approvals/AttendanceApprovalsPage")
 );
@@ -334,6 +345,17 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/my-work/shifts", element: <MyShifts /> },
   { path: "hrms/my-work/work-history", element: <MyWorkHistory /> },
   { path: "hrms/my-requests/attendance-correction", element: <MyAttendanceCorrections /> },
+  { path: "hrms/my-requests/overview", element: <MyRequestsOverview /> },
+  { path: "hrms/my-requests/leave", element: <MyLeave /> },
+  { path: "hrms/my-requests/overtime", element: <MyOvertime /> },
+  { path: "hrms/my-requests/movement", element: <MyMovement /> },
+  { path: "hrms/my-requests/travel", element: <MyTravel /> },
+  { path: "hrms/my-requests/expense-claims", element: <MyExpenseClaims /> },
+  { path: "hrms/my-requests/loans-and-advances", element: <MyLoansAndAdvances /> },
+  { path: "hrms/my-requests/assets", element: <MyAssetRequests /> },
+  { path: "hrms/my-requests/letters", element: <MyLetters /> },
+  { path: "hrms/my-requests/profile-update", element: <MyProfileUpdate /> },
+  { path: "hrms/my-requests/helpdesk", element: <MyHelpdesk /> },
   { path: "hrms/directory/teams", element: <Teams /> },
   { path: "hrms/directory/departments", element: <Departments /> },
   { path: "hrms/directory/designations", element: <Designations /> },
