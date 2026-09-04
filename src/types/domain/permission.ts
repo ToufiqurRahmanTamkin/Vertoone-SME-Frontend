@@ -35,6 +35,7 @@ export interface ModuleDefinition {
   scope: ModuleScope;
   supportsLimit: boolean;
   ownerOnly: boolean;
+  selfService: boolean;
 }
 
 export interface EffectivePermissions {

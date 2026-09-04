@@ -11,19 +11,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { usePermissions } from "@/hooks/use-permission";
+import {
+  NO_DELEGABLE_MENUS,
+  useDelegableModules,
+} from "@/hooks/use-delegable-modules";
 import {
   useCreateEmployeeRoleMutation,
   useUpdateEmployeeRoleMutation,
 } from "@/redux/apis/employeeRoleApis";
-import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { EmployeeRole } from "@/types/domain/employeeRole";
-import {
-  permissionFor,
-  prunePermissionMap,
-  type ModulePermissionMap,
-} from "@/types/domain/permission";
+import { prunePermissionMap, type ModulePermissionMap } from "@/types/domain/permission";
 import { EmployeeRoleSchema, type EmployeeRoleFormValues } from "@/validations/employeeRole";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -51,29 +49,16 @@ const toFormValues = (role: EmployeeRole): EmployeeRoleFormValues => ({
 
 export function EmployeeRoleFormModal({ open, onOpenChange, role }: EmployeeRoleFormModalProps) {
   const isEdit = Boolean(role);
-  const { modules: entitlement } = usePermissions();
 
   const [createEmployeeRole, { isLoading: isCreating }] = useCreateEmployeeRoleMutation();
   const [updateEmployeeRole, { isLoading: isUpdating }] = useUpdateEmployeeRoleMutation();
   const isSaving = isCreating || isUpdating;
 
-  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
-
-  const assignableModules = React.useMemo(
-    () =>
-      catalogue.filter(
-        (definition) =>
-          definition.scope === "COMPANY" &&
-          !definition.ownerOnly &&
-          permissionFor(entitlement, definition.key).canView
-      ),
-    [catalogue, entitlement]
-  );
-
-  const knownModuleKeys = React.useMemo(
-    () => new Set(catalogue.map((definition) => definition.key)),
-    [catalogue]
-  );
+  const {
+    modules: assignableModules,
+    knownModuleKeys,
+    ceiling,
+  } = useDelegableModules();
 
   const [grant, setGrant] = React.useState<ModulePermissionMap>({});
 
@@ -165,14 +150,14 @@ export function EmployeeRoleFormModal({ open, onOpenChange, role }: EmployeeRole
               <div className="space-y-3">
                 <p className="text-xs text-muted-foreground">
                   <span className="font-medium text-foreground">{grantedMenuCount}</span> menus in
-                  this role. Only menus your subscription includes can be handed out.
+                  this role. You can only hand out menus you have access to yourself.
                 </p>
                 <ModulePermissionMatrix
                   modules={assignableModules}
                   value={liveGrant}
                   onChange={setGrant}
-                  ceiling={entitlement}
-                  emptyMessage="Your current plan does not include any assignable menus."
+                  ceiling={ceiling}
+                  emptyMessage={NO_DELEGABLE_MENUS}
                 />
               </div>
             </DialogBody>

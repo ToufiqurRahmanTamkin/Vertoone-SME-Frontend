@@ -11,15 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { usePermissions } from "@/hooks/use-permission";
-import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
+import {
+  NO_DELEGABLE_MENUS,
+  useDelegableModules,
+} from "@/hooks/use-delegable-modules";
 import { useCreateRoleMutation, useUpdateRoleMutation } from "@/redux/apis/roleApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
-import {
-  permissionFor,
-  prunePermissionMap,
-  type ModulePermissionMap,
-} from "@/types/domain/permission";
+import { prunePermissionMap, type ModulePermissionMap } from "@/types/domain/permission";
 import type { Role } from "@/types/domain/role";
 import { RoleSchema, type RoleFormValues } from "@/validations/role";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,29 +42,16 @@ const toFormValues = (role: Role): RoleFormValues => ({
 
 export function RoleFormModal({ open, onOpenChange, role }: RoleFormModalProps) {
   const isEdit = Boolean(role);
-  const { modules: entitlement } = usePermissions();
 
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
   const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
   const isSaving = isCreating || isUpdating;
 
-  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
-
-  const assignableModules = React.useMemo(
-    () =>
-      catalogue.filter(
-        (definition) =>
-          definition.scope === "COMPANY" &&
-          !definition.ownerOnly &&
-          permissionFor(entitlement, definition.key).canView
-      ),
-    [catalogue, entitlement]
-  );
-
-  const knownModuleKeys = React.useMemo(
-    () => new Set(catalogue.map((definition) => definition.key)),
-    [catalogue]
-  );
+  const {
+    modules: assignableModules,
+    knownModuleKeys,
+    ceiling,
+  } = useDelegableModules();
 
   const [grant, setGrant] = React.useState<ModulePermissionMap>({});
 
@@ -167,8 +152,8 @@ export function RoleFormModal({ open, onOpenChange, role }: RoleFormModalProps) 
                   modules={assignableModules}
                   value={liveGrant}
                   onChange={setGrant}
-                  ceiling={entitlement}
-                  emptyMessage="Your current plan does not include any assignable menus."
+                  ceiling={ceiling}
+                  emptyMessage={NO_DELEGABLE_MENUS}
                 />
               </div>
             </DialogBody>

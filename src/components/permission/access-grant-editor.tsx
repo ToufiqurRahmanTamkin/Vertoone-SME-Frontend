@@ -1,14 +1,12 @@
 import { ModulePermissionMatrix } from "@/components/permission/module-permission-matrix";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { usePermissions } from "@/hooks/use-permission";
-import { useGetModuleCatalogueQuery } from "@/redux/apis/permissionApis";
-import { useGetRoleOptionsQuery } from "@/redux/apis/roleApis";
 import {
-  permissionFor,
-  prunePermissionMap,
-  type ModulePermissionMap,
-} from "@/types/domain/permission";
+  NO_DELEGABLE_MENUS,
+  useDelegableModules,
+} from "@/hooks/use-delegable-modules";
+import { useGetRoleOptionsQuery } from "@/redux/apis/roleApis";
+import { prunePermissionMap, type ModulePermissionMap } from "@/types/domain/permission";
 import { Check } from "lucide-react";
 import * as React from "react";
 
@@ -33,25 +31,12 @@ export function AccessGrantEditor({
   permissionsHint = "Extra menus granted on top of the roles above.",
   disabled = false,
 }: AccessGrantEditorProps) {
-  const { modules: entitlement } = usePermissions();
-  const { data: catalogue = [] } = useGetModuleCatalogueQuery();
   const { data: roleOptions = [] } = useGetRoleOptionsQuery();
-
-  const assignableModules = React.useMemo(
-    () =>
-      catalogue.filter(
-        (definition) =>
-          definition.scope === "COMPANY" &&
-          !definition.ownerOnly &&
-          permissionFor(entitlement, definition.key).canView
-      ),
-    [catalogue, entitlement]
-  );
-
-  const knownModuleKeys = React.useMemo(
-    () => new Set(catalogue.map((definition) => definition.key)),
-    [catalogue]
-  );
+  const {
+    modules: assignableModules,
+    knownModuleKeys,
+    ceiling,
+  } = useDelegableModules();
 
   const livePermissions = React.useMemo(
     () => prunePermissionMap(permissions, knownModuleKeys),
@@ -118,9 +103,9 @@ export function AccessGrantEditor({
           modules={assignableModules}
           value={livePermissions}
           onChange={onPermissionsChange}
-          ceiling={entitlement}
+          ceiling={ceiling}
           disabled={disabled}
-          emptyMessage="Your current plan does not include any assignable menus."
+          emptyMessage={NO_DELEGABLE_MENUS}
         />
       </div>
     </div>

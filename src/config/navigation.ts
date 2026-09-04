@@ -3390,23 +3390,11 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 description: "Pay cycle, salary components and statutory defaults.",
               },
               {
-                title: "Approval Workflows",
-                slug: "approval-workflows",
-                icon: "Workflow",
-                description: "Who signs off what, in which order, for every request.",
-              },
-              {
                 title: "Employee Roles & Permissions",
                 slug: "employee-roles-and-permissions",
                 icon: "KeyRound",
                 description:
                   "Permission sets for your workforce, and the employees assigned to each.",
-              },
-              {
-                title: "Employee Fields",
-                slug: "employee-fields",
-                icon: "SlidersHorizontal",
-                description: "Extra fields the employee record captures.",
               },
               {
                 title: "Document Types",
@@ -3443,12 +3431,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 slug: "expense-and-travel",
                 icon: "Receipt",
                 description: "Claim limits, per-diem rates and what needs a receipt.",
-              },
-              {
-                title: "Asset Categories",
-                slug: "asset-categories",
-                icon: "Boxes",
-                description: "How assets are grouped, and the issue rules per group.",
               },
               {
                 title: "Recruitment",
