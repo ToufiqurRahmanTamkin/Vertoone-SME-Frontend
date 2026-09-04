@@ -12,15 +12,17 @@ import {
   type Goal,
 } from "@/types/domain/goal";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, TrendingUp, Trash2 } from "lucide-react";
+import { Pencil, Share2, TrendingUp, Trash2 } from "lucide-react";
 
 export interface GoalColumnActions {
   onOpen: (goal: Goal) => void;
   onEdit: (goal: Goal) => void;
   onCheckIn: (goal: Goal) => void;
+  onShare: (goal: Goal) => void;
   onDelete: (goal: Goal) => void;
   canEdit: boolean;
   canDelete: boolean;
+  canShare: boolean;
 }
 
 export function GoalRowActions({
@@ -44,6 +46,13 @@ export function GoalRowActions({
           icon: Pencil,
           disabled: !actions.canEdit,
           onSelect: () => actions.onEdit(goal),
+        },
+        {
+          key: "share",
+          label: "Share with someone",
+          icon: Share2,
+          disabled: !actions.canShare,
+          onSelect: () => actions.onShare(goal),
         },
         {
           key: "delete",

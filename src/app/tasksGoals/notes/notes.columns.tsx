@@ -9,15 +9,17 @@ import {
   type Note,
 } from "@/types/domain/note";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Pin, PinOff, Trash2 } from "lucide-react";
+import { Pencil, Pin, PinOff, Share2, Trash2 } from "lucide-react";
 
 export interface NoteColumnActions {
   onOpen: (note: Note) => void;
   onEdit: (note: Note) => void;
   onTogglePin: (note: Note) => void;
+  onShare: (note: Note) => void;
   onDelete: (note: Note) => void;
   canEdit: boolean;
   canDelete: boolean;
+  canShare: boolean;
 }
 
 export function NoteRowActions({
@@ -41,6 +43,13 @@ export function NoteRowActions({
           icon: Pencil,
           disabled: !actions.canEdit,
           onSelect: () => actions.onEdit(note),
+        },
+        {
+          key: "share",
+          label: "Share with someone",
+          icon: Share2,
+          disabled: !actions.canShare,
+          onSelect: () => actions.onShare(note),
         },
         {
           key: "delete",

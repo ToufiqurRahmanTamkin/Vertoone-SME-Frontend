@@ -1,5 +1,6 @@
 import { ActionButton } from "@/components/shared/action-button";
 import { PageHeader } from "@/components/shared/page-header";
+import { ShareResourceDialog } from "@/components/shared/share-resource-dialog";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
-import { useModulePermission } from "@/hooks/use-permission";
+import { useBoardAccess } from "@/hooks/use-board-access";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import {
   useDeleteTaskBoardMutation,
@@ -26,7 +27,7 @@ import {
   type TaskAssigneeKind,
   type TaskPriority,
 } from "@/types/domain/task";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Share2, Trash2 } from "lucide-react";
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -38,8 +39,10 @@ import { TaskFormModal } from "./components/TaskFormModal";
 export default function TaskBoardPage() {
   const { id = "" } = useParams();
   const { filters, setFilter, clearFilters } = useQueryFilters();
-  const access = useModulePermission("/company/tasks-and-goals/tasks");
+  const access = useBoardAccess(id);
   const navigate = useNavigate();
+
+  const [shareOpen, setShareOpen] = React.useState(false);
 
   const { data: boardDetail } = useGetTaskBoardQuery(id, { skip: !id });
 
@@ -204,7 +207,7 @@ export default function TaskBoardPage() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {access.canEdit && (
+            {access.canManageBoard && (
               <Button
                 type="button"
                 variant="outline"
@@ -217,7 +220,20 @@ export default function TaskBoardPage() {
                 <Pencil className="size-4" />
               </Button>
             )}
-            {access.canDelete && (
+            {access.canShare && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Share board"
+                title="Share board"
+                className="size-9 cursor-pointer"
+                onClick={() => setShareOpen(true)}
+              >
+                <Share2 className="size-4" />
+              </Button>
+            )}
+            {access.canDeleteBoard && (
               <Button
                 type="button"
                 variant="outline"
@@ -230,7 +246,7 @@ export default function TaskBoardPage() {
                 <Trash2 className="size-4" />
               </Button>
             )}
-            {access.canCreate && (
+            {access.canCreateCards && (
               <ActionButton
                 icon={Plus}
                 label="Add card"
@@ -270,6 +286,10 @@ export default function TaskBoardPage() {
           <Badge variant="outline">{boardDetail.owner.name}</Badge>
         )}
         {board.isArchived && <StatusBadge color="zinc" label="Archived" />}
+        {access.viaShare && <StatusBadge color="violet" label="Shared with you" />}
+        {access.seesOwnCardsOnly && (
+          <StatusBadge color="amber" label="Only cards assigned to you" />
+        )}
       </div>
 
       <StatGrid className="sm:grid-cols-4">
@@ -308,8 +328,8 @@ export default function TaskBoardPage() {
 
       <TaskBoardCanvas
         view={view}
-        canCreate={access.canCreate}
-        canEdit={access.canEdit}
+        canCreate={access.canCreateCards}
+        canEdit={access.canMoveCards}
         onOpenTask={(task) => {
           setDetailTask(task);
           setDetailOpen(true);
@@ -341,14 +361,22 @@ export default function TaskBoardPage() {
         task={detailTask}
         open={detailOpen}
         onOpenChange={setDetailOpen}
-        canEdit={access.canEdit}
-        canCreate={access.canCreate}
-        canDelete={access.canDelete}
+        canEdit={access.canEditCards}
+        canCreate={access.canComment}
+        canDelete={access.canDeleteCards}
         onEditTask={(task) => {
           setEditingTask(task);
           setTaskListId(task.listId);
           setTaskFormOpen(true);
         }}
+      />
+
+      <ShareResourceDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        resourceType="TASK_BOARD"
+        resourceId={id}
+        resourceTitle={board.name}
       />
 
       <ConfirmDialog

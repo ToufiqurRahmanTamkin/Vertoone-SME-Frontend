@@ -42,6 +42,8 @@ export interface EffectivePermissions {
   role: string;
   companyId: string | null;
   modules: ModulePermissionMap;
+  /** Modules reachable only because a goal, note or board was shared with this user. */
+  sharedResourceModules?: string[];
 }
 
 export const ACTION_LABELS: Record<ModuleAction, string> = {
@@ -85,6 +87,24 @@ export const withGrantedModules = (
   const next = { ...map };
   missing.forEach((key) => {
     next[key] = { ...fullPermission(), limit: map[key]?.limit ?? null };
+  });
+  return next;
+};
+
+/**
+ * Adds view-only entries for modules a user can only reach because a record inside
+ * them was shared. Used to decide what the menu shows, never what an API allows.
+ */
+export const withViewOnlyModules = (
+  map: ModulePermissionMap,
+  keys: readonly string[]
+): ModulePermissionMap => {
+  const missing = keys.filter((key) => !map[key]?.canView);
+  if (missing.length === 0) return map;
+
+  const next = { ...map };
+  missing.forEach((key) => {
+    next[key] = { ...emptyPermission(), canView: true, limit: map[key]?.limit ?? null };
   });
   return next;
 };

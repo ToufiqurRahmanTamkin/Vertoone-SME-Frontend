@@ -3,12 +3,9 @@ import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  TASK_BOARD_VISIBILITY_LABELS,
-  type TaskBoardWithStats,
-} from "@/types/domain/task";
+import { TASK_BOARD_VISIBILITY_LABELS, type TaskBoardWithStats } from "@/types/domain/task";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Share2, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const boardProgress = (board: TaskBoardWithStats): number =>
@@ -16,9 +13,11 @@ export const boardProgress = (board: TaskBoardWithStats): number =>
 
 export interface BoardColumnActions {
   onEdit: (board: TaskBoardWithStats) => void;
+  onShare: (board: TaskBoardWithStats) => void;
   onDelete: (board: TaskBoardWithStats) => void;
   canEdit: boolean;
   canDelete: boolean;
+  canShare: boolean;
 }
 
 export function BoardRowActions({
@@ -37,6 +36,13 @@ export function BoardRowActions({
           onSelect: () => actions.onEdit(board),
         },
         {
+          key: "share",
+          label: "Share with someone",
+          icon: Share2,
+          disabled: !actions.canShare,
+          onSelect: () => actions.onShare(board),
+        },
+        {
           key: "delete",
           label: "Delete",
           icon: Trash2,
@@ -50,15 +56,13 @@ export function BoardRowActions({
   );
 }
 
-export const boardColumns = (
-  rowActions: BoardColumnActions
-): ColumnDef<TaskBoardWithStats>[] => [
+export const boardColumns = (rowActions: BoardColumnActions): ColumnDef<TaskBoardWithStats>[] => [
   {
     accessorKey: "name",
     header: "Board",
     cell: ({ row }) => (
       <div className="min-w-0">
-        <Link to={`/tasks-goals/tasks/${row.original._id}`} className="hover:underline">
+        <Link to={`/company/tasks-and-goals/tasks/${row.original._id}`} className="hover:underline">
           <ColorChip color={row.original.color} label={row.original.name} />
         </Link>
         <p className="mt-1 max-w-xs truncate text-xs text-muted-foreground">

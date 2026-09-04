@@ -26,7 +26,7 @@ const readStoredModule = (): string | null => {
 };
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const { modules, role } = usePermissions();
+  const { menuModules, role } = usePermissions();
   const { pathname } = useLocation();
   const home = useHomeRoute();
 
@@ -45,8 +45,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   }
 
   const blocks = React.useMemo(
-    () => getSidebarBlocks(role, modules, activeModule),
-    [role, modules, activeModule]
+    () => getSidebarBlocks(role, menuModules, activeModule),
+    [role, menuModules, activeModule]
   );
 
   const selectModule = React.useCallback((id: string) => {

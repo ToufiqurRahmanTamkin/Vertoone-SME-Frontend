@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 
 export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
-  const { modules, role, isLoading } = usePermissions();
+  const { modules, sharedResourceModules, role, isLoading } = usePermissions();
 
   const moduleKey = React.useMemo(() => {
     const segments = pathname.replace(/^\/+/, "").split("/").filter(Boolean);
@@ -29,7 +29,9 @@ export function ModuleRouteGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!canDo(modules, moduleKey, "canView")) {
+  // Someone with a goal, note or board shared with them can open that page even
+  // when the module itself was never granted to them.
+  if (!canDo(modules, moduleKey, "canView") && !sharedResourceModules.includes(moduleKey)) {
     return <PermissionDeniedError />;
   }
 

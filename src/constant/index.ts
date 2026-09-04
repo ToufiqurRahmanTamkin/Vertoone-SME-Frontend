@@ -320,6 +320,11 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   COMMUNITY_JOIN_REQUESTED: "Group join request",
   COMMUNITY_JOIN_APPROVED: "Group request approved",
   COMMUNITY_JOIN_DECLINED: "Group request declined",
+  RESOURCE_SHARED: "Shared with you",
+  RESOURCE_SHARE_ACCEPTED: "Invitation accepted",
+  RESOURCE_SHARE_DECLINED: "Invitation declined",
+  RESOURCE_SHARE_UPDATED: "Access changed",
+  RESOURCE_SHARE_REVOKED: "Access withdrawn",
   SYSTEM: "System",
 };
 

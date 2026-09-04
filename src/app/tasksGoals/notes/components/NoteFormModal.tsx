@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 
+import { useModulePermission } from "@/hooks/use-permission";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import { useCreateNoteMutation, useUpdateNoteMutation } from "@/redux/apis/noteApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
@@ -66,9 +67,16 @@ const emptyValues = (): NoteFormValues => ({
 export function NoteFormModal({ open, onOpenChange, note }: NoteFormModalProps) {
   const isEdit = Boolean(note);
 
-  const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
-  const { data: tagOptions = [] } = useGetTagOptionsQuery();
-  const { data: boardOptions = [] } = useGetTaskBoardOptionsQuery();
+  // A share holder has no company-wide read on these lists, so do not even ask.
+  const ownsModule = useModulePermission("/company/tasks-and-goals/notes").canView;
+
+  const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery(undefined, {
+    skip: !ownsModule,
+  });
+  const { data: tagOptions = [] } = useGetTagOptionsQuery(undefined, { skip: !ownsModule });
+  const { data: boardOptions = [] } = useGetTaskBoardOptionsQuery(undefined, {
+    skip: !ownsModule,
+  });
 
   const [createNote, { isLoading: isCreating }] = useCreateNoteMutation();
   const [updateNote, { isLoading: isUpdating }] = useUpdateNoteMutation();

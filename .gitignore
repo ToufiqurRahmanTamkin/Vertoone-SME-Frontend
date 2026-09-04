@@ -48,4 +48,6 @@ next-env.d.ts
 .dev.vars*
 !.dev.vars.example
 !.env.example
-*local*
+# Local-only env overrides. Narrower than "*local*", which also swallowed src/constant/locale.ts.
+*.local
+.env.*local

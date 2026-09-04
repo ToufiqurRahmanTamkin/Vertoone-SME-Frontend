@@ -1,9 +1,13 @@
 import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
 import { PageHeader } from "@/components/shared/page-header";
+import { ShareInvitations } from "@/components/shared/share-invitations";
+import { ShareResourceDialog } from "@/components/shared/share-resource-dialog";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TagList } from "@/components/shared/tag-list";
+import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-toolbar";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
@@ -18,6 +22,7 @@ import {
   useGetNotesQuery,
   useUpdateNoteMutation,
 } from "@/redux/apis/noteApis";
+import { useGetShareSummaryQuery } from "@/redux/apis/resourceShareApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
 import { useGetTaskBoardOptionsQuery } from "@/redux/apis/taskApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
@@ -34,36 +39,51 @@ import { toast } from "sonner";
 import { AiNoteModal } from "./components/AiNoteModal";
 import { NoteDetailSheet } from "./components/NoteDetailSheet";
 import { NoteFormModal } from "./components/NoteFormModal";
+import { SharedNotesList } from "./components/SharedNotesList";
 import { NoteRowActions, noteColumns } from "./notes.columns";
 
 export default function NotesPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/company/tasks-and-goals/notes");
 
-  const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
-  const { data: tagOptions = [] } = useGetTagOptionsQuery();
-  const { data: boardOptions = [] } = useGetTaskBoardOptionsQuery();
+  // Someone who only got here through a share cannot call the company-wide endpoints.
+  const ownsModule = access.canView;
+  const tab = ownsModule ? ((filters.tab as string) ?? "all") : "shared";
 
-  const { data, isLoading, isFetching } = useGetNotesQuery({
-    page: filters.page,
-    limit: filters.limit,
-    search: filters.search,
-    visibility: filters.visibility as NoteVisibility | undefined,
-    ownerId: filters.ownerId as string | undefined,
-    boardId: filters.boardId as string | undefined,
-    tagIds: filters.tagIds as string | undefined,
-    isPinned: filters.isPinned === undefined ? undefined : filters.isPinned === "true",
-    isArchived: filters.isArchived === "true" ? true : undefined,
-    hasReminder: filters.hasReminder === undefined ? undefined : filters.hasReminder === "true",
+  const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery(undefined, {
+    skip: !ownsModule,
+  });
+  const { data: tagOptions = [] } = useGetTagOptionsQuery(undefined, { skip: !ownsModule });
+  const { data: boardOptions = [] } = useGetTaskBoardOptionsQuery(undefined, {
+    skip: !ownsModule,
   });
 
-  const { data: summary } = useGetNoteSummaryQuery();
+  const { data, isLoading, isFetching } = useGetNotesQuery(
+    {
+      page: filters.page,
+      limit: filters.limit,
+      search: filters.search,
+      visibility: filters.visibility as NoteVisibility | undefined,
+      ownerId: filters.ownerId as string | undefined,
+      boardId: filters.boardId as string | undefined,
+      tagIds: filters.tagIds as string | undefined,
+      isPinned: filters.isPinned === undefined ? undefined : filters.isPinned === "true",
+      isArchived: filters.isArchived === "true" ? true : undefined,
+      hasReminder: filters.hasReminder === undefined ? undefined : filters.hasReminder === "true",
+    },
+    { skip: !ownsModule }
+  );
+
+  const { data: summary } = useGetNoteSummaryQuery(undefined, { skip: !ownsModule });
+  const { data: shareSummary } = useGetShareSummaryQuery();
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Note | null>(null);
   const [reading, setReading] = React.useState<Note | null>(null);
   const [detailOpen, setDetailOpen] = React.useState(false);
   const [pendingDelete, setPendingDelete] = React.useState<Note | null>(null);
+  const [sharing, setSharing] = React.useState<Note | null>(null);
+  const [shareOpen, setShareOpen] = React.useState(false);
   const [deleteNote, { isLoading: isDeleting }] = useDeleteNoteMutation();
   const [updateNote] = useUpdateNoteMutation();
 
@@ -145,6 +165,11 @@ export default function NotesPage() {
     setDetailOpen(true);
   }, []);
 
+  const openShare = React.useCallback((note: Note) => {
+    setSharing(note);
+    setShareOpen(true);
+  }, []);
+
   const togglePin = React.useCallback(
     async (note: Note) => {
       try {
@@ -170,7 +195,7 @@ export default function NotesPage() {
     }
   };
 
-  const { data: ai } = useGetAiAllowanceQuery();
+  const { data: ai } = useGetAiAllowanceQuery(undefined, { skip: !ownsModule });
   const [aiOpen, setAiOpen] = React.useState(false);
 
   const rowActions = React.useMemo(
@@ -178,11 +203,13 @@ export default function NotesPage() {
       onOpen: openDetail,
       onEdit: openEdit,
       onTogglePin: (note: Note) => void togglePin(note),
+      onShare: openShare,
       onDelete: setPendingDelete,
       canEdit: access.canEdit,
       canDelete: access.canDelete,
+      canShare: access.canEdit,
     }),
-    [openDetail, openEdit, togglePin, access.canEdit, access.canDelete]
+    [openDetail, openEdit, togglePin, openShare, access.canEdit, access.canDelete]
   );
 
   const columns = React.useMemo(() => noteColumns(rowActions), [rowActions]);
@@ -200,144 +227,175 @@ export default function NotesPage() {
         description="What was said, decided and promised — kept next to the work it belongs to."
       />
 
-      <StatGrid className="sm:grid-cols-4">
-        <Stat>
-          <StatLabel>Notes</StatLabel>
-          <StatValue>{used}</StatValue>
-          <StatDescription>
-            {limit === null ? "Unlimited on your plan" : `${used} of ${limit} allowed by your plan`}
-          </StatDescription>
-        </Stat>
-        <Stat>
-          <StatLabel>Pinned</StatLabel>
-          <StatValue>{summary?.pinnedCount ?? 0}</StatValue>
-          <StatDescription>Held at the top of the list</StatDescription>
-        </Stat>
-        <Stat>
-          <StatLabel>Reminders due</StatLabel>
-          <StatValue>{summary?.reminderDueCount ?? 0}</StatValue>
-          <StatDescription>Past the time you asked to be nudged</StatDescription>
-        </Stat>
-        <Stat>
-          <StatLabel>Active</StatLabel>
-          <StatValue>{summary?.activeCount ?? 0}</StatValue>
-          <StatDescription>{summary?.archivedCount ?? 0} archived</StatDescription>
-        </Stat>
-      </StatGrid>
+      <ShareInvitations resourceType="NOTE" />
 
-      <DataTableToolbar
-        searchValue={filters.search}
-        onSearchChange={(value) => setFilter("search", value)}
-        searchPlaceholder="Search notes..."
-        filters={toolbarFilters}
-        currentFilters={filters}
-        onFilterChange={setFilter}
-        onClear={clearFilters}
-        isLoading={isFetching}
-        actions={
-          access.canCreate && (
-            <>
-              {ai?.isConfigured && (
-                <ActionButton
-                  icon={Bot}
-                  label="Write with AI"
-                  variant="outline"
-                  disabled={isLimitReached}
-                  onClick={() => setAiOpen(true)}
-                />
+      <Tabs value={tab} onValueChange={(next) => setFilter("tab", next)} className="gap-4">
+        <TabsList>
+          {ownsModule && <TabsTrigger value="all">All notes</TabsTrigger>}
+          <TabsTrigger value="shared" className="gap-1.5">
+            Shared with me
+            {(shareSummary?.noteCount ?? 0) > 0 && (
+              <Badge variant="secondary" className="text-[10px] tabular-nums">
+                {shareSummary?.noteCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {ownsModule && (
+          <TabsContent value="all" className="space-y-4">
+            <StatGrid className="sm:grid-cols-4">
+              <Stat>
+                <StatLabel>Notes</StatLabel>
+                <StatValue>{used}</StatValue>
+                <StatDescription>
+                  {limit === null
+                    ? "Unlimited on your plan"
+                    : `${used} of ${limit} allowed by your plan`}
+                </StatDescription>
+              </Stat>
+              <Stat>
+                <StatLabel>Pinned</StatLabel>
+                <StatValue>{summary?.pinnedCount ?? 0}</StatValue>
+                <StatDescription>Held at the top of the list</StatDescription>
+              </Stat>
+              <Stat>
+                <StatLabel>Reminders due</StatLabel>
+                <StatValue>{summary?.reminderDueCount ?? 0}</StatValue>
+                <StatDescription>Past the time you asked to be nudged</StatDescription>
+              </Stat>
+              <Stat>
+                <StatLabel>Active</StatLabel>
+                <StatValue>{summary?.activeCount ?? 0}</StatValue>
+                <StatDescription>{summary?.archivedCount ?? 0} archived</StatDescription>
+              </Stat>
+            </StatGrid>
+
+            <DataTableToolbar
+              searchValue={filters.search}
+              onSearchChange={(value) => setFilter("search", value)}
+              searchPlaceholder="Search notes..."
+              filters={toolbarFilters}
+              currentFilters={filters}
+              onFilterChange={setFilter}
+              onClear={clearFilters}
+              isLoading={isFetching}
+              actions={
+                access.canCreate && (
+                  <>
+                    {ai?.isConfigured && (
+                      <ActionButton
+                        icon={Bot}
+                        label="Write with AI"
+                        variant="outline"
+                        disabled={isLimitReached}
+                        onClick={() => setAiOpen(true)}
+                      />
+                    )}
+                    <ActionButton
+                      icon={Plus}
+                      label="New note"
+                      onClick={openCreate}
+                      disabled={isLimitReached}
+                      title={
+                        isLimitReached
+                          ? `Your plan allows ${limit} notes. Delete one or upgrade to add more.`
+                          : undefined
+                      }
+                    />
+                  </>
+                )
+              }
+            />
+
+            {isLimitReached && (
+              <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
+                You have used all {limit} notes your plan allows. Delete one or upgrade your
+                subscription to add more.
+              </p>
+            )}
+
+            <DataTable
+              columns={columns}
+              data={notes}
+              isLoading={isLoading}
+              pagination={
+                meta
+                  ? {
+                      page: meta.page,
+                      limit: meta.limit,
+                      total: meta.total,
+                      pages: meta.totalPages,
+                    }
+                  : undefined
+              }
+              onPageChange={(page) => setFilter("page", page)}
+              onLimitChange={(nextLimit) => setFilter("limit", nextLimit)}
+              getRowId={(row) => row._id}
+              mobileCard={(note) => (
+                <div className="rounded-xl border bg-card p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <button
+                      type="button"
+                      className="min-w-0 cursor-pointer text-left"
+                      onClick={() => openDetail(note)}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        {note.isPinned && (
+                          <Pin className="size-3 shrink-0 text-amber-500" aria-hidden />
+                        )}
+                        <ColorChip color={note.color} label={note.title} />
+                      </span>
+                      <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
+                        {note.excerpt || "Empty note"}
+                      </p>
+                    </button>
+                    <StatusBadge
+                      color={NOTE_VISIBILITY_COLORS[note.visibility]}
+                      label={NOTE_VISIBILITY_SHORT_LABELS[note.visibility]}
+                    />
+                  </div>
+
+                  <dl className="mt-3 grid gap-1 text-xs">
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-muted-foreground">Owner</dt>
+                      <dd className="truncate font-medium">{note.owner?.name ?? "Unassigned"}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-muted-foreground">Board</dt>
+                      <dd className="truncate font-medium">{note.board?.name ?? "—"}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-muted-foreground">Reminder</dt>
+                      <dd className="truncate font-medium">
+                        {note.reminderAt ? formatDateTime(note.reminderAt) : "None"}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-muted-foreground">Last edited</dt>
+                      <dd className="truncate font-medium">{formatDateTime(note.updatedAt)}</dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <TagList tags={note.tags} emptyLabel="" />
+                    {note.isReminderDue && <StatusBadge color="red" label="Reminder due" />}
+                    {note.isArchived && <StatusBadge color="zinc" label="Archived" />}
+                  </div>
+
+                  <div className="mt-3 border-t pt-3">
+                    <NoteRowActions note={note} {...rowActions} />
+                  </div>
+                </div>
               )}
-              <ActionButton
-                icon={Plus}
-                label="New note"
-                onClick={openCreate}
-                disabled={isLimitReached}
-                title={
-                  isLimitReached
-                    ? `Your plan allows ${limit} notes. Delete one or upgrade to add more.`
-                    : undefined
-                }
-              />
-            </>
-          )
-        }
-      />
-
-      {isLimitReached && (
-        <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-          You have used all {limit} notes your plan allows. Delete one or upgrade your subscription
-          to add more.
-        </p>
-      )}
-
-      <DataTable
-        columns={columns}
-        data={notes}
-        isLoading={isLoading}
-        pagination={
-          meta
-            ? { page: meta.page, limit: meta.limit, total: meta.total, pages: meta.totalPages }
-            : undefined
-        }
-        onPageChange={(page) => setFilter("page", page)}
-        onLimitChange={(nextLimit) => setFilter("limit", nextLimit)}
-        getRowId={(row) => row._id}
-        mobileCard={(note) => (
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <button
-                type="button"
-                className="min-w-0 cursor-pointer text-left"
-                onClick={() => openDetail(note)}
-              >
-                <span className="flex items-center gap-1.5">
-                  {note.isPinned && (
-                    <Pin className="size-3 shrink-0 text-amber-500" aria-hidden />
-                  )}
-                  <ColorChip color={note.color} label={note.title} />
-                </span>
-                <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
-                  {note.excerpt || "Empty note"}
-                </p>
-              </button>
-              <StatusBadge
-                color={NOTE_VISIBILITY_COLORS[note.visibility]}
-                label={NOTE_VISIBILITY_SHORT_LABELS[note.visibility]}
-              />
-            </div>
-
-            <dl className="mt-3 grid gap-1 text-xs">
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Owner</dt>
-                <dd className="truncate font-medium">{note.owner?.name ?? "Unassigned"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Board</dt>
-                <dd className="truncate font-medium">{note.board?.name ?? "—"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Reminder</dt>
-                <dd className="truncate font-medium">
-                  {note.reminderAt ? formatDateTime(note.reminderAt) : "None"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Last edited</dt>
-                <dd className="truncate font-medium">{formatDateTime(note.updatedAt)}</dd>
-              </div>
-            </dl>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <TagList tags={note.tags} emptyLabel="" />
-              {note.isReminderDue && <StatusBadge color="red" label="Reminder due" />}
-              {note.isArchived && <StatusBadge color="zinc" label="Archived" />}
-            </div>
-
-            <div className="mt-3 border-t pt-3">
-              <NoteRowActions note={note} {...rowActions} />
-            </div>
-          </div>
+            />
+          </TabsContent>
         )}
-      />
+
+        <TabsContent value="shared">
+          <SharedNotesList onOpen={openDetail} onEdit={openEdit} />
+        </TabsContent>
+      </Tabs>
 
       <NoteFormModal open={formOpen} onOpenChange={setFormOpen} note={editing} />
 
@@ -354,6 +412,14 @@ export default function NotesPage() {
       />
 
       <AiNoteModal open={aiOpen} onOpenChange={setAiOpen} />
+
+      <ShareResourceDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        resourceType="NOTE"
+        resourceId={sharing?._id ?? null}
+        resourceTitle={sharing?.title ?? ""}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 
+import { useModulePermission } from "@/hooks/use-permission";
 import { useGetDepartmentOptionsQuery } from "@/redux/apis/departmentApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import {
@@ -132,10 +133,19 @@ const emptyValues = (): GoalFormValues => ({
 export function GoalFormModal({ open, onOpenChange, goal, onCreated }: GoalFormModalProps) {
   const isEdit = Boolean(goal);
 
-  const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
-  const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery();
-  const { data: boardOptions = [] } = useGetTaskBoardOptionsQuery();
-  const { data: tagOptions = [] } = useGetTagOptionsQuery();
+  // A share holder has no company-wide read on these lists, so do not even ask.
+  const ownsModule = useModulePermission("/company/tasks-and-goals/goals").canView;
+
+  const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery(undefined, {
+    skip: !ownsModule,
+  });
+  const { data: departmentOptions = [] } = useGetDepartmentOptionsQuery(undefined, {
+    skip: !ownsModule,
+  });
+  const { data: boardOptions = [] } = useGetTaskBoardOptionsQuery(undefined, {
+    skip: !ownsModule,
+  });
+  const { data: tagOptions = [] } = useGetTagOptionsQuery(undefined, { skip: !ownsModule });
   const { data: goalOptions = [] } = useGetGoalOptionsQuery(
     goal ? { excludeId: goal._id } : undefined
   );

@@ -5,7 +5,7 @@ import { useHomeRoute } from "@/hooks/use-home-route";
 import { Navigate } from "react-router-dom";
 
 export function WorkspaceRedirect({ workspaceId }: { workspaceId: string }) {
-  const { modules, role, isLoading } = usePermissions();
+  const { menuModules, role, isLoading } = usePermissions();
   const home = useHomeRoute();
 
   if (isLoading) {
@@ -16,7 +16,7 @@ export function WorkspaceRedirect({ workspaceId }: { workspaceId: string }) {
     );
   }
 
-  const target = getWorkspaceOptions(role, modules).find((option) => option.id === workspaceId);
+  const target = getWorkspaceOptions(role, menuModules).find((option) => option.id === workspaceId);
 
   if (target) {
     return <Navigate to={target.landingPath} replace />;

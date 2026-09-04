@@ -15,6 +15,8 @@ export const usePermissions = (): PermissionContextValue =>
 export interface ModuleAccess extends ModulePermission {
   moduleKey: string;
   isLoading: boolean;
+  /** True when the page is only reachable because something was shared with this user. */
+  viaShareOnly: boolean;
   remaining: (used: number) => number | null;
   isLimitReached: (used: number) => boolean;
 }
@@ -23,7 +25,7 @@ const toModuleKey = (pathOrKey: string): string =>
   pathOrKey.startsWith("/") ? moduleKeyFromPath(pathOrKey) : pathOrKey;
 
 export const useModulePermission = (pathOrKey: string): ModuleAccess => {
-  const { modules, isLoading } = usePermissions();
+  const { modules, sharedResourceModules, isLoading } = usePermissions();
 
   return React.useMemo(() => {
     const moduleKey = toModuleKey(pathOrKey);
@@ -36,10 +38,11 @@ export const useModulePermission = (pathOrKey: string): ModuleAccess => {
       ...permission,
       moduleKey,
       isLoading,
+      viaShareOnly: !permission.canView && sharedResourceModules.includes(moduleKey),
       remaining,
       isLimitReached: (used: number) => permission.limit !== null && used >= permission.limit,
     };
-  }, [modules, isLoading, pathOrKey]);
+  }, [modules, sharedResourceModules, isLoading, pathOrKey]);
 };
 
 export const useCurrentModulePermission = (): ModuleAccess => {

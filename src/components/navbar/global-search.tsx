@@ -23,7 +23,7 @@ export function GlobalSearch() {
   const user = useSelector(selectCurrentUser);
   const [open, setOpen] = React.useState(false);
 
-  const { modules } = usePermissions();
+  const { menuModules } = usePermissions();
 
   const isMac = React.useMemo(
     () => typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.userAgent),
@@ -31,8 +31,8 @@ export function GlobalSearch() {
   );
 
   const entries = React.useMemo(
-    () => getSearchableMenuItems(user?.role ?? "", modules),
-    [user?.role, modules]
+    () => getSearchableMenuItems(user?.role ?? "", menuModules),
+    [user?.role, menuModules]
   );
 
   React.useEffect(() => {
