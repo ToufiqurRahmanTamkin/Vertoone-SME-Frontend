@@ -1,16 +1,25 @@
 import type { Pagination } from "@/types";
 import type {
   CommunityCandidate,
+  CommunityChatSummary,
+  CommunityConversation,
+  CommunityConversationListQuery,
   CommunityGroup,
   CommunityGroupListQuery,
   CommunityGroupOption,
   CommunityGroupPayload,
   CommunityGroupSummary,
+  CommunityJoinRequest,
+  CommunityJoinRequestListQuery,
+  CommunityJoinRequestPayload,
+  CommunityJoinRequestSummary,
   CommunityMember,
   CommunityMemberListQuery,
   CommunityMemberOption,
   CommunityMemberPayload,
   CommunityMemberSummary,
+  CommunityMessage,
+  CommunityMessageListQuery,
   CommunityOverview,
   CommunityPost,
   CommunityPostListQuery,
@@ -20,6 +29,7 @@ import type {
   CommunitySettings,
   CommunitySettingsPayload,
   EnrolCommunityMembersPayload,
+  SendCommunityMessagePayload,
 } from "@/types/domain/community";
 import { baseApi } from "../baseApi";
 import { buildQuery } from "./queryString";
@@ -43,6 +53,21 @@ const GROUP_TAGS = [
   "CommunityGroupOptions",
   "CommunityMembers",
   "CommunityOverview",
+  "CommunityConversations",
+  "CommunityChatSummary",
+] as const;
+
+const JOIN_REQUEST_TAGS = [
+  "CommunityJoinRequests",
+  "CommunityJoinRequestSummary",
+  "CommunityGroups",
+  "CommunityGroupSummary",
+] as const;
+
+const CHAT_TAGS = [
+  "CommunityConversations",
+  "CommunityConversation",
+  "CommunityChatSummary",
 ] as const;
 
 const POST_TAGS = ["CommunityPosts", "CommunityPostSummary", "CommunityOverview"] as const;
@@ -146,6 +171,137 @@ const communityApi = baseApi.injectEndpoints({
       invalidatesTags: [...GROUP_TAGS, "CommunityPosts"],
     }),
 
+    getCommunityJoinRequests: builder.query<
+      ListResult<CommunityJoinRequest>,
+      CommunityJoinRequestListQuery | void
+    >({
+      query: (params) => ({
+        url: `/community/join-requests${buildQuery({ ...(params ?? {}) })}`,
+        method: "GET",
+      }),
+      providesTags: ["CommunityJoinRequests"],
+    }),
+    getCommunityJoinRequestSummary: builder.query<CommunityJoinRequestSummary, void>({
+      query: () => ({ url: "/community/join-requests/summary", method: "GET" }),
+      providesTags: ["CommunityJoinRequestSummary"],
+    }),
+    requestToJoinCommunityGroup: builder.mutation<
+      CommunityJoinRequest,
+      CommunityJoinRequestPayload
+    >({
+      query: (body) => ({ url: "/community/join-requests", method: "POST", body }),
+      invalidatesTags: [...JOIN_REQUEST_TAGS],
+    }),
+    approveCommunityJoinRequest: builder.mutation<
+      CommunityJoinRequest,
+      { id: string; decisionNote?: string }
+    >({
+      query: ({ id, decisionNote }) => ({
+        url: `/community/join-requests/${id}/approve`,
+        method: "POST",
+        body: { decisionNote },
+      }),
+      invalidatesTags: [...JOIN_REQUEST_TAGS, "CommunityMembers", "CommunityConversations"],
+    }),
+    declineCommunityJoinRequest: builder.mutation<
+      CommunityJoinRequest,
+      { id: string; decisionNote?: string }
+    >({
+      query: ({ id, decisionNote }) => ({
+        url: `/community/join-requests/${id}/decline`,
+        method: "POST",
+        body: { decisionNote },
+      }),
+      invalidatesTags: [...JOIN_REQUEST_TAGS],
+    }),
+    cancelCommunityJoinRequest: builder.mutation<null, string>({
+      query: (id) => ({ url: `/community/join-requests/${id}`, method: "DELETE" }),
+      invalidatesTags: [...JOIN_REQUEST_TAGS],
+    }),
+
+    getCommunityConversations: builder.query<
+      ListResult<CommunityConversation>,
+      CommunityConversationListQuery | void
+    >({
+      query: (params) => ({
+        url: `/community/chats/conversations${buildQuery({ ...(params ?? {}) })}`,
+        method: "GET",
+      }),
+      providesTags: ["CommunityConversations"],
+    }),
+    getCommunityChatSummary: builder.query<CommunityChatSummary, void>({
+      query: () => ({ url: "/community/chats/summary", method: "GET" }),
+      providesTags: ["CommunityChatSummary"],
+    }),
+    getCommunityConversation: builder.query<CommunityConversation, string>({
+      query: (id) => ({ url: `/community/chats/conversations/${id}`, method: "GET" }),
+      providesTags: ["CommunityConversation"],
+    }),
+    getCommunityGroupConversation: builder.query<CommunityConversation, string>({
+      query: (groupId) => ({
+        url: `/community/chats/conversations/group/${groupId}`,
+        method: "GET",
+      }),
+      providesTags: ["CommunityConversation"],
+    }),
+    startCommunityDirectChat: builder.mutation<CommunityConversation, string>({
+      query: (memberId) => ({
+        url: "/community/chats/conversations/direct",
+        method: "POST",
+        body: { memberId },
+      }),
+      invalidatesTags: [...CHAT_TAGS],
+    }),
+    getCommunityMessages: builder.query<
+      ListResult<CommunityMessage>,
+      { conversationId: string } & CommunityMessageListQuery
+    >({
+      query: ({ conversationId, ...params }) => ({
+        url: `/community/chats/conversations/${conversationId}/messages${buildQuery({ ...params })}`,
+        method: "GET",
+      }),
+      providesTags: ["CommunityMessages"],
+    }),
+    sendCommunityMessage: builder.mutation<
+      CommunityMessage,
+      { conversationId: string; body: SendCommunityMessagePayload }
+    >({
+      query: ({ conversationId, body }) => ({
+        url: `/community/chats/conversations/${conversationId}/messages`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["CommunityMessages", ...CHAT_TAGS],
+    }),
+    editCommunityMessage: builder.mutation<
+      CommunityMessage,
+      { conversationId: string; messageId: string; body: string }
+    >({
+      query: ({ conversationId, messageId, body }) => ({
+        url: `/community/chats/conversations/${conversationId}/messages/${messageId}`,
+        method: "PATCH",
+        body: { body },
+      }),
+      invalidatesTags: ["CommunityMessages", ...CHAT_TAGS],
+    }),
+    deleteCommunityMessage: builder.mutation<
+      null,
+      { conversationId: string; messageId: string }
+    >({
+      query: ({ conversationId, messageId }) => ({
+        url: `/community/chats/conversations/${conversationId}/messages/${messageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["CommunityMessages", ...CHAT_TAGS],
+    }),
+    markCommunityConversationRead: builder.mutation<CommunityConversation, string>({
+      query: (conversationId) => ({
+        url: `/community/chats/conversations/${conversationId}/read`,
+        method: "POST",
+      }),
+      invalidatesTags: [...CHAT_TAGS],
+    }),
+
     getCommunityPosts: builder.query<ListResult<CommunityPost>, CommunityPostListQuery | void>({
       query: (params) => ({
         url: `/community/posts${buildQuery({ ...(params ?? {}) })}`,
@@ -220,6 +376,22 @@ export const {
   useJoinCommunityGroupMutation,
   useLeaveCommunityGroupMutation,
   useDeleteCommunityGroupMutation,
+  useGetCommunityJoinRequestsQuery,
+  useGetCommunityJoinRequestSummaryQuery,
+  useRequestToJoinCommunityGroupMutation,
+  useApproveCommunityJoinRequestMutation,
+  useDeclineCommunityJoinRequestMutation,
+  useCancelCommunityJoinRequestMutation,
+  useGetCommunityConversationsQuery,
+  useGetCommunityChatSummaryQuery,
+  useGetCommunityConversationQuery,
+  useGetCommunityGroupConversationQuery,
+  useStartCommunityDirectChatMutation,
+  useGetCommunityMessagesQuery,
+  useSendCommunityMessageMutation,
+  useEditCommunityMessageMutation,
+  useDeleteCommunityMessageMutation,
+  useMarkCommunityConversationReadMutation,
   useGetCommunityPostsQuery,
   useGetCommunityPostSummaryQuery,
   useCreateCommunityPostMutation,

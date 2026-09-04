@@ -28,6 +28,7 @@ import {
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import {
   COMMUNITY_GROUP_VISIBILITIES,
+  COMMUNITY_GROUP_VISIBILITY_HINTS,
   COMMUNITY_GROUP_VISIBILITY_LABELS,
   type CommunityGroup,
 } from "@/types/domain/community";
@@ -46,11 +47,13 @@ interface GroupFormModalProps {
 
 const STEPS: readonly StepperStep[] = [
   { id: "details", label: "The group" },
+  { id: "artwork", label: "Logo and banner" },
   { id: "people", label: "Who is in it" },
 ];
 
 const STEP_FIELDS: readonly (keyof CommunityGroupFormValues)[][] = [
-  ["name", "slug", "description", "color", "coverImageUrl", "visibility", "isArchived"],
+  ["name", "slug", "description", "color", "visibility", "requiresApproval", "isArchived"],
+  ["logoUrl", "bannerUrl"],
   ["memberIds", "moderatorIds"],
 ];
 
@@ -73,8 +76,10 @@ const emptyValues = (): CommunityGroupFormValues => ({
   slug: "",
   description: "",
   color: "#8b5cf6",
-  coverImageUrl: "",
+  logoUrl: "",
+  bannerUrl: "",
   visibility: "OPEN",
+  requiresApproval: false,
   memberIds: [],
   moderatorIds: [],
   isArchived: false,
@@ -85,8 +90,10 @@ const toFormValues = (group: CommunityGroup): CommunityGroupFormValues => ({
   slug: group.slug,
   description: group.description,
   color: group.color,
-  coverImageUrl: group.coverImageUrl,
+  logoUrl: group.logoUrl,
+  bannerUrl: group.bannerUrl,
   visibility: group.visibility,
+  requiresApproval: group.requiresApproval,
   memberIds: group.memberIds,
   moderatorIds: group.moderatorIds,
   isArchived: group.isArchived,
@@ -121,7 +128,9 @@ export function GroupFormModal({ open, onOpenChange, group }: GroupFormModalProp
     form.reset(group ? toFormValues(group) : emptyValues());
   }, [open, group, form]);
 
-  const coverImageUrl = form.watch("coverImageUrl");
+  const logoUrl = form.watch("logoUrl");
+  const bannerUrl = form.watch("bannerUrl");
+  const visibility = form.watch("visibility");
 
   const onSubmit = async (values: CommunityGroupFormValues) => {
     const body = {
@@ -129,8 +138,10 @@ export function GroupFormModal({ open, onOpenChange, group }: GroupFormModalProp
       slug: values.slug,
       description: values.description,
       color: values.color,
-      coverImageUrl: values.coverImageUrl,
+      logoUrl: values.logoUrl,
+      bannerUrl: values.bannerUrl,
       visibility: values.visibility,
+      requiresApproval: values.requiresApproval,
       memberIds: values.memberIds,
       moderatorIds: values.moderatorIds,
       isArchived: values.isArchived,

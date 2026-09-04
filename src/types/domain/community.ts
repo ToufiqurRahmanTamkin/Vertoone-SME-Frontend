@@ -88,6 +88,37 @@ export const COMMUNITY_GROUP_VISIBILITY_COLORS: Record<CommunityGroupVisibility,
   SECRET: "zinc",
 };
 
+export const COMMUNITY_GROUP_VISIBILITY_HINTS: Record<CommunityGroupVisibility, string> = {
+  OPEN: "Public — anybody in the community can find it.",
+  CLOSED: "Private — people can find it but a moderator lets them in.",
+  SECRET: "Hidden — only its members know it exists.",
+};
+
+export const COMMUNITY_GROUP_JOIN_MODES = ["INSTANT", "REQUEST", "INVITE"] as const;
+export type CommunityGroupJoinMode = (typeof COMMUNITY_GROUP_JOIN_MODES)[number];
+
+export const COMMUNITY_GROUP_JOIN_MODE_LABELS: Record<CommunityGroupJoinMode, string> = {
+  INSTANT: "Anyone can join",
+  REQUEST: "Approval needed",
+  INVITE: "Invite only",
+};
+
+export const COMMUNITY_JOIN_REQUEST_STATUSES = ["PENDING", "APPROVED", "DECLINED"] as const;
+export type CommunityJoinRequestStatus = (typeof COMMUNITY_JOIN_REQUEST_STATUSES)[number];
+
+export const COMMUNITY_JOIN_REQUEST_STATUS_LABELS: Record<CommunityJoinRequestStatus, string> = {
+  PENDING: "Waiting",
+  APPROVED: "Approved",
+  DECLINED: "Declined",
+};
+
+export const COMMUNITY_JOIN_REQUEST_STATUS_COLORS: Record<CommunityJoinRequestStatus, StatusColor> =
+  {
+    PENDING: "amber",
+    APPROVED: "green",
+    DECLINED: "red",
+  };
+
 export const COMMUNITY_POST_STATUSES = [
   "DRAFT",
   "PENDING",
@@ -293,12 +324,15 @@ export interface CommunityGroupRef {
   name: string;
   slug: string;
   color: string;
+  logoUrl: string;
 }
 
 export interface CommunityGroup extends CommunityGroupRef {
   description: string;
-  coverImageUrl: string;
+  bannerUrl: string;
   visibility: CommunityGroupVisibility;
+  requiresApproval: boolean;
+  joinMode: CommunityGroupJoinMode;
   memberIds: string[];
   members: CommunityMemberRef[];
   moderatorIds: string[];
@@ -308,6 +342,11 @@ export interface CommunityGroup extends CommunityGroupRef {
   isArchived: boolean;
   archivedAt: string | null;
   isJoined: boolean;
+  isModerator: boolean;
+  hasPendingRequest: boolean;
+  canJoin: boolean;
+  canRequestToJoin: boolean;
+  pendingRequestCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -333,13 +372,16 @@ export interface CommunityGroupSummary {
   openCount: number;
   privateCount: number;
   averageMembers: number;
+  pendingRequestCount: number;
 }
 
 export interface CommunityGroupOption {
   _id: string;
   name: string;
   color: string;
+  logoUrl: string;
   visibility: CommunityGroupVisibility;
+  isJoined: boolean;
 }
 
 export interface CommunityGroupPayload {
@@ -347,8 +389,10 @@ export interface CommunityGroupPayload {
   slug?: string;
   description?: string;
   color?: string;
-  coverImageUrl?: string;
+  logoUrl: string;
+  bannerUrl: string;
   visibility?: CommunityGroupVisibility;
+  requiresApproval?: boolean;
   memberIds?: string[];
   moderatorIds?: string[];
   isArchived?: boolean;
@@ -497,6 +541,149 @@ export interface CommunityOverview {
   reactions: CommunityReactionCount[];
   topPosts: CommunityPost[];
   isMember: boolean;
+}
+
+export interface CommunityJoinRequest {
+  _id: string;
+  groupId: string;
+  group: CommunityGroupRef | null;
+  memberId: string;
+  member: CommunityMemberRef | null;
+  message: string;
+  status: CommunityJoinRequestStatus;
+  decidedById: string | null;
+  decidedBy: CommunityMemberRef | null;
+  decidedAt: string | null;
+  decisionNote: string;
+  isMine: boolean;
+  canDecide: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommunityJoinRequestListQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  groupId?: string;
+  status?: CommunityJoinRequestStatus;
+  mineOnly?: boolean;
+}
+
+export interface CommunityJoinRequestSummary {
+  pendingCount: number;
+  approvedCount: number;
+  declinedCount: number;
+  myPendingCount: number;
+}
+
+export interface CommunityJoinRequestPayload {
+  groupId: string;
+  message?: string;
+}
+
+export const COMMUNITY_CONVERSATION_TYPES = ["DIRECT", "GROUP"] as const;
+export type CommunityConversationType = (typeof COMMUNITY_CONVERSATION_TYPES)[number];
+
+export const COMMUNITY_CONVERSATION_TYPE_LABELS: Record<CommunityConversationType, string> = {
+  DIRECT: "Direct",
+  GROUP: "Group",
+};
+
+export const COMMUNITY_MESSAGE_KINDS = ["TEXT", "SYSTEM"] as const;
+export type CommunityMessageKind = (typeof COMMUNITY_MESSAGE_KINDS)[number];
+
+export interface CommunityMessageAttachment {
+  type: CommunityAttachmentType;
+  url: string;
+  publicId: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+}
+
+export interface CommunityMessageRef {
+  _id: string;
+  senderId: string | null;
+  sender: CommunityMemberRef | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface CommunityMessage {
+  _id: string;
+  conversationId: string;
+  senderId: string | null;
+  sender: CommunityMemberRef | null;
+  kind: CommunityMessageKind;
+  body: string;
+  attachments: CommunityMessageAttachment[];
+  replyToId: string | null;
+  replyTo: CommunityMessageRef | null;
+  readCount: number;
+  isMine: boolean;
+  isEdited: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommunityConversation {
+  _id: string;
+  type: CommunityConversationType;
+  title: string;
+  avatarUrl: string;
+  groupId: string | null;
+  group: CommunityGroupRef | null;
+  participantIds: string[];
+  participants: CommunityMemberRef[];
+  participantCount: number;
+  counterpartId: string | null;
+  counterpart: CommunityMemberRef | null;
+  lastMessageAt: string | null;
+  lastMessagePreview: string;
+  lastMessageSenderId: string | null;
+  messageCount: number;
+  unreadCount: number;
+  lastReadAt: string | null;
+  canPost: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommunityConversationListQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  type?: CommunityConversationType;
+  unreadOnly?: boolean;
+}
+
+export interface CommunityMessageListQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+}
+
+export interface CommunityChatSummary {
+  conversationCount: number;
+  directCount: number;
+  groupCount: number;
+  unreadCount: number;
+  unreadConversationCount: number;
+}
+
+export interface SendCommunityMessagePayload {
+  body?: string;
+  attachments?: CommunityMessageAttachment[];
+  replyToId?: string | null;
 }
 
 export const initialsOf = (name: string): string =>

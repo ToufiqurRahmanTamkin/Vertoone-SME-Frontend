@@ -73,19 +73,40 @@ export type CommunitySettingsFormValues = z.input<typeof CommunitySettingsSchema
 
 export type CommunitySettingsFormOutput = z.output<typeof CommunitySettingsSchema>;
 
+const requiredImageUrl = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `Every group needs a ${label}`)
+    .url("That does not look like a link");
+
 export const CommunityGroupSchema = z.object({
   name: z.string().trim().min(1, "A group needs a name").max(80),
   slug: z.string().trim().max(60),
   description: z.string().trim().max(600),
   color: hexColor,
-  coverImageUrl: optionalUrl,
+  logoUrl: requiredImageUrl("logo"),
+  bannerUrl: requiredImageUrl("banner"),
   visibility: z.enum(COMMUNITY_GROUP_VISIBILITIES),
+  requiresApproval: z.boolean(),
   memberIds: z.array(z.string()),
   moderatorIds: z.array(z.string()),
   isArchived: z.boolean(),
 });
 
 export type CommunityGroupFormValues = z.infer<typeof CommunityGroupSchema>;
+
+export const CommunityJoinRequestSchema = z.object({
+  message: z.string().trim().max(500),
+});
+
+export type CommunityJoinRequestFormValues = z.infer<typeof CommunityJoinRequestSchema>;
+
+export const CommunityMessageSchema = z.object({
+  body: z.string().trim().max(4000),
+});
+
+export type CommunityMessageFormValues = z.infer<typeof CommunityMessageSchema>;
 
 export const CommunityMemberSchema = z.object({
   displayName: z.string().trim().min(1, "A member needs a name").max(80),
