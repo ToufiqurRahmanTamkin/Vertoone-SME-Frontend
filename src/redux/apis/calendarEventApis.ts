@@ -21,6 +21,8 @@ const EVENT_TAGS = [
   "CalendarEvent",
   "CalendarEventSummary",
   "CalendarEventOptions",
+  "CalendarSchedule",
+  "CalendarOverview",
 ] as const;
 
 export const CALENDAR_EVENTS_URL = "/calendar/events";

@@ -109,12 +109,16 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "CalendarEvent",
     "CalendarEventSummary",
     "CalendarEventOptions",
+    "CalendarSchedule",
+    "CalendarOverview",
   ],
   CALENDAR_MEETINGS: [
     "CalendarMeetings",
     "CalendarMeeting",
     "CalendarMeetingSummary",
     "CalendarMeetingOptions",
+    "CalendarSchedule",
+    "CalendarOverview",
   ],
   CALENDAR_BOOKINGS: [
     "CalendarBookings",
@@ -122,12 +126,16 @@ const TAGS_BY_RESOURCE: Record<SocketResource, TagType[]> = {
     "CalendarBookingSummary",
     "CalendarBookingOptions",
     "CalendarBookingSlots",
+    "CalendarSchedule",
+    "CalendarOverview",
   ],
   CALENDAR_REGISTRATIONS: [
     "CalendarRegistrations",
     "CalendarRegistration",
     "CalendarRegistrationSummary",
     "CalendarBookingSlots",
+    "CalendarSchedule",
+    "CalendarOverview",
   ],
   ROLES: ["Roles", "RoleSummary", "RoleOptions", "Permissions"],
   EMPLOYEE_ROLES: [

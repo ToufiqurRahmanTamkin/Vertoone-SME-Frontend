@@ -21,6 +21,8 @@ const MEETING_TAGS = [
   "CalendarMeeting",
   "CalendarMeetingSummary",
   "CalendarMeetingOptions",
+  "CalendarSchedule",
+  "CalendarOverview",
 ] as const;
 
 export const CALENDAR_MEETINGS_URL = "/calendar/meetings";

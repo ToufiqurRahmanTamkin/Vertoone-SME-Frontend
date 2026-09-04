@@ -334,6 +334,8 @@ export const ALL_TAG_TYPES = [
   "MeetingRoomSummary",
   "MeetingRoomOptions",
   "MeetingRoomFloors",
+  "CalendarOverview",
+  "CalendarSchedule",
   "CalendarEvents",
   "CalendarEvent",
   "CalendarEventSummary",

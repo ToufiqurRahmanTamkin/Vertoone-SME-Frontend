@@ -353,6 +353,7 @@ export function ConcernFormModal({
                     control={form.control}
                     name="headPhone"
                     label="Phone"
+                    description="The head is also registered as an employee of this concern."
                     className="col-span-6 sm:col-span-3"
                   />
                   <FormSelect

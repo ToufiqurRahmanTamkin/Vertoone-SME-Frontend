@@ -42,6 +42,7 @@ interface EventFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event?: CalendarEvent | null;
+  defaultStartAt?: string | null;
 }
 
 const STEPS: readonly StepperStep[] = [
@@ -95,7 +96,20 @@ const inTwoWeeks = (hourOffset: number): string => {
   return date.toISOString();
 };
 
-const emptyValues = (): CalendarEventFormValues => ({
+const seededStart = (startAt: string): string => {
+  const date = new Date(startAt);
+  if (isNaN(date.getTime())) return inTwoWeeks(0);
+  if (date.getHours() === 0 && date.getMinutes() === 0) date.setHours(9, 0, 0, 0);
+  return date.toISOString();
+};
+
+const plusHours = (startAt: string, hours: number): string => {
+  const date = new Date(startAt);
+  date.setHours(date.getHours() + hours);
+  return date.toISOString();
+};
+
+const emptyValues = (defaultStartAt?: string | null): CalendarEventFormValues => ({
   title: "",
   slug: "",
   summary: "",
@@ -116,8 +130,8 @@ const emptyValues = (): CalendarEventFormValues => ({
   },
   status: "DRAFT",
   isRegistrationOpen: true,
-  startAt: inTwoWeeks(0),
-  endAt: inTwoWeeks(2),
+  startAt: defaultStartAt ? seededStart(defaultStartAt) : inTwoWeeks(0),
+  endAt: defaultStartAt ? plusHours(seededStart(defaultStartAt), 2) : inTwoWeeks(2),
   registrationClosesAt: "",
   capacity: 0,
   coverUrl: "",
@@ -188,7 +202,12 @@ const toPayload = (values: CalendarEventFormValues): CreateCalendarEventPayload 
   accentColor: values.accentColor,
 });
 
-export function EventFormModal({ open, onOpenChange, event }: EventFormModalProps) {
+export function EventFormModal({
+  open,
+  onOpenChange,
+  event,
+  defaultStartAt = null,
+}: EventFormModalProps) {
   const isEdit = Boolean(event);
 
   const [createEvent, { isLoading: isCreating }] = useCreateCalendarEventMutation();
@@ -202,8 +221,8 @@ export function EventFormModal({ open, onOpenChange, event }: EventFormModalProp
 
   React.useEffect(() => {
     if (!open) return;
-    form.reset(event ? toFormValues(event) : emptyValues());
-  }, [open, event, form]);
+    form.reset(event ? toFormValues(event) : emptyValues(defaultStartAt));
+  }, [open, event, defaultStartAt, form]);
 
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);

@@ -64,7 +64,7 @@ export interface CreateConcernPayload {
     name: string;
     email: string;
     password: string;
-    phone?: string;
+    phone: string;
     status?: Extract<UserStatus, "ACTIVE" | "INACTIVE">;
     modulePermissions?: ModulePermissionMap;
     roleIds?: string[];

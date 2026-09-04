@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalPhone } from "./phone";
+import { optionalPhone, requiredPhone } from "./phone";
 
 const optionalUrl = z
   .string()
@@ -29,7 +29,7 @@ export const ConcernSchema = z.object({
   isActive: z.boolean(),
   headName: z.string().trim().min(2, "The concern head needs a name").max(80),
   headEmail: z.string().trim().toLowerCase().email("A valid sign-in email is required"),
-  headPhone: optionalPhone,
+  headPhone: requiredPhone,
   headPassword: z.union([z.literal(""), z.string().min(8, "Use at least 8 characters").max(128)]),
   headStatus: z.enum(["ACTIVE", "INACTIVE"]),
 });

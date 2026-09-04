@@ -43,6 +43,7 @@ interface MeetingFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meeting?: CalendarMeeting | null;
+  defaultStartAt?: string | null;
 }
 
 const STEPS: readonly StepperStep[] = [
@@ -88,7 +89,20 @@ const nextWeek = (hourOffset: number): string => {
   return date.toISOString();
 };
 
-const emptyValues = (): CalendarMeetingFormValues => ({
+const seededStart = (startAt: string): string => {
+  const date = new Date(startAt);
+  if (isNaN(date.getTime())) return nextWeek(0);
+  if (date.getHours() === 0 && date.getMinutes() === 0) date.setHours(10, 0, 0, 0);
+  return date.toISOString();
+};
+
+const plusHours = (startAt: string, hours: number): string => {
+  const date = new Date(startAt);
+  date.setHours(date.getHours() + hours);
+  return date.toISOString();
+};
+
+const emptyValues = (defaultStartAt?: string | null): CalendarMeetingFormValues => ({
   title: "",
   slug: "",
   summary: "",
@@ -110,8 +124,8 @@ const emptyValues = (): CalendarMeetingFormValues => ({
   },
   status: "DRAFT",
   isRegistrationOpen: true,
-  startAt: nextWeek(0),
-  endAt: nextWeek(1),
+  startAt: defaultStartAt ? seededStart(defaultStartAt) : nextWeek(0),
+  endAt: defaultStartAt ? plusHours(seededStart(defaultStartAt), 1) : nextWeek(1),
   registrationClosesAt: "",
   capacity: 0,
   coverUrl: "",
@@ -177,7 +191,12 @@ const toPayload = (values: CalendarMeetingFormValues): CreateCalendarMeetingPayl
   accentColor: values.accentColor,
 });
 
-export function MeetingFormModal({ open, onOpenChange, meeting }: MeetingFormModalProps) {
+export function MeetingFormModal({
+  open,
+  onOpenChange,
+  meeting,
+  defaultStartAt = null,
+}: MeetingFormModalProps) {
   const isEdit = Boolean(meeting);
 
   const [createMeeting, { isLoading: isCreating }] = useCreateCalendarMeetingMutation();
@@ -203,8 +222,8 @@ export function MeetingFormModal({ open, onOpenChange, meeting }: MeetingFormMod
 
   React.useEffect(() => {
     if (!open) return;
-    form.reset(meeting ? toFormValues(meeting) : emptyValues());
-  }, [open, meeting, form]);
+    form.reset(meeting ? toFormValues(meeting) : emptyValues(defaultStartAt));
+  }, [open, meeting, defaultStartAt, form]);
 
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);

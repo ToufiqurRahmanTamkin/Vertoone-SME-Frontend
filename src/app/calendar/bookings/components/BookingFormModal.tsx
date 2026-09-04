@@ -37,6 +37,7 @@ interface BookingFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   booking?: CalendarBooking | null;
+  defaultWeekday?: number | null;
 }
 
 const STEPS: readonly StepperStep[] = [
@@ -86,7 +87,14 @@ const STATUS_OPTIONS = toOptions(CALENDAR_STATUS_LABELS);
 
 const localOffsetMinutes = (): number => -new Date().getTimezoneOffset();
 
-const emptyValues = (): CalendarBookingFormValues => ({
+const WEEKDAY_HOURS = { startTime: "09:00", endTime: "17:00" } as const;
+
+const defaultAvailability = (weekday?: number | null) =>
+  weekday === null || weekday === undefined
+    ? [1, 2, 3, 4, 5].map((day) => ({ weekday: day, ...WEEKDAY_HOURS }))
+    : [{ weekday, ...WEEKDAY_HOURS }];
+
+const emptyValues = (defaultWeekday?: number | null): CalendarBookingFormValues => ({
   title: "",
   slug: "",
   summary: "",
@@ -113,13 +121,7 @@ const emptyValues = (): CalendarBookingFormValues => ({
   leadTimeHours: 2,
   windowDays: 30,
   timezoneOffsetMinutes: localOffsetMinutes(),
-  availability: [
-    { weekday: 1, startTime: "09:00", endTime: "17:00" },
-    { weekday: 2, startTime: "09:00", endTime: "17:00" },
-    { weekday: 3, startTime: "09:00", endTime: "17:00" },
-    { weekday: 4, startTime: "09:00", endTime: "17:00" },
-    { weekday: 5, startTime: "09:00", endTime: "17:00" },
-  ],
+  availability: defaultAvailability(defaultWeekday),
   coverUrl: "",
   coverPublicId: "",
   accentColor: DEFAULT_CALENDAR_COLOR,
@@ -187,7 +189,12 @@ const toPayload = (values: CalendarBookingFormValues): CreateCalendarBookingPayl
   accentColor: values.accentColor,
 });
 
-export function BookingFormModal({ open, onOpenChange, booking }: BookingFormModalProps) {
+export function BookingFormModal({
+  open,
+  onOpenChange,
+  booking,
+  defaultWeekday = null,
+}: BookingFormModalProps) {
   const isEdit = Boolean(booking);
 
   const [createBooking, { isLoading: isCreating }] = useCreateCalendarBookingMutation();
@@ -201,8 +208,8 @@ export function BookingFormModal({ open, onOpenChange, booking }: BookingFormMod
 
   React.useEffect(() => {
     if (!open) return;
-    form.reset(booking ? toFormValues(booking) : emptyValues());
-  }, [open, booking, form]);
+    form.reset(booking ? toFormValues(booking) : emptyValues(defaultWeekday));
+  }, [open, booking, defaultWeekday, form]);
 
   const [step, setStep] = React.useState(0);
   const [furthestStep, setFurthestStep] = React.useState(0);

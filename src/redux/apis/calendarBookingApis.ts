@@ -24,6 +24,8 @@ const BOOKING_TAGS = [
   "CalendarBookingSummary",
   "CalendarBookingOptions",
   "CalendarBookingSlots",
+  "CalendarSchedule",
+  "CalendarOverview",
 ] as const;
 
 export const CALENDAR_BOOKINGS_URL = "/calendar/bookings";

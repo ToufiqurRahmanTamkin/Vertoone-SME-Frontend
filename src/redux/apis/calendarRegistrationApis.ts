@@ -34,6 +34,8 @@ const REGISTRATION_TAGS = [
   "CalendarBooking",
   "CalendarBookingSummary",
   "CalendarBookingSlots",
+  "CalendarSchedule",
+  "CalendarOverview",
 ] as const;
 
 const BASE_BY_TYPE: Record<CalendarResourceType, (resourceId: string) => string> = {
