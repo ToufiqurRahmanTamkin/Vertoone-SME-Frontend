@@ -1,4 +1,5 @@
 export * from "./form-checkbox";
+export * from "./form-chips";
 export * from "./form-color";
 export * from "./form-date";
 export * from "./form-image";
