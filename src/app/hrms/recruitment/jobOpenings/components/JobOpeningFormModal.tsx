@@ -163,6 +163,24 @@ export function JobOpeningFormModal({
   onOpenChange,
   opening,
 }: JobOpeningFormModalProps) {
+  const [session, setSession] = React.useState(0);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setSession((current) => current + 1);
+        onOpenChange(next);
+      }}
+    >
+      {open && (
+        <JobOpeningBody key={session} open={open} onOpenChange={onOpenChange} opening={opening} />
+      )}
+    </Dialog>
+  );
+}
+
+function JobOpeningBody({ open, onOpenChange, opening }: JobOpeningFormModalProps) {
   const [createOpening, { isLoading: isCreating }] = useCreateJobOpeningMutation();
   const [updateOpening, { isLoading: isUpdating }] = useUpdateJobOpeningMutation();
   const isSaving = isCreating || isUpdating;
@@ -200,17 +218,8 @@ export function JobOpeningFormModal({
 
   const form = useForm<JobOpeningFormValues>({
     resolver: zodResolver(JobOpeningSchema),
-    defaultValues: emptyValues(),
+    defaultValues: opening ? toFormValues(opening) : emptyValues(),
   });
-
-  React.useEffect(() => {
-    if (!open) {
-      setStep(0);
-      setFurthestStep(0);
-      return;
-    }
-    form.reset(opening ? toFormValues(opening) : emptyValues());
-  }, [open, opening, form]);
 
   const status = useWatch({ control: form.control, name: "status" });
 
@@ -291,8 +300,7 @@ export function JobOpeningFormModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+    <DialogContent className="sm:max-w-3xl">
         <Form {...form}>
           <form onSubmit={handleFormSubmit}>
             <DialogHeader>
@@ -558,7 +566,6 @@ export function JobOpeningFormModal({
             </DialogFooter>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   );
 }
