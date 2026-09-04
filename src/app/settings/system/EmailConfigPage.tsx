@@ -7,273 +7,506 @@ import {
 } from "@/components/shared/form-fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Form } from "@/components/ui/form";
-import { EmailConfigSchema, type EmailConfigFormValues } from "@/validations/smeConfiguration";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useModulePermission } from "@/hooks/use-permission";
+import { formatDateTime } from "@/lib/date";
+import { cn } from "@/lib/utils";
+import {
+  useDisconnectEmailServerMutation,
+  useGetEmailProvidersQuery,
+  useGetEmailSettingsQuery,
+  useSendTestEmailMutation,
+  useTestEmailConnectionMutation,
+  useUpdateEmailSettingsMutation,
+} from "@/redux/apis/emailSettingsApis";
+import { type ApiErrorResponse } from "@/redux/baseApi";
+import {
+  EMAIL_ENCRYPTIONS,
+  EMAIL_ENCRYPTION_LABELS,
+  EMAIL_HEALTH_COLORS,
+  EMAIL_HEALTH_LABELS,
+  type EmailProviderPreset,
+  type EmailSettings,
+} from "@/types/domain/emailSettings";
+import {
+  EmailSettingsSchema,
+  type EmailSettingsFormValues,
+} from "@/validations/emailSettings";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Hammer, KeyRound, Mail, MailCheck, Send, Server } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Mail,
+  MailCheck,
+  PlugZap,
+  Send,
+  Server,
+  Unplug,
+} from "lucide-react";
+import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { ConfigActions } from "./components/ConfigActions";
+import { ProviderPicker } from "./components/ProviderPicker";
 
-const PROVIDERS = [
-  { label: "SMTP server", value: "smtp" },
-  { label: "SendGrid", value: "sendgrid" },
-  { label: "Mailgun", value: "mailgun" },
-  { label: "Amazon SES", value: "ses" },
-  { label: "Postmark", value: "postmark" },
-  { label: "Resend", value: "resend" },
-];
+const ENCRYPTION_OPTIONS = EMAIL_ENCRYPTIONS.map((value) => ({
+  value,
+  label: EMAIL_ENCRYPTION_LABELS[value],
+}));
 
-const ENCRYPTIONS = [
-  { label: "None", value: "none" },
-  { label: "TLS (STARTTLS)", value: "tls" },
-  { label: "SSL", value: "ssl" },
-];
-
-const PROVIDER_LABELS: Record<string, string> = {
-  smtp: "SMTP server",
-  sendgrid: "SendGrid",
-  mailgun: "Mailgun",
-  ses: "Amazon SES",
-  postmark: "Postmark",
-  resend: "Resend",
-};
-
-const DEFAULTS: EmailConfigFormValues = {
-  enabled: true,
-  provider: "smtp",
-  fromName: "",
-  fromEmail: "",
-  replyToEmail: "",
-  bccEmail: "",
-  smtpHost: "",
-  smtpPort: 587,
-  smtpEncryption: "tls",
-  smtpUsername: "",
-  smtpPassword: "",
-  apiKey: "",
-  apiDomain: "",
-  apiRegion: "",
-  dailySendLimit: 1000,
-  footerText: "",
-  trackOpens: false,
-  retryFailed: true,
-  testRecipient: "",
-};
+const toFormValues = (settings: EmailSettings): EmailSettingsFormValues => ({
+  isEnabled: settings.isEnabled,
+  provider: settings.provider,
+  host: settings.host,
+  port: settings.port,
+  encryption: settings.encryption,
+  username: settings.username,
+  password: "",
+  fromName: settings.fromName,
+  fromEmail: settings.fromEmail,
+  replyToEmail: settings.replyToEmail,
+  footerText: settings.footerText,
+});
 
 export default function EmailConfigPage() {
-  const form = useForm<EmailConfigFormValues>({
-    resolver: zodResolver(EmailConfigSchema),
-    defaultValues: DEFAULTS,
+  const access = useModulePermission("/settings/system/email");
+
+  const { data: settings, isLoading } = useGetEmailSettingsQuery();
+  const { data: providers = [] } = useGetEmailProvidersQuery();
+
+  const [updateSettings, { isLoading: isSaving }] = useUpdateEmailSettingsMutation();
+  const [testConnection, { isLoading: isTestingConnection }] = useTestEmailConnectionMutation();
+  const [sendTest, { isLoading: isSendingTest }] = useSendTestEmailMutation();
+  const [disconnectServer, { isLoading: isDisconnecting }] = useDisconnectEmailServerMutation();
+
+  const form = useForm<EmailSettingsFormValues>({
+    resolver: zodResolver(EmailSettingsSchema),
+    defaultValues: {
+      isEnabled: false,
+      provider: "CUSTOM_SMTP",
+      host: "",
+      port: 587,
+      encryption: "STARTTLS",
+      username: "",
+      password: "",
+      fromName: "",
+      fromEmail: "",
+      replyToEmail: "",
+      footerText: "",
+    },
   });
 
-  const provider = useWatch({ control: form.control, name: "provider" });
-  const enabled = useWatch({ control: form.control, name: "enabled" });
-  const isSmtp = provider === "smtp";
+  const [testRecipient, setTestRecipient] = React.useState("");
+  const [disconnectOpen, setDisconnectOpen] = React.useState(false);
 
-  const onSubmit = (values: EmailConfigFormValues) => {
-    form.reset(values);
-    toast.success("Email configuration saved", {
-      description: "Kept for this session only — the configuration API is not connected yet.",
-    });
+  React.useEffect(() => {
+    if (settings) form.reset(toFormValues(settings));
+  }, [settings, form]);
+
+  const provider = useWatch({ control: form.control, name: "provider" });
+
+  const preset = React.useMemo<EmailProviderPreset | undefined>(
+    () => providers.find((entry) => entry.provider === provider),
+    [providers, provider]
+  );
+
+  const applyPreset = (next: EmailProviderPreset) => {
+    form.setValue("provider", next.provider, { shouldDirty: true });
+    form.setValue("host", next.host, { shouldDirty: true });
+    form.setValue("port", next.port, { shouldDirty: true });
+    form.setValue("encryption", next.encryption, { shouldDirty: true });
+    if (next.fixedUsername) {
+      form.setValue("username", next.fixedUsername, { shouldDirty: true });
+    }
   };
 
-  const sendTest = () => {
-    const recipient = form.getValues("testRecipient");
+  const onSubmit = async (values: EmailSettingsFormValues) => {
+    const parsed = EmailSettingsSchema.parse(values);
+
+    try {
+      const saved = await updateSettings({
+        isEnabled: parsed.isEnabled,
+        provider: parsed.provider,
+        host: parsed.host,
+        port: parsed.port,
+        encryption: parsed.encryption,
+        username: parsed.username,
+        ...(parsed.password ? { password: parsed.password } : {}),
+        fromName: parsed.fromName,
+        fromEmail: parsed.fromEmail,
+        replyToEmail: parsed.replyToEmail,
+        footerText: parsed.footerText,
+      }).unwrap();
+
+      form.reset(toFormValues(saved));
+      toast.success("Email settings saved");
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not save the email settings");
+    }
+  };
+
+  const runConnectionTest = async () => {
+    try {
+      const result = await testConnection().unwrap();
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not reach the mail server");
+    }
+  };
+
+  const runTestSend = async () => {
+    const recipient = testRecipient.trim();
     if (!recipient) {
-      toast.error("Enter an address to send the test to");
+      toast.error("Enter the address the test should go to");
       return;
     }
-    toast.info(`Test email to ${recipient} is not sent yet`, {
-      description: "The mail service is wired up in a later step.",
-    });
+
+    try {
+      const result = await sendTest({ recipient }).unwrap();
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not send the test email");
+    }
   };
+
+  const confirmDisconnect = async () => {
+    try {
+      const cleared = await disconnectServer().unwrap();
+      form.reset(toFormValues(cleared));
+      setDisconnectOpen(false);
+      toast.success("Mail server disconnected");
+    } catch (error: unknown) {
+      const err = error as ApiErrorResponse;
+      toast.error(err?.data?.message || "Could not disconnect the mail server");
+    }
+  };
+
+  if (isLoading || !settings) {
+    return (
+      <>
+        <PageHeader
+          title="Email"
+          description="The mailbox every module sends invoices, alerts and campaigns from."
+        />
+        <div className="grid gap-4 lg:grid-cols-2 xl:gap-6">
+          {[0, 1, 2, 3].map((index) => (
+            <Skeleton key={index} className="h-72 w-full rounded-xl" />
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  const readOnly = !access.canEdit;
+  const health = settings.health;
+  const isHealthy = health === "WORKING";
+  const hasFailure = health === "FAILING";
 
   return (
     <>
       <PageHeader
-        title="Email configuration"
-        description="The mailbox every module sends invoices, campaigns and alerts from."
+        title="Email"
+        description="The mailbox every module sends invoices, alerts and campaigns from."
         actions={
-          <div className="flex items-center gap-2">
-            <Badge variant={enabled ? "success" : "outline"} className="px-2.5 py-1">
-              <Mail className="size-3" />
-              {enabled ? "Sending on" : "Sending off"}
-            </Badge>
-            <Badge variant="secondary" className="px-2.5 py-1">
-              <Hammer className="size-3" />
-              UI only
-            </Badge>
-          </div>
+          <StatusBadge color={EMAIL_HEALTH_COLORS[health]} label={EMAIL_HEALTH_LABELS[health]} />
         }
       />
 
+      <div
+        className={cn(
+          "flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between",
+          isHealthy && "border-emerald-500/40 bg-emerald-500/10",
+          hasFailure && "border-red-500/40 bg-red-500/10",
+          !isHealthy && !hasFailure && "bg-muted/40"
+        )}
+      >
+        <div className="flex items-start gap-2.5">
+          {isHealthy ? (
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
+          ) : hasFailure ? (
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600 dark:text-red-500" />
+          ) : (
+            <Mail className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+          )}
+          <div className="space-y-0.5 text-sm">
+            <p className="font-medium">
+              {isHealthy
+                ? "Your mail server is connected and working."
+                : hasFailure
+                  ? "The last attempt to reach your mail server failed."
+                  : settings.isComplete
+                    ? "Details are filled in, but not tested yet."
+                    : "Pick a provider below and paste your credentials to start sending."}
+            </p>
+            <p className="text-muted-foreground">
+              {hasFailure
+                ? settings.lastError
+                : settings.usesPlatformFallback
+                  ? "Until then, mail goes out through the Vertoone shared mailbox."
+                  : settings.lastTestedAt
+                    ? `Last checked ${formatDateTime(settings.lastTestedAt)}`
+                    : "Nothing has been sent from here yet."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            disabled={readOnly || !settings.isComplete || isTestingConnection}
+            onClick={() => void runConnectionTest()}
+          >
+            {isTestingConnection ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <PlugZap className="size-4" />
+            )}
+            Test connection
+          </Button>
+          {settings.isComplete && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              disabled={readOnly || isDisconnecting}
+              onClick={() => setDisconnectOpen(true)}
+            >
+              <Unplug className="size-4" />
+              Disconnect
+            </Button>
+          )}
+        </div>
+      </div>
+
       <Form {...form}>
         <form className="flex flex-col gap-4 xl:gap-6" onSubmit={form.handleSubmit(onSubmit)}>
+          <SectionCard
+            icon={Server}
+            title="Who carries your mail"
+            description="Pick your email provider and we fill in the server details for you."
+          >
+            <ProviderPicker
+              providers={providers}
+              value={provider}
+              disabled={readOnly}
+              onSelect={applyPreset}
+            />
+          </SectionCard>
+
           <div className="grid items-stretch gap-4 lg:grid-cols-2 xl:gap-6">
             <SectionCard
-              icon={Send}
-              title="Delivery"
-              description="Which service carries your mail, and how hard it tries."
+              icon={PlugZap}
+              title={preset ? `${preset.label} credentials` : "Connection"}
+              description={
+                preset?.passwordHint ??
+                "The username and password your mail host gave you."
+              }
+              action={
+                preset?.helpUrl ? (
+                  <a
+                    href={preset.helpUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
+                  >
+                    Guide
+                    <ExternalLink className="size-3" />
+                  </a>
+                ) : undefined
+              }
             >
-              <FormSwitch
-                control={form.control}
-                name="enabled"
-                label="Send email from this workspace"
-                description="Turn off to suppress every outgoing message"
-              />
-              <FormSelect
-                control={form.control}
-                name="provider"
-                label="Provider"
-                options={PROVIDERS}
-              />
               <FormInput
                 control={form.control}
-                name="dailySendLimit"
-                label="Daily send limit"
-                type="number"
-                description="Stops runaway sending. Set 0 to leave it uncapped."
+                name="username"
+                label={preset?.usernameLabel ?? "Username"}
+                description={preset?.usernameHint}
+                placeholder="you@yourcompany.com"
+                disabled={readOnly || Boolean(preset?.fixedUsername)}
               />
-              <FormSwitch
+
+              <FormPassword
                 control={form.control}
-                name="retryFailed"
-                label="Retry failed sends"
-                description="Try three more times over an hour"
+                name="password"
+                label={preset?.passwordLabel ?? "Password"}
+                description={
+                  settings.hasPassword
+                    ? "Saved. Leave blank to keep the current one, or type a new one to replace it."
+                    : undefined
+                }
+                disabled={readOnly}
+              />
+
+              <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+                <FormInput
+                  control={form.control}
+                  name="host"
+                  label="Server"
+                  placeholder="smtp.yourcompany.com"
+                  disabled={readOnly || preset?.hostIsEditable === false}
+                  description={
+                    preset?.hostIsEditable === false ? "Fixed by your provider." : undefined
+                  }
+                />
+                <FormInput
+                  control={form.control}
+                  name="port"
+                  label="Port"
+                  type="number"
+                  disabled={readOnly}
+                />
+              </div>
+
+              <FormSelect
+                control={form.control}
+                name="encryption"
+                label="Encryption"
+                options={ENCRYPTION_OPTIONS}
+                disabled={readOnly}
                 className="mt-auto"
               />
             </SectionCard>
 
             <SectionCard
               icon={Mail}
-              title="Sender identity"
-              description="What a customer sees in their inbox, and where replies land."
+              title="What people see"
+              description="The name and address on every message you send."
             >
               <FormInput
                 control={form.control}
                 name="fromName"
                 label="From name"
                 placeholder="Vertoone Trading"
+                disabled={readOnly}
               />
               <FormInput
                 control={form.control}
                 name="fromEmail"
                 label="From address"
-                placeholder="billing@yourdomain.com"
+                placeholder="billing@yourcompany.com"
+                description="Most providers require this to match the mailbox you signed in with."
+                disabled={readOnly}
               />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="replyToEmail"
-                  label="Reply-to address"
-                  placeholder="support@yourdomain.com"
-                />
-                <FormInput
-                  control={form.control}
-                  name="bccEmail"
-                  label="Always BCC"
-                  placeholder="archive@yourdomain.com"
-                />
-              </div>
-            </SectionCard>
-
-            {isSmtp ? (
-              <SectionCard
-                icon={Server}
-                title="SMTP server"
-                description="Connection details from your mail host."
-              >
-                <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-                  <FormInput
-                    control={form.control}
-                    name="smtpHost"
-                    label="Host"
-                    placeholder="smtp.yourdomain.com"
-                  />
-                  <FormInput control={form.control} name="smtpPort" label="Port" type="number" />
-                </div>
-                <FormSelect
-                  control={form.control}
-                  name="smtpEncryption"
-                  label="Encryption"
-                  options={ENCRYPTIONS}
-                />
-                <FormInput
-                  control={form.control}
-                  name="smtpUsername"
-                  label="Username"
-                  placeholder="billing@yourdomain.com"
-                />
-                <FormPassword control={form.control} name="smtpPassword" label="Password" />
-              </SectionCard>
-            ) : (
-              <SectionCard
-                icon={KeyRound}
-                title={`${PROVIDER_LABELS[provider]} credentials`}
-                description="Generated in your provider dashboard. Keys are write-only once saved."
-              >
-                <FormPassword control={form.control} name="apiKey" label="API key" />
-                <FormInput
-                  control={form.control}
-                  name="apiDomain"
-                  label="Sending domain"
-                  placeholder="mail.yourdomain.com"
-                  description="Required by Mailgun, optional elsewhere."
-                />
-                <FormInput
-                  control={form.control}
-                  name="apiRegion"
-                  label="Region"
-                  placeholder="us-east-1"
-                  description="Used by Amazon SES and Mailgun EU accounts."
-                  className="mt-auto"
-                />
-              </SectionCard>
-            )}
-
-            <SectionCard
-              icon={MailCheck}
-              title="Footer & testing"
-              description="The signature appended to every message, and a way to prove delivery."
-            >
+              <FormInput
+                control={form.control}
+                name="replyToEmail"
+                label="Reply-to address"
+                placeholder="support@yourcompany.com"
+                description="Optional. Where replies land if that is a different inbox."
+                disabled={readOnly}
+              />
               <FormTextarea
                 control={form.control}
                 name="footerText"
-                label="Email footer"
+                label="Footer"
                 placeholder="Vertoone Trading Ltd. · Dhaka · +880 1XXX XXXXXX"
+                description="Appended to the bottom of every message."
                 showCharCount={false}
+                disabled={readOnly}
+                className="mt-auto"
               />
+            </SectionCard>
+          </div>
+
+          <div className="grid items-stretch gap-4 lg:grid-cols-2 xl:gap-6">
+            <SectionCard
+              icon={Send}
+              title="Turn sending on"
+              description="Until this is on, mail goes out through the Vertoone shared mailbox."
+            >
               <FormSwitch
                 control={form.control}
-                name="trackOpens"
-                label="Track opens"
-                description="Add a tracking pixel to outgoing mail"
+                name="isEnabled"
+                label="Send email from this mailbox"
+                description="Needs a server, username, password and from address."
+                disabled={readOnly}
               />
-              <div className="mt-auto grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                <FormInput
-                  control={form.control}
-                  name="testRecipient"
-                  label="Send a test to"
-                  placeholder="you@yourdomain.com"
-                />
+            </SectionCard>
+
+            <SectionCard
+              icon={MailCheck}
+              title="Prove it works"
+              description="Send yourself a real message to confirm everything is wired up."
+            >
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                <div className="space-y-2">
+                  <label htmlFor="test-recipient" className="text-sm font-medium">
+                    Send a test to
+                  </label>
+                  <Input
+                    id="test-recipient"
+                    value={testRecipient}
+                    onChange={(event) => setTestRecipient(event.target.value)}
+                    placeholder="you@yourcompany.com"
+                    disabled={readOnly || !settings.isComplete}
+                  />
+                </div>
                 <Button
                   type="button"
                   variant="outline"
                   className="cursor-pointer"
-                  onClick={sendTest}
+                  disabled={readOnly || !settings.isComplete || isSendingTest}
+                  onClick={() => void runTestSend()}
                 >
-                  <Send className="mr-1.5 h-4 w-4" />
+                  {isSendingTest ? (
+                    <Loader2 className="mr-1.5 size-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-1.5 size-4" />
+                  )}
                   Send test
                 </Button>
               </div>
+
+              {settings.lastTestRecipient && (
+                <p className="mt-auto text-xs text-muted-foreground">
+                  Last test went to {settings.lastTestRecipient}
+                  {settings.lastTestedAt ? ` on ${formatDateTime(settings.lastTestedAt)}` : ""}.
+                </p>
+              )}
             </SectionCard>
           </div>
 
-          <ConfigActions isDirty={form.formState.isDirty} onReset={() => form.reset(DEFAULTS)} />
+          {access.canEdit && (
+            <ConfigActions
+              isDirty={form.formState.isDirty}
+              isSaving={isSaving}
+              onReset={() => form.reset(toFormValues(settings))}
+            />
+          )}
         </form>
       </Form>
+
+      <ConfirmDialog
+        open={disconnectOpen}
+        onOpenChange={setDisconnectOpen}
+        title="Disconnect this mail server?"
+        description="The server, username and password are cleared, and mail falls back to the Vertoone shared mailbox."
+        confirmText="Disconnect"
+        variant="destructive"
+        isLoading={isDisconnecting}
+        onConfirm={confirmDisconnect}
+      />
     </>
   );
 }

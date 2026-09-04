@@ -150,6 +150,7 @@ const SalesReturns = lazy(() => import("@/app/sme/sales/returns/SalesReturnsPage
 const Pos = lazy(() => import("@/app/sme/pos/PosPage"));
 const EmailConfig = lazy(() => import("@/app/settings/system/EmailConfigPage"));
 const PaymentConfig = lazy(() => import("@/app/settings/system/PaymentConfigPage"));
+const ApiWebhooks = lazy(() => import("@/app/settings/system/ApiWebhooksPage"));
 const Shop = lazy(() => import("@/app/sme/shop/ShopPage"));
 const BusinessToolsDashboard = lazy(
   () => import("@/app/businessTools/dashboard/BusinessToolsDashboardPage")
@@ -335,6 +336,7 @@ const builtRoutes: RouteConfig[] = [
   { path: "settings/users-and-roles/roles-and-permissions", element: <Roles /> },
   { path: "settings/system/email", element: <EmailConfig /> },
   { path: "settings/system/payments", element: <PaymentConfig /> },
+  { path: "settings/system/api-and-webhooks", element: <ApiWebhooks /> },
   { path: "settings/my-account", element: <AccountSettings /> },
 ];
 

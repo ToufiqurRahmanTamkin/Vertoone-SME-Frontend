@@ -360,7 +360,7 @@ export default function JobOpeningsPage() {
         description="The roles you are hiring for, and how far along each one is."
         actions={
           <div className="flex items-center gap-2">
-            <CurrencyNote />
+            <CurrencyNote currency={summary?.currency ?? "BDT"} />
             <BackLink to="/hrms/recruitment/overview" label="Recruitment overview" />
           </div>
         }

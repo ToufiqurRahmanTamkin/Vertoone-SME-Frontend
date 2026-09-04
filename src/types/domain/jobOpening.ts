@@ -172,6 +172,7 @@ export interface JobOpeningSummary {
   totalPositions: number;
   positionsToFill: number;
   closingSoonCount: number;
+  currency: string;
 }
 
 export interface JobOpeningOption {
