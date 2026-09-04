@@ -345,7 +345,6 @@ const legacyRedirects: RouteConfig[] = [
   { path: "automation/overview", element: <Navigate to="/company/automation/overview" replace /> },
   { path: "automation/settings", element: <Navigate to="/company/automation/settings" replace /> },
   { path: "automation/workflows", element: <Navigate to="/company/automation/workflows" replace /> },
-  { path: "automation/workspace", element: <Navigate to="/company/automation/workspaces" replace /> },
   { path: "business-tools/email-builder", element: <Navigate to="/crm/business-tools/email-builder" replace /> },
   { path: "business-tools/form-builder", element: <Navigate to="/crm/business-tools/form-builder" replace /> },
   { path: "business-tools/overview", element: <Navigate to="/crm/business-tools/overview" replace /> },

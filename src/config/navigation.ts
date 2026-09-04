@@ -715,12 +715,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
             items: [
               overview("Runs, failures and time saved across your automations."),
               {
-                title: "Workspaces",
-                slug: "workspaces",
-                icon: "FolderKanban",
-                description: "Where your automations are grouped, shared and versioned.",
-              },
-              {
                 title: "Workflows",
                 slug: "workflows",
                 icon: "Workflow",
@@ -3395,12 +3389,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 icon: "KeyRound",
                 description:
                   "Permission sets for your workforce, and the employees assigned to each.",
-              },
-              {
-                title: "Document Types",
-                slug: "document-types",
-                icon: "FileText",
-                description: "The documents you expect on file, and when they expire.",
               },
               {
                 title: "Letter Templates",
