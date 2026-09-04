@@ -7,6 +7,7 @@ import type {
   GoalPayload,
   GoalRef,
   GoalSummary,
+  MyGoalSummary,
 } from "@/types/domain/goal";
 import { baseApi } from "../baseApi";
 import { buildQuery } from "./queryString";
@@ -26,6 +27,17 @@ const goalApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["Goals"],
+    }),
+    getMyGoals: builder.query<GoalListResult, GoalListQuery | void>({
+      query: (params) => ({
+        url: `/tasks-goals/goals/mine${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["MyGoals"],
+    }),
+    getMyGoalSummary: builder.query<MyGoalSummary, void>({
+      query: () => ({ url: "/tasks-goals/goals/mine/summary", method: "GET" }),
+      providesTags: ["MyGoalSummary"],
     }),
     getGoalOptions: builder.query<GoalRef[], GoalOptionQuery | void>({
       query: (params) => ({
@@ -68,6 +80,8 @@ const goalApi = baseApi.injectEndpoints({
 export const {
   useGetGoalsQuery,
   useGetGoalOptionsQuery,
+  useGetMyGoalsQuery,
+  useGetMyGoalSummaryQuery,
   useGetGoalSummaryQuery,
   useGetGoalQuery,
   useCreateGoalMutation,

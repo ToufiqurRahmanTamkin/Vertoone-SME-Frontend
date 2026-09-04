@@ -103,12 +103,36 @@ const OvertimeSettings = lazy(
 const ProvidentFundSettings = lazy(
   () => import("@/app/hrms/settings/providentFund/ProvidentFundSettingsPage")
 );
+const AttendanceOverview = lazy(
+  () => import("@/app/hrms/attendance/overview/AttendanceOverviewPage")
+);
+const DailyAttendance = lazy(
+  () => import("@/app/hrms/attendance/daily/DailyAttendancePage")
+);
+const ShiftAssignments = lazy(
+  () => import("@/app/hrms/attendance/shiftAssignments/ShiftAssignmentsPage")
+);
+const RosterPlanning = lazy(() => import("@/app/hrms/attendance/roster/RosterPage"));
+const WorkHistory = lazy(() => import("@/app/hrms/workHistory/WorkHistoryPage"));
+const MyAttendanceCorrections = lazy(
+  () => import("@/app/hrms/myRequests/AttendanceCorrectionPage")
+);
+const AttendanceApprovals = lazy(
+  () => import("@/app/hrms/approvals/AttendanceApprovalsPage")
+);
 const PoliciesOverview = lazy(() => import("@/app/hrms/policies/overview/PoliciesOverviewPage"));
 const PoliciesHandbook = lazy(() => import("@/app/hrms/policies/handbook/PoliciesPage"));
 const PolicyAcknowledgements = lazy(
   () => import("@/app/hrms/policies/acknowledgements/PolicyAcknowledgementsPage")
 );
 const Announcements = lazy(() => import("@/app/hrms/announcements/AnnouncementsPage"));
+const MyAttendance = lazy(() => import("@/app/hrms/myWork/MyAttendancePage"));
+const MyShifts = lazy(() => import("@/app/hrms/myWork/MyShiftPage"));
+const MyWorkHistory = lazy(() => import("@/app/hrms/myWork/MyWorkHistoryPage"));
+const MyWorkOverview = lazy(() => import("@/app/hrms/myWork/overview/MyWorkOverviewPage"));
+const MyTimesheet = lazy(() => import("@/app/hrms/myWork/timesheet/MyTimesheetPage"));
+const MyTasks = lazy(() => import("@/app/hrms/myWork/tasks/MyTasksPage"));
+const MyGoals = lazy(() => import("@/app/hrms/myWork/goals/MyGoalsPage"));
 const MyPolicies = lazy(() => import("@/app/hrms/myRecords/MyPoliciesPage"));
 const MyAnnouncements = lazy(() => import("@/app/hrms/myRecords/MyAnnouncementsPage"));
 const AssetsOverview = lazy(() => import("@/app/hrms/assets/overview/AssetsOverviewPage"));
@@ -300,6 +324,16 @@ const builtRoutes: RouteConfig[] = [
   { path: "crm/settings/tags", element: <Tags /> },
 
   { path: "hrms/directory/employees", element: <Employees /> },
+  { path: "hrms/directory/work-history", element: <WorkHistory /> },
+  { path: "hrms/attendance/overview", element: <AttendanceOverview /> },
+  { path: "hrms/attendance/daily-attendance", element: <DailyAttendance /> },
+  { path: "hrms/attendance/shift-assignments", element: <ShiftAssignments /> },
+  { path: "hrms/attendance/roster", element: <RosterPlanning /> },
+  { path: "hrms/approvals/attendance", element: <AttendanceApprovals /> },
+  { path: "hrms/my-work/attendance", element: <MyAttendance /> },
+  { path: "hrms/my-work/shifts", element: <MyShifts /> },
+  { path: "hrms/my-work/work-history", element: <MyWorkHistory /> },
+  { path: "hrms/my-requests/attendance-correction", element: <MyAttendanceCorrections /> },
   { path: "hrms/directory/teams", element: <Teams /> },
   { path: "hrms/directory/departments", element: <Departments /> },
   { path: "hrms/directory/designations", element: <Designations /> },
@@ -314,6 +348,10 @@ const builtRoutes: RouteConfig[] = [
   { path: "hrms/policies/handbook", element: <PoliciesHandbook /> },
   { path: "hrms/policies/acknowledgements", element: <PolicyAcknowledgements /> },
   { path: "hrms/announcements", element: <Announcements /> },
+  { path: "hrms/my-work/overview", element: <MyWorkOverview /> },
+  { path: "hrms/my-work/timesheet", element: <MyTimesheet /> },
+  { path: "hrms/my-work/tasks", element: <MyTasks /> },
+  { path: "hrms/my-work/goals", element: <MyGoals /> },
   { path: "hrms/my-records/policies", element: <MyPolicies /> },
   { path: "hrms/my-records/announcements", element: <MyAnnouncements /> },
   { path: "hrms/assets/overview", element: <AssetsOverview /> },

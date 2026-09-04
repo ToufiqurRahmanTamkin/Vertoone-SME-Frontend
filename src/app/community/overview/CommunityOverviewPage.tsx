@@ -113,7 +113,7 @@ export default function CommunityOverviewPage() {
         </div>
       )}
 
-      <StatGrid>
+      <StatGrid className="lg:grid-cols-4">
         {kpiCards.map((card) => (
           <KpiCard key={card.label} {...card} isLoading={isLoading} />
         ))}

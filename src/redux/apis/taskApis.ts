@@ -1,5 +1,6 @@
 import type { Pagination } from "@/types";
 import type {
+  MyTaskSummary,
   Task,
   TaskActivity,
   TaskActivityListQuery,
@@ -129,6 +130,30 @@ const taskApi = baseApi.injectEndpoints({
       }),
       providesTags: ["TaskSummary"],
     }),
+    getMyTasks: builder.query<TaskListResult, TaskListQuery | void>({
+      query: (params) => ({
+        url: `/tasks-goals/tasks/mine${buildQuery((params ?? {}) as Record<string, unknown>)}`,
+        method: "GET",
+      }),
+      providesTags: ["MyTasks"],
+    }),
+    getMyTaskSummary: builder.query<MyTaskSummary, TaskListQuery | void>({
+      query: (params) => ({
+        url: `/tasks-goals/tasks/mine/summary${buildQuery(
+          (params ?? {}) as Record<string, unknown>
+        )}`,
+        method: "GET",
+      }),
+      providesTags: ["MyTaskSummary"],
+    }),
+    setMyTaskCompletion: builder.mutation<Task, { id: string; isCompleted: boolean }>({
+      query: ({ id, isCompleted }) => ({
+        url: `/tasks-goals/tasks/mine/${id}/completion`,
+        method: "PATCH",
+        body: { isCompleted },
+      }),
+      invalidatesTags: [...TASK_TAGS, "MyTasks", "MyTaskSummary"],
+    }),
     getTaskAssigneeOptions: builder.query<TaskAssigneeOption[], TaskAssigneeOptionQuery | void>({
       query: (params) => ({
         url: `/tasks-goals/tasks/assignees${buildQuery(
@@ -218,6 +243,9 @@ export const {
   useGetTaskBoardViewQuery,
   useGetTasksQuery,
   useGetTaskSummaryQuery,
+  useGetMyTasksQuery,
+  useGetMyTaskSummaryQuery,
+  useSetMyTaskCompletionMutation,
   useGetTaskAssigneeOptionsQuery,
   useGetTaskQuery,
   useCreateTaskMutation,

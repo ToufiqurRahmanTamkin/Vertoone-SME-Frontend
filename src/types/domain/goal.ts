@@ -209,6 +209,16 @@ export interface GoalSummary {
   averageProgress: number;
 }
 
+export interface MyGoalSummary {
+  total: number;
+  openCount: number;
+  atRiskCount: number;
+  achievedCount: number;
+  overdueCount: number;
+  dueSoonCount: number;
+  averageProgress: number;
+}
+
 export interface GoalKeyResultPayload {
   _id?: string;
   title: string;

@@ -112,7 +112,7 @@ export default function CommunityFeedsPage() {
         actions={<BackLink to="/company/community/overview" label="Community overview" />}
       />
 
-      <StatGrid>
+      <StatGrid className="lg:grid-cols-4">
         <Stat>
           <StatLabel>Posts</StatLabel>
           <StatValue>{formatNumber(summary?.publishedCount)}</StatValue>

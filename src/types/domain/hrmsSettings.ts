@@ -164,6 +164,7 @@ export interface LeaveSettings {
 }
 
 export interface AttendanceSettings {
+  timezone: string;
   graceMinutes: number;
   halfDayAfterMinutes: number;
   minHoursFullDay: number;

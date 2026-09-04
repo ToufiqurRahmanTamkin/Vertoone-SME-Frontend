@@ -224,7 +224,7 @@ export default function CommunityMembersPage() {
         actions={<BackLink to="/company/community/overview" label="Community overview" />}
       />
 
-      <StatGrid>
+      <StatGrid className="lg:grid-cols-4">
         <Stat>
           <StatLabel>Members</StatLabel>
           <StatValue>{formatNumber(used)}</StatValue>

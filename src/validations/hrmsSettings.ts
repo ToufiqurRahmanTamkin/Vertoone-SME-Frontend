@@ -74,6 +74,7 @@ export type LeavePolicyFormValues = z.infer<typeof LeavePolicySchema>;
 
 export const AttendanceRuleSchema = z
   .object({
+    timezone: z.string().trim().min(1, "Pick a time zone"),
     graceMinutes: numberField(0, 240),
     halfDayAfterMinutes: numberField(0, 600),
     minHoursFullDay: numberField(1, 24),

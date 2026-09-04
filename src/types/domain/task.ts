@@ -360,6 +360,16 @@ export interface TaskSummary {
   completionRate: number;
 }
 
+export interface MyTaskSummary {
+  total: number;
+  openCount: number;
+  completedCount: number;
+  overdueCount: number;
+  dueTodayCount: number;
+  dueThisWeekCount: number;
+  completionRate: number;
+}
+
 export interface TaskAssigneePayload {
   kind: TaskAssigneeKind;
   refId: string;

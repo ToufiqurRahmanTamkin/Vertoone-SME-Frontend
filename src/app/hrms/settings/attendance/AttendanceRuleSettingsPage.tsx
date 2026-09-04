@@ -1,5 +1,10 @@
 import { BackLink } from "@/components/shared/back-link";
-import { FormInput, FormMultiSelect, FormSwitch } from "@/components/shared/form-fields";
+import {
+  FormInput,
+  FormMultiSelect,
+  FormSelect,
+  FormSwitch,
+} from "@/components/shared/form-fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Form } from "@/components/ui/form";
@@ -38,7 +43,13 @@ const CAPTURE_OPTIONS = ATTENDANCE_CAPTURE_METHODS.map((value) => ({
   label: ATTENDANCE_CAPTURE_METHOD_LABELS[value],
 }));
 
+const TIMEZONE_OPTIONS = (Intl.supportedValuesOf?.("timeZone") ?? ["UTC"]).map((zone) => ({
+  value: zone,
+  label: zone,
+}));
+
 const toFormValues = (attendance: AttendanceSettings): AttendanceRuleFormValues => ({
+  timezone: attendance.timezone || "UTC",
   graceMinutes: attendance.graceMinutes,
   halfDayAfterMinutes: attendance.halfDayAfterMinutes,
   minHoursFullDay: attendance.minHoursFullDay,
@@ -86,6 +97,7 @@ function AttendanceRuleForm({
   const onSubmit = async (values: AttendanceRuleFormValues) => {
     try {
       await updateAttendance({
+        timezone: values.timezone,
         graceMinutes: toNumber(values.graceMinutes),
         halfDayAfterMinutes: toNumber(values.halfDayAfterMinutes),
         minHoursFullDay: toNumber(values.minHoursFullDay),
@@ -121,6 +133,7 @@ function AttendanceRuleForm({
       value: "thresholds",
       label: "Late & absent",
       fields: [
+        "timezone",
         "graceMinutes",
         "halfDayAfterMinutes",
         "autoAbsentAfterMinutes",
@@ -135,6 +148,17 @@ function AttendanceRuleForm({
           title="Late, early and absent"
           description="Measured against the start and end time of the shift each employee is on."
         >
+          <FormSelect
+            control={form.control}
+            name="timezone"
+            label="Attendance time zone"
+            placeholder="Pick a time zone"
+            searchable
+            description="Decides when a working day starts and ends for clock-ins."
+            options={TIMEZONE_OPTIONS}
+            className="sm:max-w-sm"
+          />
+
           <div className="grid gap-4 sm:grid-cols-3">
             <FormInput
               control={form.control}

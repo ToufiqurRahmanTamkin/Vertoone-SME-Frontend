@@ -380,7 +380,7 @@ export default function CommunityGroupsPage() {
         actions={<BackLink to="/company/community/overview" label="Community overview" />}
       />
 
-      <StatGrid>
+      <StatGrid className="lg:grid-cols-4">
         <Stat>
           <StatLabel>Groups</StatLabel>
           <StatValue>{formatNumber(used)}</StatValue>

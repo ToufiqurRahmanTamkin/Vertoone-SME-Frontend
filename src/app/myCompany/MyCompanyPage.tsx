@@ -33,6 +33,7 @@ import type {
 import { AlertTriangle, Building2, Receipt, ShieldCheck, Wallet } from "lucide-react";
 import { useSelector } from "react-redux";
 import { AiAllowanceCard } from "./components/AiAllowanceCard";
+import { MyAttendanceCard } from "./components/MyAttendanceCard";
 import { PlanEntitlementCard } from "./components/PlanEntitlementCard";
 import { SubscriptionManagementCard } from "./components/SubscriptionManagementCard";
 
@@ -139,6 +140,8 @@ export default function MyCompanyPage() {
         title={`Welcome back, ${user?.name ?? "there"}`}
         description="Your company profile, subscription and billing history."
       />
+
+      <MyAttendanceCard />
 
       <StatGrid className="xl:grid-cols-4">
         {cards.map(({ label, value, description, icon: Icon, color }) => (
