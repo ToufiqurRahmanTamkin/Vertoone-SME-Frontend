@@ -163,6 +163,11 @@ function ProvidentFundForm({
   });
   const interestEnabled = useWatch({ control: form.control, name: "interestEnabled" });
   const loansEnabled = useWatch({ control: form.control, name: "loansEnabled" });
+  const maxLoanPercentOfBalance = useWatch({
+    control: form.control,
+    name: "maxLoanPercentOfBalance",
+  });
+  const maxLoanTenureMonths = useWatch({ control: form.control, name: "maxLoanTenureMonths" });
   const requireNominee = useWatch({ control: form.control, name: "requireNominee" });
   const rules = useWatch({ control: form.control, name: "withdrawalRules" });
 
@@ -565,13 +570,9 @@ function ProvidentFundForm({
             {loansEnabled && (
               <p className="rounded-lg border border-dashed bg-muted/20 p-3 text-sm">
                 A member may borrow up to{" "}
-                <span className="font-medium">
-                  {toNumber(form.getValues("maxLoanPercentOfBalance"))}%
-                </span>{" "}
-                of their balance, repaid over at most{" "}
-                <span className="font-medium">
-                  {monthWord(toNumber(form.getValues("maxLoanTenureMonths")))}
-                </span>
+                <span className="font-medium">{toNumber(maxLoanPercentOfBalance)}%</span> of
+                their balance, repaid over at most{" "}
+                <span className="font-medium">{monthWord(toNumber(maxLoanTenureMonths))}</span>
                 .
               </p>
             )}
