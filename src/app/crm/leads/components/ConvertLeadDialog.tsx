@@ -47,22 +47,20 @@ export function ConvertLeadDialog({
   const [dealTitle, setDealTitle] = React.useState("");
   const [dealValue, setDealValue] = React.useState("");
   const [keepLead, setKeepLead] = React.useState(true);
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (!open || !lead) return;
+  const seedKey = open && lead ? lead._id : null;
+
+  if (seedKey !== seededFor) {
+    setSeededFor(seedKey);
     setCreateDeal(canCreateDeal);
-    setDealTitle(lead.title);
-    setDealValue(lead.estimatedValue > 0 ? String(lead.estimatedValue) : "");
+    setDealTitle(lead?.title ?? "");
+    setDealValue(lead && lead.estimatedValue > 0 ? String(lead.estimatedValue) : "");
     setKeepLead(true);
-  }, [open, lead, canCreateDeal]);
-
-  React.useEffect(() => {
-    if (!open || pipelineId) return;
-    const first = pipelineOptions[0];
-    if (first) setPipelineId(first._id);
-  }, [open, pipelineId, pipelineOptions]);
+  }
 
   const hasPipeline = pipelineOptions.length > 0;
+  const resolvedPipelineId = pipelineId || pipelineOptions[0]?._id || "";
   const wantsDeal = createDeal && canCreateDeal && hasPipeline;
 
   const confirm = async () => {
@@ -74,7 +72,7 @@ export function ConvertLeadDialog({
         body: {
           keepLead,
           createDeal: wantsDeal,
-          pipelineId: wantsDeal ? pipelineId : null,
+          pipelineId: wantsDeal ? resolvedPipelineId : null,
           dealTitle: wantsDeal ? dealTitle : undefined,
           dealValue: wantsDeal && dealValue !== "" ? Number(dealValue) : undefined,
         },
@@ -138,7 +136,7 @@ export function ConvertLeadDialog({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="convert-pipeline">Pipeline</Label>
-                <Select value={pipelineId} onValueChange={setPipelineId}>
+                <Select value={resolvedPipelineId} onValueChange={setPipelineId}>
                   <SelectTrigger id="convert-pipeline" className="w-full">
                     <SelectValue placeholder="Pick a pipeline" />
                   </SelectTrigger>
@@ -193,7 +191,7 @@ export function ConvertLeadDialog({
           </Button>
           <Button
             type="button"
-            disabled={isLoading || (wantsDeal && !pipelineId)}
+            disabled={isLoading || (wantsDeal && !resolvedPipelineId)}
             onClick={() => void confirm()}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
