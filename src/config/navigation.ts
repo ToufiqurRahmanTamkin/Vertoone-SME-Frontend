@@ -2017,52 +2017,10 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 description: "The reasons a deal can be marked lost, for honest reporting.",
               },
               {
-                title: "Scoring Rules",
-                slug: "scoring-rules",
-                icon: "Target",
-                description: "What makes a lead hot, expressed as points.",
-              },
-              {
-                title: "Assignment Rules",
-                slug: "assignment-rules",
-                icon: "UserCog",
-                description: "Who a new lead or ticket is routed to, and when.",
-              },
-              {
-                title: "Workflow Rules",
-                slug: "workflow-rules",
-                icon: "Workflow",
-                description: "Actions fired automatically when a record changes.",
-              },
-              {
-                title: "Blueprints",
-                slug: "blueprints",
-                icon: "GitBranch",
-                description: "The steps a record must follow before it can move on.",
-              },
-              {
-                title: "Custom Fields",
-                slug: "custom-fields",
-                icon: "SlidersHorizontal",
-                description: "Extra fields your records capture beyond the defaults.",
-              },
-              {
-                title: "Duplicate Rules",
-                slug: "duplicate-rules",
-                icon: "Copy",
-                description: "How duplicate leads, contacts and accounts are caught.",
-              },
-              {
                 title: "Territories",
                 slug: "territories",
                 icon: "MapPin",
                 description: "Regions, segments and how ownership is divided.",
-              },
-              {
-                title: "Web Forms",
-                slug: "web-forms",
-                icon: "ClipboardList",
-                description: "Forms that create records straight from your site.",
               },
               {
                 title: "Import & Export",
