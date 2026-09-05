@@ -11,10 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import {
-  NO_DELEGABLE_MENUS,
-  useDelegableModules,
-} from "@/hooks/use-delegable-modules";
+import { NO_DELEGABLE_MENUS, useDelegableModules } from "@/hooks/use-delegable-modules";
 import {
   useCreateEmployeeRoleMutation,
   useUpdateEmployeeRoleMutation,
@@ -33,6 +30,7 @@ interface EmployeeRoleFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   role?: EmployeeRole | null;
+  onSaved?: (role: EmployeeRole) => void;
 }
 
 const emptyValues = (): EmployeeRoleFormValues => ({
@@ -47,18 +45,19 @@ const toFormValues = (role: EmployeeRole): EmployeeRoleFormValues => ({
   isActive: role.isActive,
 });
 
-export function EmployeeRoleFormModal({ open, onOpenChange, role }: EmployeeRoleFormModalProps) {
+export function EmployeeRoleFormModal({
+  open,
+  onOpenChange,
+  role,
+  onSaved,
+}: EmployeeRoleFormModalProps) {
   const isEdit = Boolean(role);
 
   const [createEmployeeRole, { isLoading: isCreating }] = useCreateEmployeeRoleMutation();
   const [updateEmployeeRole, { isLoading: isUpdating }] = useUpdateEmployeeRoleMutation();
   const isSaving = isCreating || isUpdating;
 
-  const {
-    modules: assignableModules,
-    knownModuleKeys,
-    ceiling,
-  } = useDelegableModules();
+  const { modules: assignableModules, knownModuleKeys, ceiling } = useDelegableModules();
 
   const [grant, setGrant] = React.useState<ModulePermissionMap>({});
 
@@ -95,13 +94,11 @@ export function EmployeeRoleFormModal({ open, onOpenChange, role }: EmployeeRole
     };
 
     try {
-      if (role) {
-        await updateEmployeeRole({ id: role._id, body }).unwrap();
-        toast.success("Employee role updated");
-      } else {
-        await createEmployeeRole(body).unwrap();
-        toast.success("Employee role created");
-      }
+      const saved = role
+        ? await updateEmployeeRole({ id: role._id, body }).unwrap()
+        : await createEmployeeRole(body).unwrap();
+      toast.success(role ? "Employee role updated" : "Employee role created");
+      onSaved?.(saved);
       onOpenChange(false);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;

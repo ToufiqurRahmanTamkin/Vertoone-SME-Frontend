@@ -32,6 +32,7 @@ interface DepartmentFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   department?: Department | null;
+  onSaved?: (department: Department) => void;
 }
 
 const DETAILS_STEP: StepperStep = { id: "details", label: "Details" };
@@ -74,7 +75,12 @@ const toPayload = (
   ...grant,
 });
 
-export function DepartmentFormModal({ open, onOpenChange, department }: DepartmentFormModalProps) {
+export function DepartmentFormModal({
+  open,
+  onOpenChange,
+  department,
+  onSaved,
+}: DepartmentFormModalProps) {
   const isEdit = Boolean(department);
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
@@ -95,7 +101,9 @@ export function DepartmentFormModal({ open, onOpenChange, department }: Departme
 
   const seedKey = open ? (department?._id ?? "new") : null;
   const grant = useAccessGrant(seedKey, department);
-  const canManageAccess = useModulePermission("/settings/users-and-roles/roles-and-permissions").canEdit;
+  const canManageAccess = useModulePermission(
+    "/settings/users-and-roles/roles-and-permissions"
+  ).canEdit;
 
   const steps = React.useMemo<StepperStep[]>(
     () =>
@@ -157,13 +165,11 @@ export function DepartmentFormModal({ open, onOpenChange, department }: Departme
         roleIds: grant.roleIds,
       });
 
-      if (department) {
-        await updateDepartment({ id: department._id, body }).unwrap();
-        toast.success("Department updated");
-      } else {
-        await createDepartment(body).unwrap();
-        toast.success("Department created");
-      }
+      const saved = department
+        ? await updateDepartment({ id: department._id, body }).unwrap()
+        : await createDepartment(body).unwrap();
+      toast.success(department ? "Department updated" : "Department created");
+      onSaved?.(saved);
       onOpenChange(false);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;

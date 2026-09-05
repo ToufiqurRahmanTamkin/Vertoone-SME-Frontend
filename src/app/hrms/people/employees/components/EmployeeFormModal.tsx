@@ -11,6 +11,11 @@ import {
 } from "@/components/shared/form-fields";
 import { AccessGrantEditor } from "@/components/permission/access-grant-editor";
 import { FileUploader } from "@/components/shared/file-uploader";
+import { QuickCreateButton } from "@/components/shared/quick-create-button";
+import { ColorLabelFormModal, type ColorLabel } from "@/components/shared/color-label-form-modal";
+import { DepartmentFormModal } from "@/app/hrms/people/departments/components/DepartmentFormModal";
+import { DesignationFormModal } from "@/app/hrms/people/designations/components/DesignationFormModal";
+import { EmployeeRoleFormModal } from "@/app/hrms/settings/employeeRoles/components/EmployeeRoleFormModal";
 import {
   Accordion,
   AccordionContent,
@@ -47,7 +52,11 @@ import { useGetEmployeeRoleOptionsQuery } from "@/redux/apis/employeeRoleApis";
 import { useGetConcernsQuery } from "@/redux/apis/concernApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
 import { useAccessGrant } from "@/hooks/use-access-grant";
+import { useModulePermission } from "@/hooks/use-permission";
 import type { ModulePermissionMap } from "@/types/domain/permission";
+import type { Department } from "@/types/domain/department";
+import type { Designation } from "@/types/domain/designation";
+import type { EmployeeRole } from "@/types/domain/employeeRole";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import type { Employee, EmployeePayload } from "@/types/domain/employee";
 import { EmployeeSchema, type EmployeeFormValues } from "@/validations/employee";
@@ -62,6 +71,15 @@ interface EmployeeFormModalProps {
   onOpenChange: (open: boolean) => void;
   employee?: Employee | null;
 }
+
+type QuickCreateKind = "department" | "designation" | "employeeRole" | "tag";
+
+type MultiSelectField = "departmentIds" | "designationIds" | "employeeRoleIds" | "tagIds";
+
+const DEPARTMENTS_MODULE = "/hrms/directory/departments";
+const DESIGNATIONS_MODULE = "/hrms/directory/designations";
+const EMPLOYEE_ROLES_MODULE = "/hrms/settings/employee-roles-and-permissions";
+const TAGS_MODULE = "/crm/settings/tags";
 
 const STATUS_OPTIONS = toOptions(EMPLOYEE_STATUS_LABELS);
 const EMPLOYMENT_TYPE_OPTIONS = toOptions(EMPLOYMENT_TYPE_LABELS);
@@ -215,6 +233,13 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
   const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
   const isSaving = isCreating || isUpdating;
 
+  const canCreateDepartment = useModulePermission(DEPARTMENTS_MODULE).canCreate;
+  const canCreateDesignation = useModulePermission(DESIGNATIONS_MODULE).canCreate;
+  const canCreateEmployeeRole = useModulePermission(EMPLOYEE_ROLES_MODULE).canCreate;
+  const canCreateTag = useModulePermission(TAGS_MODULE).canCreate;
+
+  const [quickCreate, setQuickCreate] = React.useState<QuickCreateKind | null>(null);
+
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(EmployeeSchema),
     defaultValues: emptyValues(),
@@ -222,10 +247,20 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
 
   React.useEffect(() => {
     if (!open) return;
+    setQuickCreate(null);
     form.reset(employee ? toFormValues(employee) : emptyValues());
   }, [open, employee, form]);
 
   const grant = useAccessGrant(open ? (employee?._id ?? "new") : null, employee?.access);
+
+  const selectCreated = React.useCallback(
+    (field: MultiSelectField, id: string) => {
+      const current = form.getValues(field) ?? [];
+      if (current.includes(id)) return;
+      form.setValue(field, [...current, id], { shouldDirty: true, shouldValidate: true });
+    },
+    [form]
+  );
 
   const concernOptions = React.useMemo(
     () =>
@@ -310,366 +345,453 @@ export function EmployeeFormModal({ open, onOpenChange, employee }: EmployeeForm
     }
   };
 
+  const closeQuickCreate = () => setQuickCreate(null);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit employee" : "New employee"}</DialogTitle>
-          <DialogDescription>
-            Email and phone number must be unique across your company.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{isEdit ? "Edit employee" : "New employee"}</DialogTitle>
+            <DialogDescription>
+              Email and phone number must be unique across your company.
+            </DialogDescription>
+          </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogBody className="flex flex-col gap-4">
-              {missingOrgData && (
-                <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-                  Every employee needs at least one department and one designation. Create them
-                  under HRMS - Departments and HRMS - Designations first.
-                </p>
-              )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <DialogBody className="flex flex-col gap-4">
+                {missingOrgData && (
+                  <p className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
+                    Every employee needs at least one department and one designation.{" "}
+                    {canCreateDepartment || canCreateDesignation
+                      ? "Use the gear icon next to each field to create one without leaving this form."
+                      : "Create them under HRMS - Departments and HRMS - Designations first."}
+                  </p>
+                )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormInput
-                  control={form.control}
-                  name="fullName"
-                  label="Full name"
-                  placeholder="Ayesha Rahman"
-                />
-                <FormInput
-                  control={form.control}
-                  name="email"
-                  label="Email"
-                  placeholder="ayesha@company.com"
-                />
-                <FormPhone control={form.control} name="phone" label="Phone" />
-                <FormSelect
-                  control={form.control}
-                  name="employmentType"
-                  label="Employment type"
-                  options={EMPLOYMENT_TYPE_OPTIONS}
-                />
-                <FormMultiSelect
-                  control={form.control}
-                  name="departmentIds"
-                  label="Departments"
-                  placeholder="Pick at least one"
-                  options={departmentChoices}
-                  emptyText="No departments yet. Create them under HRMS - Departments."
-                />
-                <FormMultiSelect
-                  control={form.control}
-                  name="designationIds"
-                  label="Designations"
-                  placeholder="Pick at least one"
-                  options={designationChoices}
-                  emptyText="No designations yet. Create them under HRMS - Designations."
-                />
-                <FormMultiSelect
-                  control={form.control}
-                  name="employeeRoleIds"
-                  label="Employee roles"
-                  placeholder="No employee role"
-                  description="What this person can reach in the app once they can sign in."
-                  options={employeeRoleChoices}
-                  emptyText="No employee roles yet. Create them under HRMS Settings - Employee Roles & Permissions."
-                  className="sm:col-span-2"
-                />
-              </div>
-
-              {isEdit && (
-                <p className="text-xs text-muted-foreground">
-                  Employee ID{" "}
-                  <span className="font-medium text-foreground">{employee?.employeeCode}</span> is
-                  generated automatically and cannot be changed.
-                </p>
-              )}
-
-              <Accordion type="multiple" className="rounded-lg border px-3">
-                <AccordionItem value="personal">
-                  <AccordionTrigger className="text-sm">Personal details</AccordionTrigger>
-                  <AccordionContent className="flex flex-col gap-4 pb-4">
-                    <FileUploader
-                      value={form.watch("photoUrl")}
-                      publicId={form.watch("photoPublicId")}
-                      folder="avatars"
-                      label="Photo"
-                      description="Square image, at least 256x256."
-                      onChange={(asset) => {
-                        form.setValue("photoUrl", asset?.url ?? "", { shouldDirty: true });
-                        form.setValue("photoPublicId", asset?.publicId ?? "", {
-                          shouldDirty: true,
-                        });
-                      }}
-                    />
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <FormDate
-                        control={form.control}
-                        name="dateOfBirth"
-                        label="Date of birth"
-                        dateOnly
-                        disableFuture
-                      />
-                      <FormSelect
-                        control={form.control}
-                        name="gender"
-                        label="Gender"
-                        placeholder="Not set"
-                        options={GENDER_OPTIONS}
-                      />
-                      <FormSelect
-                        control={form.control}
-                        name="maritalStatus"
-                        label="Marital status"
-                        placeholder="Not set"
-                        options={MARITAL_STATUS_OPTIONS}
-                      />
-                      <FormSelect
-                        control={form.control}
-                        name="bloodGroup"
-                        label="Blood group"
-                        placeholder="Not set"
-                        options={BLOOD_GROUP_OPTIONS}
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="nationalId"
-                        label="National ID"
-                        placeholder="Optional"
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="workLocation"
-                        label="Work location"
-                        placeholder="Head office"
-                      />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <FormTextarea
-                        control={form.control}
-                        name="presentAddress"
-                        label="Present address"
-                        placeholder="Where they live now"
-                      />
-                      <FormTextarea
-                        control={form.control}
-                        name="permanentAddress"
-                        label="Permanent address"
-                        placeholder="Home address"
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="emergency">
-                  <AccordionTrigger className="text-sm">Emergency contact</AccordionTrigger>
-                  <AccordionContent className="pb-4">
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      <FormInput
-                        control={form.control}
-                        name="emergencyContactName"
-                        label="Name"
-                        placeholder="Optional"
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="emergencyContactRelationship"
-                        label="Relationship"
-                        placeholder="Spouse"
-                      />
-                      <FormPhone
-                        control={form.control}
-                        name="emergencyContactPhone"
-                        label="Phone"
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="job">
-                  <AccordionTrigger className="text-sm">Job details</AccordionTrigger>
-                  <AccordionContent className="pb-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <FormSelect
-                        control={form.control}
-                        name="status"
-                        label="Status"
-                        options={STATUS_OPTIONS}
-                      />
-                      <FormDate
-                        control={form.control}
-                        name="joiningDate"
-                        label="Joining date"
-                        description="Today is used when left blank."
-                        dateOnly
-                      />
-                      <FormDate
-                        control={form.control}
-                        name="confirmationDate"
-                        label="Confirmation date"
-                        dateOnly
-                      />
-                      <FormDate
-                        control={form.control}
-                        name="resignationDate"
-                        label="Resignation date"
-                        dateOnly
-                      />
-                      <FormSelect
-                        control={form.control}
-                        name="supervisorId"
-                        label="Supervisor"
-                        placeholder="Pick an employee"
-                        options={managerOptions}
-                        searchable
-                      />
-                      <FormSelect
-                        control={form.control}
-                        name="lineManagerId"
-                        label="Line manager"
-                        placeholder="Pick an employee"
-                        description="May be the same person as the supervisor."
-                        options={managerOptions}
-                        searchable
-                      />
-                      <FormSelect
-                        control={form.control}
-                        name="concernId"
-                        label="Belongs to"
-                        placeholder="The organization"
-                        description="Leave blank when the employee sits with the organization itself."
-                        options={concernOptions}
-                        searchable
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="access">
-                  <AccordionTrigger className="text-sm">Workspace access</AccordionTrigger>
-                  <AccordionContent className="flex flex-col gap-4 pb-4">
-                    <FormSwitch
-                      control={form.control}
-                      name="canSignIn"
-                      label="Can sign in"
-                      description="Creates a sign-in for this employee using their work email."
-                    />
-
-                    {canSignIn && (
-                      <div className="space-y-4">
-                        <FormPassword
-                          control={form.control}
-                          name="accessPassword"
-                          label={hasLogin ? "New password" : "Password"}
-                          description={
-                            hasLogin
-                              ? "Leave blank to keep the current password. Changing it signs them out everywhere."
-                              : "At least 8 characters. They sign in with their work email."
-                          }
-                          className="sm:max-w-sm"
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormInput
+                    control={form.control}
+                    name="fullName"
+                    label="Full name"
+                    placeholder="Ayesha Rahman"
+                  />
+                  <FormInput
+                    control={form.control}
+                    name="email"
+                    label="Email"
+                    placeholder="ayesha@company.com"
+                  />
+                  <FormPhone control={form.control} name="phone" label="Phone" />
+                  <FormSelect
+                    control={form.control}
+                    name="employmentType"
+                    label="Employment type"
+                    options={EMPLOYMENT_TYPE_OPTIONS}
+                  />
+                  <FormMultiSelect
+                    control={form.control}
+                    name="departmentIds"
+                    label="Departments"
+                    placeholder="Pick at least one"
+                    options={departmentChoices}
+                    emptyText={
+                      canCreateDepartment
+                        ? "No departments yet. Use the gear icon to create one."
+                        : "No departments yet. Create them under HRMS - Departments."
+                    }
+                    labelAction={
+                      canCreateDepartment && (
+                        <QuickCreateButton
+                          label="Create a department"
+                          onClick={() => setQuickCreate("department")}
                         />
-                        <p className="text-xs text-muted-foreground">
-                          They also inherit whatever their departments, designations and teams
-                          grant. Anything your plan does not include stays out of reach.
-                        </p>
-                        <AccessGrantEditor
-                          roleIds={grant.roleIds}
-                          onRoleIdsChange={grant.setRoleIds}
-                          permissions={grant.permissions}
-                          onPermissionsChange={grant.setPermissions}
-                          rolesHint="Roles handed to this employee directly."
-                          permissionsHint="Extra menus granted only to this employee."
+                      )
+                    }
+                  />
+                  <FormMultiSelect
+                    control={form.control}
+                    name="designationIds"
+                    label="Designations"
+                    placeholder="Pick at least one"
+                    options={designationChoices}
+                    emptyText={
+                      canCreateDesignation
+                        ? "No designations yet. Use the gear icon to create one."
+                        : "No designations yet. Create them under HRMS - Designations."
+                    }
+                    labelAction={
+                      canCreateDesignation && (
+                        <QuickCreateButton
+                          label="Create a designation"
+                          onClick={() => setQuickCreate("designation")}
+                        />
+                      )
+                    }
+                  />
+                  <FormMultiSelect
+                    control={form.control}
+                    name="employeeRoleIds"
+                    label="Employee roles"
+                    placeholder="No employee role"
+                    description="What this person can reach in the app once they can sign in."
+                    options={employeeRoleChoices}
+                    emptyText={
+                      canCreateEmployeeRole
+                        ? "No employee roles yet. Use the gear icon to create one."
+                        : "No employee roles yet. Create them under HRMS Settings - Employee Roles & Permissions."
+                    }
+                    labelAction={
+                      canCreateEmployeeRole && (
+                        <QuickCreateButton
+                          label="Create an employee role"
+                          onClick={() => setQuickCreate("employeeRole")}
+                        />
+                      )
+                    }
+                    className="sm:col-span-2"
+                  />
+                </div>
+
+                {isEdit && (
+                  <p className="text-xs text-muted-foreground">
+                    Employee ID{" "}
+                    <span className="font-medium text-foreground">{employee?.employeeCode}</span> is
+                    generated automatically and cannot be changed.
+                  </p>
+                )}
+
+                <Accordion type="multiple" className="rounded-lg border px-3">
+                  <AccordionItem value="personal">
+                    <AccordionTrigger className="text-sm">Personal details</AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4 pb-4">
+                      <FileUploader
+                        value={form.watch("photoUrl")}
+                        publicId={form.watch("photoPublicId")}
+                        folder="avatars"
+                        label="Photo"
+                        description="Square image, at least 256x256."
+                        onChange={(asset) => {
+                          form.setValue("photoUrl", asset?.url ?? "", { shouldDirty: true });
+                          form.setValue("photoPublicId", asset?.publicId ?? "", {
+                            shouldDirty: true,
+                          });
+                        }}
+                      />
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormDate
+                          control={form.control}
+                          name="dateOfBirth"
+                          label="Date of birth"
+                          dateOnly
+                          disableFuture
+                        />
+                        <FormSelect
+                          control={form.control}
+                          name="gender"
+                          label="Gender"
+                          placeholder="Not set"
+                          options={GENDER_OPTIONS}
+                        />
+                        <FormSelect
+                          control={form.control}
+                          name="maritalStatus"
+                          label="Marital status"
+                          placeholder="Not set"
+                          options={MARITAL_STATUS_OPTIONS}
+                        />
+                        <FormSelect
+                          control={form.control}
+                          name="bloodGroup"
+                          label="Blood group"
+                          placeholder="Not set"
+                          options={BLOOD_GROUP_OPTIONS}
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="nationalId"
+                          label="National ID"
+                          placeholder="Optional"
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="workLocation"
+                          label="Work location"
+                          placeholder="Head office"
                         />
                       </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
 
-                <AccordionItem value="bank">
-                  <AccordionTrigger className="text-sm">Bank details</AccordionTrigger>
-                  <AccordionContent className="flex flex-col gap-4 pb-4">
-                    <p className="text-xs text-muted-foreground">
-                      Salary is not set here. Record it under HRMS - Payroll - Salaries, where every
-                      revision is kept as history.
-                    </p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <FormInput
-                        control={form.control}
-                        name="bankName"
-                        label="Bank"
-                        placeholder="Optional"
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="branchName"
-                        label="Branch"
-                        placeholder="Optional"
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="accountName"
-                        label="Account name"
-                        placeholder="Optional"
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="accountNumber"
-                        label="Account number"
-                        placeholder="Optional"
-                      />
-                      <FormInput
-                        control={form.control}
-                        name="routingNumber"
-                        label="Routing number"
-                        placeholder="Optional"
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormTextarea
+                          control={form.control}
+                          name="presentAddress"
+                          label="Present address"
+                          placeholder="Where they live now"
+                        />
+                        <FormTextarea
+                          control={form.control}
+                          name="permanentAddress"
+                          label="Permanent address"
+                          placeholder="Home address"
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
 
-                <AccordionItem value="tags" className="border-b-0">
-                  <AccordionTrigger className="text-sm">Tags and notes</AccordionTrigger>
-                  <AccordionContent className="flex flex-col gap-4 pb-4">
-                    <FormMultiSelect
-                      control={form.control}
-                      name="tagIds"
-                      label="Tags"
-                      placeholder="No tags"
-                      options={tagChoices}
-                      emptyText="No tags yet. Create them under CRM - Tags."
-                      description="Tags are shared across modules and can be used to filter this list."
-                    />
-                    <FormTextarea
-                      control={form.control}
-                      name="notes"
-                      label="Notes"
-                      placeholder="Anything worth recording about this employee."
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </DialogBody>
+                  <AccordionItem value="emergency">
+                    <AccordionTrigger className="text-sm">Emergency contact</AccordionTrigger>
+                    <AccordionContent className="pb-4">
+                      <div className="grid gap-4 sm:grid-cols-3">
+                        <FormInput
+                          control={form.control}
+                          name="emergencyContactName"
+                          label="Name"
+                          placeholder="Optional"
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="emergencyContactRelationship"
+                          label="Relationship"
+                          placeholder="Spouse"
+                        />
+                        <FormPhone
+                          control={form.control}
+                          name="emergencyContactPhone"
+                          label="Phone"
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving || missingOrgData}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? "Save changes" : "Add employee"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+                  <AccordionItem value="job">
+                    <AccordionTrigger className="text-sm">Job details</AccordionTrigger>
+                    <AccordionContent className="pb-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormSelect
+                          control={form.control}
+                          name="status"
+                          label="Status"
+                          options={STATUS_OPTIONS}
+                        />
+                        <FormDate
+                          control={form.control}
+                          name="joiningDate"
+                          label="Joining date"
+                          description="Today is used when left blank."
+                          dateOnly
+                        />
+                        <FormDate
+                          control={form.control}
+                          name="confirmationDate"
+                          label="Confirmation date"
+                          dateOnly
+                        />
+                        <FormDate
+                          control={form.control}
+                          name="resignationDate"
+                          label="Resignation date"
+                          dateOnly
+                        />
+                        <FormSelect
+                          control={form.control}
+                          name="supervisorId"
+                          label="Supervisor"
+                          placeholder="Pick an employee"
+                          options={managerOptions}
+                          searchable
+                        />
+                        <FormSelect
+                          control={form.control}
+                          name="lineManagerId"
+                          label="Line manager"
+                          placeholder="Pick an employee"
+                          description="May be the same person as the supervisor."
+                          options={managerOptions}
+                          searchable
+                        />
+                        <FormSelect
+                          control={form.control}
+                          name="concernId"
+                          label="Belongs to"
+                          placeholder="The organization"
+                          description="Leave blank when the employee sits with the organization itself."
+                          options={concernOptions}
+                          searchable
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="access">
+                    <AccordionTrigger className="text-sm">Workspace access</AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4 pb-4">
+                      <FormSwitch
+                        control={form.control}
+                        name="canSignIn"
+                        label="Can sign in"
+                        description="Creates a sign-in for this employee using their work email."
+                      />
+
+                      {canSignIn && (
+                        <div className="space-y-4">
+                          <FormPassword
+                            control={form.control}
+                            name="accessPassword"
+                            label={hasLogin ? "New password" : "Password"}
+                            description={
+                              hasLogin
+                                ? "Leave blank to keep the current password. Changing it signs them out everywhere."
+                                : "At least 8 characters. They sign in with their work email."
+                            }
+                            className="sm:max-w-sm"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            They also inherit whatever their departments, designations and teams
+                            grant. Anything your plan does not include stays out of reach.
+                          </p>
+                          <AccessGrantEditor
+                            roleIds={grant.roleIds}
+                            onRoleIdsChange={grant.setRoleIds}
+                            permissions={grant.permissions}
+                            onPermissionsChange={grant.setPermissions}
+                            rolesHint="Roles handed to this employee directly."
+                            permissionsHint="Extra menus granted only to this employee."
+                          />
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="bank">
+                    <AccordionTrigger className="text-sm">Bank details</AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4 pb-4">
+                      <p className="text-xs text-muted-foreground">
+                        Salary is not set here. Record it under HRMS - Payroll - Salaries, where
+                        every revision is kept as history.
+                      </p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormInput
+                          control={form.control}
+                          name="bankName"
+                          label="Bank"
+                          placeholder="Optional"
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="branchName"
+                          label="Branch"
+                          placeholder="Optional"
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="accountName"
+                          label="Account name"
+                          placeholder="Optional"
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="accountNumber"
+                          label="Account number"
+                          placeholder="Optional"
+                        />
+                        <FormInput
+                          control={form.control}
+                          name="routingNumber"
+                          label="Routing number"
+                          placeholder="Optional"
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="tags" className="border-b-0">
+                    <AccordionTrigger className="text-sm">Tags and notes</AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4 pb-4">
+                      <FormMultiSelect
+                        control={form.control}
+                        name="tagIds"
+                        label="Tags"
+                        placeholder="No tags"
+                        options={tagChoices}
+                        emptyText={
+                          canCreateTag
+                            ? "No tags yet. Use the gear icon to create one."
+                            : "No tags yet. Create them under CRM - Tags."
+                        }
+                        description="Tags are shared across modules and can be used to filter this list."
+                        labelAction={
+                          canCreateTag && (
+                            <QuickCreateButton
+                              label="Create a tag"
+                              onClick={() => setQuickCreate("tag")}
+                            />
+                          )
+                        }
+                      />
+                      <FormTextarea
+                        control={form.control}
+                        name="notes"
+                        label="Notes"
+                        placeholder="Anything worth recording about this employee."
+                      />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </DialogBody>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSaving || missingOrgData}>
+                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isEdit ? "Save changes" : "Add employee"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {open && canCreateDepartment && (
+        <DepartmentFormModal
+          open={quickCreate === "department"}
+          onOpenChange={(next) => !next && closeQuickCreate()}
+          onSaved={(department: Department) => selectCreated("departmentIds", department._id)}
+        />
+      )}
+
+      {open && canCreateDesignation && (
+        <DesignationFormModal
+          open={quickCreate === "designation"}
+          onOpenChange={(next) => !next && closeQuickCreate()}
+          onSaved={(designation: Designation) => selectCreated("designationIds", designation._id)}
+        />
+      )}
+
+      {open && canCreateEmployeeRole && (
+        <EmployeeRoleFormModal
+          open={quickCreate === "employeeRole"}
+          onOpenChange={(next) => !next && closeQuickCreate()}
+          onSaved={(role: EmployeeRole) => selectCreated("employeeRoleIds", role._id)}
+        />
+      )}
+
+      {open && canCreateTag && (
+        <ColorLabelFormModal
+          kind="tag"
+          open={quickCreate === "tag"}
+          onOpenChange={(next) => !next && closeQuickCreate()}
+          onSaved={(tag: ColorLabel) => selectCreated("tagIds", tag._id)}
+        />
+      )}
+    </>
   );
 }

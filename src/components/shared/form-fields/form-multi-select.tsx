@@ -42,12 +42,14 @@ export function FormMultiSelect<TFieldValues extends FieldValues>({
   searchable,
   emptyText = "No results found.",
   maxVisible = 6,
+  labelAction,
 }: BaseProps<TFieldValues> & {
   options: MultiSelectOption[];
   disabled?: boolean;
   searchable?: boolean;
   emptyText?: string;
   maxVisible?: number;
+  labelAction?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const showSearch = searchable ?? options.length > 8;
@@ -71,7 +73,10 @@ export function FormMultiSelect<TFieldValues extends FieldValues>({
 
         return (
           <FormItem className={cn("min-w-0", className)}>
-            <FormLabel>{label}</FormLabel>
+            <div className="flex min-w-0 items-center gap-1">
+              <FormLabel className="min-w-0">{label}</FormLabel>
+              {labelAction}
+            </div>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild disabled={disabled}>
                 <FormControl>

@@ -31,6 +31,7 @@ interface DesignationFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   designation?: Designation | null;
+  onSaved?: (designation: Designation) => void;
 }
 
 const DETAILS_STEP: StepperStep = { id: "details", label: "Details" };
@@ -77,6 +78,7 @@ export function DesignationFormModal({
   open,
   onOpenChange,
   designation,
+  onSaved,
 }: DesignationFormModalProps) {
   const isEdit = Boolean(designation);
 
@@ -96,7 +98,9 @@ export function DesignationFormModal({
 
   const seedKey = open ? (designation?._id ?? "new") : null;
   const grant = useAccessGrant(seedKey, designation);
-  const canManageAccess = useModulePermission("/settings/users-and-roles/roles-and-permissions").canEdit;
+  const canManageAccess = useModulePermission(
+    "/settings/users-and-roles/roles-and-permissions"
+  ).canEdit;
 
   const steps = React.useMemo<StepperStep[]>(
     () =>
@@ -137,13 +141,11 @@ export function DesignationFormModal({
         roleIds: grant.roleIds,
       });
 
-      if (designation) {
-        await updateDesignation({ id: designation._id, body }).unwrap();
-        toast.success("Designation updated");
-      } else {
-        await createDesignation(body).unwrap();
-        toast.success("Designation created");
-      }
+      const saved = designation
+        ? await updateDesignation({ id: designation._id, body }).unwrap()
+        : await createDesignation(body).unwrap();
+      toast.success(designation ? "Designation updated" : "Designation created");
+      onSaved?.(saved);
       onOpenChange(false);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
