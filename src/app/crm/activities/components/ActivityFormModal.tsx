@@ -16,47 +16,73 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
+import { useGetContactOptionsQuery } from "@/redux/apis/contactApis";
 import {
-  useCreatePipelineActivityMutation,
-  useUpdatePipelineActivityMutation,
-} from "@/redux/apis/pipelineApis";
+  useCreateCrmActivityMutation,
+  useUpdateCrmActivityMutation,
+} from "@/redux/apis/crmActivityApis";
+import { useGetDealOptionsQuery } from "@/redux/apis/dealApis";
+import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
+import { useGetLeadOptionsQuery } from "@/redux/apis/leadApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import {
-  PIPELINE_ACTIVITY_MANUAL_TYPES,
-  PIPELINE_ACTIVITY_OUTCOME_LABELS,
-  PIPELINE_ACTIVITY_OUTCOMES,
-  PIPELINE_ACTIVITY_TYPE_LABELS,
-  type PipelineActivity,
-} from "@/types/domain/pipeline";
-import { PipelineActivitySchema, type PipelineActivityFormValues } from "@/validations/pipeline";
+  CRM_ACTIVITY_MANUAL_TYPES,
+  CRM_ACTIVITY_OUTCOME_LABELS,
+  CRM_ACTIVITY_OUTCOMES,
+  CRM_ACTIVITY_RELATED_LABELS,
+  CRM_ACTIVITY_RELATED_TYPES,
+  CRM_ACTIVITY_TYPE_LABELS,
+  type CrmActivity,
+  type CrmActivityManualType,
+  type CrmActivityRelatedType,
+} from "@/types/domain/crmActivity";
+import { CrmActivitySchema, type CrmActivityFormValues } from "@/validations/crmActivity";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
+export interface ActivityFormTarget {
+  relatedType: CrmActivityRelatedType;
+  dealId?: string;
+  leadId?: string;
+  contactId?: string;
+}
+
 interface ActivityFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  pipelineId: string;
-  entryId: string;
-  contactId: string | null;
-  activity?: PipelineActivity | null;
+  activity?: CrmActivity | null;
+  target?: ActivityFormTarget | null;
+  defaultType?: CrmActivityManualType;
+  lockTarget?: boolean;
 }
 
-const TYPE_OPTIONS = PIPELINE_ACTIVITY_MANUAL_TYPES.map((type) => ({
-  label: PIPELINE_ACTIVITY_TYPE_LABELS[type],
+const TYPE_OPTIONS = CRM_ACTIVITY_MANUAL_TYPES.map((type) => ({
+  label: CRM_ACTIVITY_TYPE_LABELS[type],
   value: type,
 }));
 
-const OUTCOME_OPTIONS = PIPELINE_ACTIVITY_OUTCOMES.map((outcome) => ({
-  label: PIPELINE_ACTIVITY_OUTCOME_LABELS[outcome],
+const OUTCOME_OPTIONS = CRM_ACTIVITY_OUTCOMES.map((outcome) => ({
+  label: CRM_ACTIVITY_OUTCOME_LABELS[outcome],
   value: outcome,
 }));
 
-const emptyValues = (): PipelineActivityFormValues => ({
-  type: "CALL",
+const RELATED_OPTIONS = CRM_ACTIVITY_RELATED_TYPES.map((related) => ({
+  label: CRM_ACTIVITY_RELATED_LABELS[related],
+  value: related,
+}));
+
+const emptyValues = (
+  target?: ActivityFormTarget | null,
+  defaultType: CrmActivityManualType = "CALL"
+): CrmActivityFormValues => ({
+  relatedType: target?.relatedType ?? "DEAL",
+  dealId: target?.dealId ?? "",
+  leadId: target?.leadId ?? "",
+  contactId: target?.contactId ?? "",
+  type: defaultType,
   subject: "",
   body: "",
   location: "",
@@ -72,22 +98,25 @@ const emptyValues = (): PipelineActivityFormValues => ({
 export function ActivityFormModal({
   open,
   onOpenChange,
-  pipelineId,
-  entryId,
-  contactId,
   activity,
+  target,
+  defaultType = "CALL",
+  lockTarget = false,
 }: ActivityFormModalProps) {
   const isEdit = Boolean(activity);
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
+  const { data: dealOptions = [] } = useGetDealOptionsQuery(undefined, { skip: !open });
+  const { data: leadOptions = [] } = useGetLeadOptionsQuery(undefined, { skip: !open });
+  const { data: contactOptions = [] } = useGetContactOptionsQuery(undefined, { skip: !open });
 
-  const [createActivity, { isLoading: isCreating }] = useCreatePipelineActivityMutation();
-  const [updateActivity, { isLoading: isUpdating }] = useUpdatePipelineActivityMutation();
+  const [createActivity, { isLoading: isCreating }] = useCreateCrmActivityMutation();
+  const [updateActivity, { isLoading: isUpdating }] = useUpdateCrmActivityMutation();
   const isSaving = isCreating || isUpdating;
 
-  const form = useForm<PipelineActivityFormValues>({
-    resolver: zodResolver(PipelineActivitySchema),
-    defaultValues: emptyValues(),
+  const form = useForm<CrmActivityFormValues>({
+    resolver: zodResolver(CrmActivitySchema),
+    defaultValues: emptyValues(target, defaultType),
   });
 
   React.useEffect(() => {
@@ -96,7 +125,11 @@ export function ActivityFormModal({
     form.reset(
       activity
         ? {
-            type: activity.type as PipelineActivityFormValues["type"],
+            relatedType: activity.relatedType,
+            dealId: activity.dealId ?? "",
+            leadId: activity.leadId ?? "",
+            contactId: activity.contactId ?? "",
+            type: activity.type as CrmActivityManualType,
             subject: activity.subject,
             body: activity.body,
             location: activity.location,
@@ -108,9 +141,9 @@ export function ActivityFormModal({
             performedById: activity.performedById ?? "",
             isPinned: activity.isPinned,
           }
-        : emptyValues()
+        : emptyValues(target, defaultType)
     );
-  }, [open, activity, form]);
+  }, [open, activity, target, defaultType, form]);
 
   const performerChoices = React.useMemo(
     () => [
@@ -120,10 +153,30 @@ export function ActivityFormModal({
     [employeeOptions]
   );
 
+  const dealChoices = React.useMemo(
+    () => dealOptions.map((deal) => ({ label: `${deal.code} · ${deal.title}`, value: deal._id })),
+    [dealOptions]
+  );
+
+  const leadChoices = React.useMemo(
+    () => leadOptions.map((lead) => ({ label: `${lead.code} · ${lead.title}`, value: lead._id })),
+    [leadOptions]
+  );
+
+  const contactChoices = React.useMemo(
+    () =>
+      contactOptions.map((contact) => ({
+        label: contact.name || contact.email || "Unnamed contact",
+        value: contact._id,
+      })),
+    [contactOptions]
+  );
+
+  const relatedType = useWatch({ control: form.control, name: "relatedType" });
   const type = useWatch({ control: form.control, name: "type" });
   const isCompleted = useWatch({ control: form.control, name: "isCompleted" });
 
-  const onSubmit = async (values: PipelineActivityFormValues) => {
+  const onSubmit = async (values: CrmActivityFormValues) => {
     try {
       const body = {
         type: values.type,
@@ -143,7 +196,12 @@ export function ActivityFormModal({
         await updateActivity({ id: activity._id, body }).unwrap();
         toast.success("Activity updated");
       } else {
-        await createActivity({ ...body, pipelineId, entryId, contactId }).unwrap();
+        await createActivity({
+          ...body,
+          dealId: values.relatedType === "DEAL" ? values.dealId : null,
+          leadId: values.relatedType === "LEAD" ? values.leadId : null,
+          contactId: values.relatedType === "CONTACT" ? values.contactId : null,
+        }).unwrap();
         toast.success("Activity logged");
       }
       onOpenChange(false);
@@ -152,6 +210,8 @@ export function ActivityFormModal({
       toast.error(err?.data?.message || "Could not save the activity");
     }
   };
+
+  const showTargetPicker = !isEdit && !lockTarget;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -170,6 +230,49 @@ export function ActivityFormModal({
             onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
           >
             <DialogBody className="flex flex-col gap-4">
+              {showTargetPicker && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormSelect
+                    control={form.control}
+                    name="relatedType"
+                    label="Against"
+                    options={RELATED_OPTIONS}
+                    description="Which record this activity belongs to."
+                  />
+
+                  {relatedType === "DEAL" && (
+                    <FormSelect
+                      control={form.control}
+                      name="dealId"
+                      label="Deal"
+                      placeholder="Pick a deal"
+                      options={dealChoices}
+                      searchable
+                    />
+                  )}
+                  {relatedType === "LEAD" && (
+                    <FormSelect
+                      control={form.control}
+                      name="leadId"
+                      label="Lead"
+                      placeholder="Pick a lead"
+                      options={leadChoices}
+                      searchable
+                    />
+                  )}
+                  {relatedType === "CONTACT" && (
+                    <FormSelect
+                      control={form.control}
+                      name="contactId"
+                      label="Contact"
+                      placeholder="Pick a contact"
+                      options={contactChoices}
+                      searchable
+                    />
+                  )}
+                </div>
+              )}
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormSelect
                   control={form.control}
@@ -188,7 +291,7 @@ export function ActivityFormModal({
                   control={form.control}
                   name="subject"
                   label="Subject"
-                  placeholder="Called about the renewal quote"
+                  placeholder="Walked them through the proposal"
                   className="sm:col-span-2"
                 />
 
@@ -216,7 +319,7 @@ export function ActivityFormModal({
                   options={performerChoices}
                 />
 
-                {(type === "MEETING" || type === "VISIT") && (
+                {(type === "MEETING" || type === "VISIT" || type === "DEMO") && (
                   <FormInput
                     control={form.control}
                     name="location"

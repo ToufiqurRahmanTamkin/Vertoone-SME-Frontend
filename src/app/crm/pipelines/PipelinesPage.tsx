@@ -1,5 +1,6 @@
 import { ActionButton } from "@/components/shared/action-button";
 import { ColorChip } from "@/components/shared/color-chip";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -8,8 +9,10 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { formatAmountValue } from "@/lib/amount";
 import { useGetContactTypeOptionsQuery } from "@/redux/apis/contactTypeApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
+import { useGetPublicSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import {
   useDeletePipelineMutation,
   useGetPipelineSummaryQuery,
@@ -32,6 +35,7 @@ export default function PipelinesPage() {
 
   const { data: contactTypeOptions = [] } = useGetContactTypeOptionsQuery();
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
+  const { data: systemConfig } = useGetPublicSystemConfigQuery();
 
   const { data, isLoading, isFetching } = useGetPipelinesQuery({
     page: filters.page,
@@ -123,7 +127,8 @@ export default function PipelinesPage() {
     <>
       <PageHeader
         title="Pipelines"
-        description="The stages a contact moves through, from first contact to close. Open one to work its board."
+        description="The stages a deal moves through, from first contact to close. Open one to work its board."
+        actions={<CurrencyNote currency={systemConfig?.defaultCurrency ?? "BDT"} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -135,18 +140,18 @@ export default function PipelinesPage() {
           </StatDescription>
         </Stat>
         <Stat>
-          <StatLabel>Cards</StatLabel>
-          <StatValue>{summary?.entryCount ?? 0}</StatValue>
-          <StatDescription>Contacts sitting on a stage right now</StatDescription>
+          <StatLabel>Deals</StatLabel>
+          <StatValue>{summary?.dealCount ?? 0}</StatValue>
+          <StatDescription>Sitting on a stage right now</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Open value</StatLabel>
-          <StatValue>{formatMoney(summary?.openValue ?? 0, "BDT")}</StatValue>
+          <StatValue>{formatAmountValue(summary?.openValue)}</StatValue>
           <StatDescription>Still in play across every pipeline</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Won value</StatLabel>
-          <StatValue>{formatMoney(summary?.wonValue ?? 0, "BDT")}</StatValue>
+          <StatValue>{formatAmountValue(summary?.wonValue)}</StatValue>
           <StatDescription>Closed and won to date</StatDescription>
         </Stat>
       </StatGrid>
@@ -236,8 +241,8 @@ export default function PipelinesPage() {
                 <dd className="font-medium">{pipeline.stages.length}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Cards</dt>
-                <dd className="font-medium">{pipeline.entryCount}</dd>
+                <dt className="text-muted-foreground">Deals</dt>
+                <dd className="font-medium">{pipeline.dealCount}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Open value</dt>

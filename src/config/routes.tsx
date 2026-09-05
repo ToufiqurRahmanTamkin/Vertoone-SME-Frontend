@@ -63,6 +63,16 @@ const Goals = lazy(() => import("@/app/tasksGoals/goals/GoalsPage"));
 const Notes = lazy(() => import("@/app/tasksGoals/notes/NotesPage"));
 const Pipelines = lazy(() => import("@/app/crm/pipelines/PipelinesPage"));
 const PipelineDetail = lazy(() => import("@/app/crm/pipelines/PipelineDetailPage"));
+const CrmActivitiesOverview = lazy(
+  () => import("@/app/crm/activities/ActivitiesOverviewPage")
+);
+const CrmTasks = lazy(() => import("@/app/crm/activities/TasksPage"));
+const CrmCalls = lazy(() => import("@/app/crm/activities/CallsPage"));
+const CrmMeetings = lazy(() => import("@/app/crm/activities/MeetingsPage"));
+const CrmNotes = lazy(() => import("@/app/crm/activities/NotesPage"));
+const CrmTimeline = lazy(() => import("@/app/crm/activities/TimelinePage"));
+const CrmForecasts = lazy(() => import("@/app/crm/forecasts/ForecastsPage"));
+const CrmTerritories = lazy(() => import("@/app/crm/territories/TerritoriesPage"));
 const CalendarOverview = lazy(() => import("@/app/calendar/overview/CalendarOverviewPage"));
 const Schedule = lazy(() => import("@/app/calendar/schedule/SchedulePage"));
 const CalendarSettings = lazy(() => import("@/app/calendar/settings/CalendarSettingsPage"));
@@ -330,6 +340,14 @@ const builtRoutes: RouteConfig[] = [
   { path: "crm/pipelines", element: <Pipelines /> },
   { path: "crm/pipelines/:id", element: <PipelineDetail /> },
   { path: "crm/contacts", element: <Contacts /> },
+  { path: "crm/activities/overview", element: <CrmActivitiesOverview /> },
+  { path: "crm/activities/tasks", element: <CrmTasks /> },
+  { path: "crm/activities/calls", element: <CrmCalls /> },
+  { path: "crm/activities/meetings", element: <CrmMeetings /> },
+  { path: "crm/activities/notes", element: <CrmNotes /> },
+  { path: "crm/activities/timeline", element: <CrmTimeline /> },
+  { path: "crm/forecasts", element: <CrmForecasts /> },
+  { path: "crm/territories", element: <CrmTerritories /> },
   { path: "crm/settings/lead-sources", element: <LeadSources /> },
   { path: "crm/settings/contact-types", element: <ContactTypes /> },
   { path: "crm/settings/tags", element: <Tags /> },

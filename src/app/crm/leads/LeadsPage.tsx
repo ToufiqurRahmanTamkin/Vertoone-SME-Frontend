@@ -11,7 +11,6 @@ import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
 import { formatDate } from "@/lib/date";
 import {
-  useConvertLeadMutation,
   useDeleteLeadMutation,
   useGetLeadSummaryQuery,
   useGetLeadsQuery,
@@ -32,6 +31,7 @@ import {
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { ConvertLeadDialog } from "./components/ConvertLeadDialog";
 import { LeadFormModal } from "./components/LeadFormModal";
 import { LeadRowActions, leadColumns } from "./leads.columns";
 
@@ -39,6 +39,7 @@ export default function LeadsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/crm/leads");
   const contactAccess = useModulePermission("/crm/contacts");
+  const dealAccess = useModulePermission("/crm/deals");
 
   const { data: leadSourceOptions = [] } = useGetLeadSourceOptionsQuery();
 
@@ -59,7 +60,6 @@ export default function LeadsPage() {
   const [pendingDelete, setPendingDelete] = React.useState<Lead | null>(null);
   const [pendingConvert, setPendingConvert] = React.useState<Lead | null>(null);
   const [deleteLead, { isLoading: isDeleting }] = useDeleteLeadMutation();
-  const [convertLead, { isLoading: isConverting }] = useConvertLeadMutation();
 
   const canConvert = access.canEdit && contactAccess.canCreate;
 
@@ -121,18 +121,6 @@ export default function LeadsPage() {
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not delete the lead");
-    }
-  };
-
-  const confirmConvert = async () => {
-    if (!pendingConvert) return;
-    try {
-      await convertLead({ id: pendingConvert._id, body: {} }).unwrap();
-      toast.success("Lead converted to a contact");
-      setPendingConvert(null);
-    } catch (error: unknown) {
-      const err = error as ApiErrorResponse;
-      toast.error(err?.data?.message || "Could not convert the lead");
     }
   };
 
@@ -291,14 +279,11 @@ export default function LeadsPage() {
 
       <LeadFormModal open={formOpen} onOpenChange={setFormOpen} lead={editing} />
 
-      <ConfirmDialog
+      <ConvertLeadDialog
+        lead={pendingConvert}
         open={Boolean(pendingConvert)}
         onOpenChange={(open) => !open && setPendingConvert(null)}
-        title={`Convert "${pendingConvert?.title ?? ""}" to a contact?`}
-        description="We copy the person, company, source and tags onto a new contact, and mark the lead as won."
-        confirmText="Convert"
-        isLoading={isConverting}
-        onConfirm={confirmConvert}
+        canCreateDeal={dealAccess.canCreate}
       />
 
       <ConfirmDialog

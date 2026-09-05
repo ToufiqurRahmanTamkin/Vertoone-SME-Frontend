@@ -154,13 +154,25 @@ export interface LeadPayload {
   isActive?: boolean;
 }
 
+export interface LeadOptionQuery {
+  search?: string;
+  status?: LeadStatus;
+}
+
 export interface ConvertLeadPayload {
   contactTypeId?: string | null;
   ownerId?: string | null;
   keepLead?: boolean;
+  createDeal?: boolean;
+  pipelineId?: string | null;
+  stageId?: string | null;
+  dealTitle?: string;
+  dealValue?: number;
+  expectedCloseDate?: string | null;
 }
 
 export interface ConvertLeadResult {
   lead: Lead;
   contactId: string;
+  dealId: string | null;
 }

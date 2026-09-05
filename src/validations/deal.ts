@@ -1,9 +1,4 @@
-import {
-  DEAL_ACTIVITY_MANUAL_TYPES,
-  DEAL_ACTIVITY_OUTCOMES,
-  DEAL_PRIORITIES,
-  SUPPORTED_CURRENCIES,
-} from "@/types/domain/deal";
+import { DEAL_PRIORITIES, SUPPORTED_CURRENCIES } from "@/types/domain/deal";
 import { z } from "zod";
 
 export const DealSchema = z.object({
@@ -28,27 +23,3 @@ export const DealSchema = z.object({
 });
 
 export type DealFormValues = z.infer<typeof DealSchema>;
-
-export const DealActivitySchema = z
-  .object({
-    type: z.enum(DEAL_ACTIVITY_MANUAL_TYPES),
-    subject: z.string().trim().min(1, "An activity needs a subject").max(160),
-    body: z.string().trim().max(4000),
-    location: z.string().trim().max(200),
-    occurredAt: z.string().trim().min(1, "Pick the date and time it happened"),
-    durationMinutes: z.union([
-      z.literal(""),
-      z.number().int().min(0, "0 or more").max(10080, "At most 7 days"),
-    ]),
-    dueAt: z.string().trim(),
-    isCompleted: z.boolean(),
-    outcome: z.enum(DEAL_ACTIVITY_OUTCOMES),
-    performedById: z.string(),
-    isPinned: z.boolean(),
-  })
-  .refine((values) => values.isCompleted || values.dueAt !== "", {
-    message: "An open activity needs a due date and time",
-    path: ["dueAt"],
-  });
-
-export type DealActivityFormValues = z.infer<typeof DealActivitySchema>;

@@ -97,11 +97,6 @@ export function DataTableToolbar({
     setIsDrawerOpen(false);
   };
 
-  const hasPendingFilters = filterParamKeys.some((key) => {
-    const v = pendingFilters[key];
-    return v !== "" && v !== "all" && v !== undefined;
-  });
-
   useEffect(() => {
     if (!isDrawerOpen) return;
     restoreFocusRef.current = document.activeElement as HTMLElement | null;
@@ -143,7 +138,7 @@ export function DataTableToolbar({
     activeFilterKeys.length -
     (activeFilterKeys.includes("from") && activeFilterKeys.includes("to") ? 1 : 0);
 
-  const hasActiveFilters = (searchValue && searchValue !== "") || activeFilterKeys.length > 0;
+  const hasActiveFilters = Boolean(searchValue) || activeFilterKeys.length > 0;
 
   const handleClear = () => {
     setLocalSearch("");
@@ -243,7 +238,18 @@ export function DataTableToolbar({
             </div>
           ))}
 
-
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-pointer gap-1.5"
+              onClick={handleClear}
+              disabled={isLoading}
+            >
+              <X className="size-4" />
+              Clear
+            </Button>
+          )}
         </div>
 
         {useDrawer && (
@@ -310,7 +316,17 @@ export function DataTableToolbar({
               )}
             </div>
             <div className="mt-auto flex flex-row gap-2 p-4 pb-6">
-
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  handleClear();
+                  setIsDrawerOpen(false);
+                }}
+                disabled={!hasActiveFilters}
+              >
+                Clear
+              </Button>
               <Button className="flex-1" onClick={applyPendingAndClose}>
                 Done
               </Button>

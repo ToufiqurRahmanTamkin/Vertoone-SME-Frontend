@@ -1,5 +1,7 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { BackLink } from "@/components/shared/back-link";
 import { ColorChip } from "@/components/shared/color-chip";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -20,84 +22,96 @@ import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/compone
 import { Textarea } from "@/components/ui/textarea";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { formatAmountValue } from "@/lib/amount";
+import { useGetCrmActivitySummaryQuery } from "@/redux/apis/crmActivityApis";
+import {
+  useGetDealBoardQuery,
+  useGetDealSummaryQuery,
+  useMoveDealMutation,
+  useUpdateDealMutation,
+} from "@/redux/apis/dealApis";
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import {
   useDeletePipelineMutation,
-  useGetPipelineBoardQuery,
-  useGetPipelineEntrySummaryQuery,
-  useMovePipelineEntryMutation,
-  useUpdatePipelineEntryMutation,
+  useGetPipelineQuery,
 } from "@/redux/apis/pipelineApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import type { CrmActivity } from "@/types/domain/crmActivity";
 import {
-  PIPELINE_ENTRY_PRIORITIES,
-  PIPELINE_ENTRY_PRIORITY_LABELS,
-  PIPELINE_ENTRY_STATUS_LABELS,
-  PIPELINE_ENTRY_STATUSES,
-  type PipelineActivity,
-  type PipelineEntry,
-  type PipelineEntryPriority,
-  type PipelineEntryStatus,
-} from "@/types/domain/pipeline";
-import { ArrowLeft, Pencil, Plus, Star, Trash2 } from "lucide-react";
+  DEAL_PRIORITIES,
+  DEAL_PRIORITY_LABELS,
+  DEAL_STATUS_LABELS,
+  DEAL_STATUSES,
+  type Deal,
+  type DealPriority,
+  type DealStatus,
+} from "@/types/domain/deal";
+import { Pencil, Plus, Star, Trash2 } from "lucide-react";
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ActivityFormModal } from "./components/ActivityFormModal";
-import { EntryDetailSheet } from "./components/EntryDetailSheet";
-import { EntryFormModal } from "./components/EntryFormModal";
-import { PipelineBoard, type EntryMove } from "./components/PipelineBoard";
+import { ActivityFormModal } from "../activities/components/ActivityFormModal";
+import { DealBoard, type DealMove } from "../deals/components/DealBoard";
+import { DealDetailSheet } from "../deals/components/DealDetailSheet";
+import { DealFormModal } from "../deals/components/DealFormModal";
 import { PipelineFormModal } from "./components/PipelineFormModal";
-import { formatMoney } from "./pipeline.helpers";
 
 export default function PipelineDetailPage() {
   const { id = "" } = useParams();
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/crm/pipelines");
+  const dealAccess = useModulePermission("/crm/deals");
   const navigate = useNavigate();
 
   const { data: employeeOptions = [] } = useGetEmployeeOptionsQuery();
 
   const {
-    data: board,
-    isLoading,
-    isFetching,
+    data: pipeline,
+    isLoading: isPipelineLoading,
     isError,
-  } = useGetPipelineBoardQuery(
+  } = useGetPipelineQuery(id, { skip: !id });
+
+  const {
+    data: board,
+    isLoading: isBoardLoading,
+    isFetching,
+  } = useGetDealBoardQuery(
     {
       pipelineId: id,
       search: filters.search,
       ownerId: filters.ownerId as string | undefined,
-      priority: filters.priority as PipelineEntryPriority | undefined,
-      status: filters.status as PipelineEntryStatus | undefined,
+      priority: filters.priority as DealPriority | undefined,
+      status: filters.status as DealStatus | undefined,
     },
     { skip: !id }
   );
 
-  const { data: entrySummary } = useGetPipelineEntrySummaryQuery({ pipelineId: id }, { skip: !id });
+  const { data: dealSummary } = useGetDealSummaryQuery({ pipelineId: id }, { skip: !id });
+  const { data: activitySummary } = useGetCrmActivitySummaryQuery(
+    { pipelineId: id },
+    { skip: !id }
+  );
 
-  const [moveEntry] = useMovePipelineEntryMutation();
-  const [updateEntry, { isLoading: isSavingReason }] = useUpdatePipelineEntryMutation();
+  const [moveDeal] = useMoveDealMutation();
+  const [updateDeal, { isLoading: isSavingReason }] = useUpdateDealMutation();
   const [deletePipeline, { isLoading: isDeletingPipeline }] = useDeletePipelineMutation();
 
   const [pipelineFormOpen, setPipelineFormOpen] = React.useState(false);
   const [pipelinePendingDelete, setPipelinePendingDelete] = React.useState(false);
 
-  const [entryFormOpen, setEntryFormOpen] = React.useState(false);
-  const [editingEntry, setEditingEntry] = React.useState<PipelineEntry | null>(null);
-  const [entryStageId, setEntryStageId] = React.useState<string | undefined>(undefined);
+  const [dealFormOpen, setDealFormOpen] = React.useState(false);
+  const [editingDeal, setEditingDeal] = React.useState<Deal | null>(null);
+  const [dealStageId, setDealStageId] = React.useState<string | undefined>(undefined);
 
-  const [detailEntry, setDetailEntry] = React.useState<PipelineEntry | null>(null);
+  const [detailDeal, setDetailDeal] = React.useState<Deal | null>(null);
   const [detailOpen, setDetailOpen] = React.useState(false);
 
   const [activityOpen, setActivityOpen] = React.useState(false);
-  const [activityEntry, setActivityEntry] = React.useState<PipelineEntry | null>(null);
-  const [editingActivity, setEditingActivity] = React.useState<PipelineActivity | null>(null);
+  const [activityDeal, setActivityDeal] = React.useState<Deal | null>(null);
+  const [editingActivity, setEditingActivity] = React.useState<CrmActivity | null>(null);
 
-  const [lostEntryId, setLostEntryId] = React.useState<string | null>(null);
+  const [lostDealId, setLostDealId] = React.useState<string | null>(null);
   const [lostReason, setLostReason] = React.useState("");
-
-  const pipeline = board?.pipeline;
 
   const toolbarFilters = React.useMemo<FilterConfig[]>(
     () => [
@@ -114,8 +128,8 @@ export default function PipelineDetailPage() {
         name: "priority",
         label: "Priority",
         type: "select",
-        options: PIPELINE_ENTRY_PRIORITIES.map((priority) => ({
-          label: PIPELINE_ENTRY_PRIORITY_LABELS[priority],
+        options: DEAL_PRIORITIES.map((priority) => ({
+          label: DEAL_PRIORITY_LABELS[priority],
           value: priority,
         })),
       },
@@ -123,8 +137,8 @@ export default function PipelineDetailPage() {
         name: "status",
         label: "Status",
         type: "select",
-        options: PIPELINE_ENTRY_STATUSES.map((status) => ({
-          label: PIPELINE_ENTRY_STATUS_LABELS[status],
+        options: DEAL_STATUSES.map((status) => ({
+          label: DEAL_STATUS_LABELS[status],
           value: status,
         })),
       },
@@ -132,10 +146,10 @@ export default function PipelineDetailPage() {
     [employeeOptions]
   );
 
-  const handleMove = async (move: EntryMove) => {
+  const handleMove = async (move: DealMove) => {
     try {
-      await moveEntry({
-        id: move.entryId,
+      await moveDeal({
+        id: move.dealId,
         body: { stageId: move.stageId, position: move.position },
       }).unwrap();
 
@@ -143,20 +157,20 @@ export default function PipelineDetailPage() {
 
       if (move.stageType === "LOST") {
         setLostReason("");
-        setLostEntryId(move.entryId);
+        setLostDealId(move.dealId);
       }
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
-      toast.error(err?.data?.message || "Could not move the card");
+      toast.error(err?.data?.message || "Could not move the deal");
     }
   };
 
   const saveLostReason = async () => {
-    if (!lostEntryId) return;
+    if (!lostDealId) return;
     try {
-      await updateEntry({ id: lostEntryId, body: { lostReason } }).unwrap();
+      await updateDeal({ id: lostDealId, body: { lostReason } }).unwrap();
       toast.success("Reason saved");
-      setLostEntryId(null);
+      setLostDealId(null);
     } catch (error: unknown) {
       const err = error as ApiErrorResponse;
       toast.error(err?.data?.message || "Could not save the reason");
@@ -175,7 +189,7 @@ export default function PipelineDetailPage() {
     }
   };
 
-  if (isLoading) {
+  if (isPipelineLoading || isBoardLoading) {
     return (
       <div className="flex justify-center py-16">
         <LoadingSpinner size="lg" />
@@ -183,47 +197,30 @@ export default function PipelineDetailPage() {
     );
   }
 
-  if (isError || !board || !pipeline) {
+  if (isError || !pipeline) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-16 text-center">
         <p className="font-semibold">Pipeline not found</p>
         <p className="text-sm text-muted-foreground">
           It may have been deleted, or you may not have access to it.
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          className="cursor-pointer gap-1.5"
-          onClick={() => navigate("/crm/pipelines")}
-        >
-          <ArrowLeft className="size-4" />
-          Back to pipelines
-        </Button>
+        <BackLink to="/crm/pipelines" label="Back to pipelines" variant="outline" />
       </div>
     );
   }
 
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="-ml-2 w-fit cursor-pointer gap-1.5 text-muted-foreground"
-        onClick={() => navigate("/crm/pipelines")}
-      >
-        <ArrowLeft className="size-4" />
-        All pipelines
-      </Button>
-
       <PageHeader
         title={pipeline.name}
         description={
           pipeline.description ||
-          "Drag a card from one stage to the next as the conversation moves on."
+          "Drag a deal from one stage to the next as the conversation moves on."
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <BackLink to="/crm/pipelines" label="All pipelines" />
+            <CurrencyNote currency={pipeline.currency} />
             {access.canEdit && (
               <Button
                 type="button"
@@ -250,14 +247,14 @@ export default function PipelineDetailPage() {
                 <Trash2 className="size-4" />
               </Button>
             )}
-            {access.canCreate && (
+            {dealAccess.canCreate && (
               <ActionButton
                 icon={Plus}
-                label="Add contact"
+                label="New deal"
                 onClick={() => {
-                  setEditingEntry(null);
-                  setEntryStageId(undefined);
-                  setEntryFormOpen(true);
+                  setEditingDeal(null);
+                  setDealStageId(undefined);
+                  setDealFormOpen(true);
                 }}
               />
             )}
@@ -280,7 +277,6 @@ export default function PipelineDetailPage() {
         {pipeline.contactType && (
           <ColorChip color={pipeline.contactType.color} label={pipeline.contactType.name} />
         )}
-        <Badge variant="outline">{pipeline.currency}</Badge>
         <Badge variant="outline">{pipeline.owner?.name ?? "Unassigned"}</Badge>
         {pipeline.isDefault && (
           <Badge variant="secondary" className="gap-1">
@@ -296,29 +292,29 @@ export default function PipelineDetailPage() {
 
       <StatGrid className="sm:grid-cols-4">
         <Stat>
-          <StatLabel>Cards</StatLabel>
-          <StatValue>{entrySummary?.total ?? 0}</StatValue>
-          <StatDescription>{entrySummary?.openCount ?? 0} still open</StatDescription>
+          <StatLabel>Deals</StatLabel>
+          <StatValue>{dealSummary?.total ?? 0}</StatValue>
+          <StatDescription>{dealSummary?.openCount ?? 0} still open</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Open value</StatLabel>
-          <StatValue>{formatMoney(entrySummary?.openValue ?? 0, pipeline.currency)}</StatValue>
+          <StatValue>{formatAmountValue(dealSummary?.openValue)}</StatValue>
           <StatDescription>
-            {formatMoney(entrySummary?.weightedValue ?? 0, pipeline.currency)} weighted by stage
+            {formatAmountValue(dealSummary?.weightedValue)} weighted by stage
           </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Won</StatLabel>
-          <StatValue>{formatMoney(entrySummary?.wonValue ?? 0, pipeline.currency)}</StatValue>
+          <StatValue>{formatAmountValue(dealSummary?.wonValue)}</StatValue>
           <StatDescription>
-            {entrySummary?.wonCount ?? 0} won · {entrySummary?.lostCount ?? 0} lost
+            {dealSummary?.winRate ?? 0}% win rate · {dealSummary?.lostCount ?? 0} lost
           </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Needs attention</StatLabel>
-          <StatValue>{entrySummary?.overdueCount ?? 0}</StatValue>
+          <StatValue>{dealSummary?.rottingCount ?? 0}</StatValue>
           <StatDescription>
-            {entrySummary?.rottingCount ?? 0} sitting too long in a stage
+            {activitySummary?.overdueCount ?? 0} overdue follow-ups on this pipeline
           </StatDescription>
         </Stat>
       </StatGrid>
@@ -326,7 +322,7 @@ export default function PipelineDetailPage() {
       <DataTableToolbar
         searchValue={filters.search}
         onSearchChange={(value) => setFilter("search", value)}
-        searchPlaceholder="Search cards and contacts..."
+        searchPlaceholder="Search deals and contacts..."
         filters={toolbarFilters}
         currentFilters={filters}
         onFilterChange={setFilter}
@@ -334,21 +330,27 @@ export default function PipelineDetailPage() {
         isLoading={isFetching}
       />
 
-      <PipelineBoard
-        board={board}
-        canCreate={access.canCreate}
-        canEdit={access.canEdit}
-        onOpenEntry={(entry) => {
-          setDetailEntry(entry);
-          setDetailOpen(true);
-        }}
-        onAddToStage={(stageId) => {
-          setEditingEntry(null);
-          setEntryStageId(stageId);
-          setEntryFormOpen(true);
-        }}
-        onMove={(move) => void handleMove(move)}
-      />
+      {board && board.columns.length > 0 ? (
+        <DealBoard
+          board={board}
+          canCreate={dealAccess.canCreate}
+          canEdit={dealAccess.canEdit}
+          onOpenDeal={(deal) => {
+            setDetailDeal(deal);
+            setDetailOpen(true);
+          }}
+          onAddToStage={(stageId) => {
+            setEditingDeal(null);
+            setDealStageId(stageId);
+            setDealFormOpen(true);
+          }}
+          onMove={(move) => void handleMove(move)}
+        />
+      ) : (
+        <p className="rounded-xl border border-dashed px-6 py-16 text-center text-sm text-muted-foreground">
+          This pipeline has no stages yet. Edit it and add the stages a deal moves through.
+        </p>
+      )}
 
       <PipelineFormModal
         open={pipelineFormOpen}
@@ -356,50 +358,49 @@ export default function PipelineDetailPage() {
         pipeline={pipeline}
       />
 
-      <EntryFormModal
-        open={entryFormOpen}
-        onOpenChange={setEntryFormOpen}
-        pipeline={pipeline}
-        entry={editingEntry}
-        defaultStageId={entryStageId}
+      <DealFormModal
+        open={dealFormOpen}
+        onOpenChange={setDealFormOpen}
+        deal={editingDeal}
+        defaultPipelineId={id}
+        defaultStageId={dealStageId}
       />
 
-      <EntryDetailSheet
-        entry={detailEntry}
+      <DealDetailSheet
+        deal={detailDeal}
         open={detailOpen}
         onOpenChange={setDetailOpen}
-        canEdit={access.canEdit}
-        canCreate={access.canCreate}
-        canDelete={access.canDelete}
-        onEditEntry={(entry) => {
-          setEditingEntry(entry);
-          setEntryStageId(entry.stageId);
-          setEntryFormOpen(true);
+        canEdit={dealAccess.canEdit}
+        canCreate={dealAccess.canCreate}
+        canDelete={dealAccess.canDelete}
+        onEditDeal={(deal) => {
+          setEditingDeal(deal);
+          setDealStageId(deal.stageId);
+          setDealFormOpen(true);
         }}
-        onLogActivity={(entry) => {
-          setActivityEntry(entry);
+        onLogActivity={(deal) => {
+          setActivityDeal(deal);
           setEditingActivity(null);
           setActivityOpen(true);
         }}
-        onEditActivity={(entry, activity) => {
-          setActivityEntry(entry);
+        onEditActivity={(deal, activity) => {
+          setActivityDeal(deal);
           setEditingActivity(activity);
           setActivityOpen(true);
         }}
       />
 
-      {activityEntry && (
+      {activityDeal && (
         <ActivityFormModal
           open={activityOpen}
           onOpenChange={setActivityOpen}
-          pipelineId={activityEntry.pipelineId}
-          entryId={activityEntry._id}
-          contactId={activityEntry.contactId}
           activity={editingActivity}
+          target={{ relatedType: "DEAL", dealId: activityDeal._id }}
+          lockTarget
         />
       )}
 
-      <Dialog open={Boolean(lostEntryId)} onOpenChange={(open) => !open && setLostEntryId(null)}>
+      <Dialog open={Boolean(lostDealId)} onOpenChange={(open) => !open && setLostDealId(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Why was it lost?</DialogTitle>
@@ -417,7 +418,7 @@ export default function PipelineDetailPage() {
             />
           </DialogBody>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setLostEntryId(null)}>
+            <Button type="button" variant="outline" onClick={() => setLostDealId(null)}>
               Skip
             </Button>
             <Button
@@ -435,7 +436,7 @@ export default function PipelineDetailPage() {
         open={pipelinePendingDelete}
         onOpenChange={setPipelinePendingDelete}
         title={`Delete "${pipeline.name}"?`}
-        description="Its cards and their activity history go with it. The contacts themselves are kept."
+        description="Its deals and their activity history go with it. The contacts themselves are kept."
         confirmText="Delete"
         variant="destructive"
         isLoading={isDeletingPipeline}

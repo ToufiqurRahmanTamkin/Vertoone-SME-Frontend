@@ -101,11 +101,11 @@ export const pipelineColumns = (
     ),
   },
   {
-    accessorKey: "entryCount",
-    header: "Cards",
+    accessorKey: "dealCount",
+    header: "Deals",
     cell: ({ row }) => (
       <Badge variant="secondary" className="tabular-nums">
-        {row.original.entryCount}
+        {row.original.dealCount}
       </Badge>
     ),
   },

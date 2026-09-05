@@ -35,6 +35,7 @@ import {
 import { useGetEmployeeOptionsQuery } from "@/redux/apis/employeeApis";
 import { useGetPipelineOptionsQuery } from "@/redux/apis/pipelineApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import type { CrmActivity } from "@/types/domain/crmActivity";
 import {
   DEAL_PRIORITIES,
   DEAL_PRIORITY_COLORS,
@@ -43,16 +44,15 @@ import {
   DEAL_STATUS_LABELS,
   DEAL_STATUSES,
   type Deal,
-  type DealActivity,
   type DealPriority,
   type DealStatus,
 } from "@/types/domain/deal";
 import { Columns3, PanelRightOpen, Pencil, Plus, Table2, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { ActivityFormModal } from "../activities/components/ActivityFormModal";
 import { formatMoney } from "./deal.helpers";
 import { dealColumns } from "./deals.columns";
-import { DealActivityFormModal } from "./components/DealActivityFormModal";
 import { DealBoard, type DealMove } from "./components/DealBoard";
 import { DealDetailSheet } from "./components/DealDetailSheet";
 import { DealFormModal } from "./components/DealFormModal";
@@ -118,7 +118,7 @@ export default function DealsPage() {
 
   const [activityOpen, setActivityOpen] = React.useState(false);
   const [activityDeal, setActivityDeal] = React.useState<Deal | null>(null);
-  const [editingActivity, setEditingActivity] = React.useState<DealActivity | null>(null);
+  const [editingActivity, setEditingActivity] = React.useState<CrmActivity | null>(null);
 
   const [pendingDelete, setPendingDelete] = React.useState<Deal | null>(null);
   const [lostDealId, setLostDealId] = React.useState<string | null>(null);
@@ -506,11 +506,12 @@ export default function DealsPage() {
       />
 
       {activityDeal && (
-        <DealActivityFormModal
+        <ActivityFormModal
           open={activityOpen}
           onOpenChange={setActivityOpen}
-          dealId={activityDeal._id}
           activity={editingActivity}
+          target={{ relatedType: "DEAL", dealId: activityDeal._id }}
+          lockTarget
         />
       )}
 

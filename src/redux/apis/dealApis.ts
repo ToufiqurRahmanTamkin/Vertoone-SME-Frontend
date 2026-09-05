@@ -1,11 +1,6 @@
 import type { Pagination } from "@/types";
 import type {
   Deal,
-  DealActivity,
-  DealActivityListQuery,
-  DealActivityPayload,
-  DealActivitySummary,
-  DealActivityUpdatePayload,
   DealBoard,
   DealBoardQuery,
   DealListQuery,
@@ -25,25 +20,15 @@ interface DealListResult {
   meta: Pagination;
 }
 
-interface DealActivityListResult {
-  data: DealActivity[];
-  meta: Pagination;
-}
-
 const DEAL_TAGS = [
   "Deals",
   "DealSummary",
   "DealOptions",
   "DealBoard",
-  "DealActivities",
-  "DealActivitySummary",
-] as const;
-
-const ACTIVITY_TAGS = [
-  "DealActivities",
-  "DealActivitySummary",
-  "Deals",
-  "DealBoard",
+  "CrmActivities",
+  "CrmActivitySummary",
+  "Pipelines",
+  "PipelineSummary",
 ] as const;
 
 const dealApi = baseApi.injectEndpoints({
@@ -104,38 +89,6 @@ const dealApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/crm/deals/${id}`, method: "DELETE" }),
       invalidatesTags: [...DEAL_TAGS],
     }),
-
-    getDealActivities: builder.query<DealActivityListResult, DealActivityListQuery | void>({
-      query: (params) => ({
-        url: `/crm/deal-activities${buildQuery((params ?? {}) as Record<string, unknown>)}`,
-        method: "GET",
-      }),
-      providesTags: ["DealActivities"],
-    }),
-    getDealActivitySummary: builder.query<DealActivitySummary, DealActivityListQuery | void>({
-      query: (params) => ({
-        url: `/crm/deal-activities/summary${buildQuery(
-          (params ?? {}) as Record<string, unknown>
-        )}`,
-        method: "GET",
-      }),
-      providesTags: ["DealActivitySummary"],
-    }),
-    createDealActivity: builder.mutation<DealActivity, DealActivityPayload>({
-      query: (body) => ({ url: "/crm/deal-activities", method: "POST", body }),
-      invalidatesTags: [...ACTIVITY_TAGS],
-    }),
-    updateDealActivity: builder.mutation<
-      DealActivity,
-      { id: string; body: DealActivityUpdatePayload }
-    >({
-      query: ({ id, body }) => ({ url: `/crm/deal-activities/${id}`, method: "PATCH", body }),
-      invalidatesTags: [...ACTIVITY_TAGS],
-    }),
-    deleteDealActivity: builder.mutation<null, string>({
-      query: (id) => ({ url: `/crm/deal-activities/${id}`, method: "DELETE" }),
-      invalidatesTags: [...ACTIVITY_TAGS],
-    }),
   }),
 });
 
@@ -150,9 +103,4 @@ export const {
   useMoveDealMutation,
   useReorderDealsMutation,
   useDeleteDealMutation,
-  useGetDealActivitiesQuery,
-  useGetDealActivitySummaryQuery,
-  useCreateDealActivityMutation,
-  useUpdateDealActivityMutation,
-  useDeleteDealActivityMutation,
 } = dealApi;

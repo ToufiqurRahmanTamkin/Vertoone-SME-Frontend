@@ -15,19 +15,19 @@ import { formatDate, formatDateTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { useDeleteDealMutation, useGetDealQuery } from "@/redux/apis/dealApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
+import type { CrmActivity } from "@/types/domain/crmActivity";
 import {
   DEAL_PRIORITY_COLORS,
   DEAL_PRIORITY_LABELS,
   DEAL_STATUS_COLORS,
   DEAL_STATUS_LABELS,
   type Deal,
-  type DealActivity,
 } from "@/types/domain/deal";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { ActivityTimeline } from "../../activities/components/ActivityTimeline";
 import { formatMoney } from "../deal.helpers";
-import { DealActivityTimeline } from "./DealActivityTimeline";
 
 interface DealDetailSheetProps {
   deal: Deal | null;
@@ -35,7 +35,7 @@ interface DealDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onEditDeal: (deal: Deal) => void;
   onLogActivity: (deal: Deal) => void;
-  onEditActivity: (deal: Deal, activity: DealActivity) => void;
+  onEditActivity: (deal: Deal, activity: CrmActivity) => void;
   canEdit: boolean;
   canCreate: boolean;
   canDelete: boolean;
@@ -240,8 +240,8 @@ export function DealDetailSheet({
                   )}
                 </div>
 
-                <DealActivityTimeline
-                  dealId={current._id}
+                <ActivityTimeline
+                  filter={{ dealId: current._id }}
                   canEdit={canEdit}
                   canDelete={canDelete}
                   onEdit={(activity) => onEditActivity(current, activity)}

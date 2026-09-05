@@ -5,99 +5,59 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { safeDistanceToNow, safeFormat } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import {
-  useDeletePipelineActivityMutation,
-  useGetPipelineActivitiesQuery,
-  useUpdatePipelineActivityMutation,
-} from "@/redux/apis/pipelineApis";
+  useDeleteCrmActivityMutation,
+  useGetCrmActivitiesQuery,
+  useUpdateCrmActivityMutation,
+} from "@/redux/apis/crmActivityApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import {
-  PIPELINE_ACTIVITY_OUTCOME_LABELS,
-  PIPELINE_ACTIVITY_TYPE_LABELS,
-  type PipelineActivity,
-} from "@/types/domain/pipeline";
-import {
-  AlarmClock,
-  ArrowRightLeft,
-  BellRing,
-  Check,
-  CheckSquare,
-  Coins,
-  Mail,
-  MapPin,
-  MessageCircle,
-  MessageSquare,
-  Pencil,
-  Phone,
-  Pin,
-  Plus,
-  RotateCcw,
-  StickyNote,
-  Trash2,
-  Trophy,
-  UserCog,
-  Users,
-  XCircle,
-  type LucideIcon,
-} from "lucide-react";
+  CRM_ACTIVITY_OUTCOME_LABELS,
+  CRM_ACTIVITY_RELATED_LABELS,
+  CRM_ACTIVITY_TYPE_LABELS,
+  type CrmActivity,
+  type CrmActivityListQuery,
+} from "@/types/domain/crmActivity";
+import { AlarmClock, ArrowRightLeft, Check, MapPin, Pencil, Pin, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-
-const ICONS: Record<PipelineActivity["type"], LucideIcon> = {
-  NOTE: StickyNote,
-  CALL: Phone,
-  EMAIL: Mail,
-  MEETING: Users,
-  TASK: CheckSquare,
-  WHATSAPP: MessageCircle,
-  SMS: MessageSquare,
-  VISIT: MapPin,
-  FOLLOW_UP: BellRing,
-  ENTRY_CREATED: Plus,
-  STAGE_CHANGED: ArrowRightLeft,
-  ENTRY_WON: Trophy,
-  ENTRY_LOST: XCircle,
-  ENTRY_REOPENED: RotateCcw,
-  ENTRY_UPDATED: Pencil,
-  ENTRY_REMOVED: Trash2,
-  OWNER_CHANGED: UserCog,
-  VALUE_CHANGED: Coins,
-};
+import { ACTIVITY_ICONS, relatedNameOf } from "../activity.helpers";
 
 const dayKeyOf = (iso: string): string => safeFormat(iso, "yyyy-MM-dd", "");
 
 const dayLabelOf = (iso: string): string => safeFormat(iso, "EEEE, d MMMM yyyy", "Unknown date");
 
 interface ActivityTimelineProps {
-  pipelineId: string;
-  entryId: string;
+  filter: CrmActivityListQuery;
   canEdit: boolean;
   canDelete: boolean;
-  onEdit: (activity: PipelineActivity) => void;
+  onEdit: (activity: CrmActivity) => void;
+  showRelated?: boolean;
+  emptyText?: string;
 }
 
 export function ActivityTimeline({
-  pipelineId,
-  entryId,
+  filter,
   canEdit,
   canDelete,
   onEdit,
+  showRelated = false,
+  emptyText = "Nothing logged yet. Record the first call, demo or note.",
 }: ActivityTimelineProps) {
-  const { data, isLoading } = useGetPipelineActivitiesQuery({
-    pipelineId,
-    entryId,
+  const { data, isLoading } = useGetCrmActivitiesQuery({
     limit: 100,
     sortBy: "occurredAt",
     sortOrder: "desc",
+    ...filter,
   });
 
-  const [updateActivity] = useUpdatePipelineActivityMutation();
-  const [deleteActivity, { isLoading: isDeleting }] = useDeletePipelineActivityMutation();
-  const [pendingDelete, setPendingDelete] = React.useState<PipelineActivity | null>(null);
+  const [updateActivity] = useUpdateCrmActivityMutation();
+  const [deleteActivity, { isLoading: isDeleting }] = useDeleteCrmActivityMutation();
+  const [pendingDelete, setPendingDelete] = React.useState<CrmActivity | null>(null);
 
   const activities = React.useMemo(() => data?.data ?? [], [data]);
 
   const groups = React.useMemo(() => {
-    const byDay = new Map<string, PipelineActivity[]>();
+    const byDay = new Map<string, CrmActivity[]>();
 
     activities.forEach((activity) => {
       const key = dayKeyOf(activity.occurredAt);
@@ -109,7 +69,7 @@ export function ActivityTimeline({
     return [...byDay.entries()].sort((left, right) => right[0].localeCompare(left[0]));
   }, [activities]);
 
-  const complete = async (activity: PipelineActivity) => {
+  const complete = async (activity: CrmActivity) => {
     try {
       await updateActivity({ id: activity._id, body: { isCompleted: true } }).unwrap();
       toast.success("Marked done");
@@ -142,7 +102,7 @@ export function ActivityTimeline({
   if (activities.length === 0) {
     return (
       <p className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-        Nothing logged yet. Record the first call, meeting or note.
+        {emptyText}
       </p>
     );
   }
@@ -158,7 +118,7 @@ export function ActivityTimeline({
 
             <ol className="space-y-2 border-l pl-4">
               {rows.map((activity) => {
-                const Icon = ICONS[activity.type];
+                const Icon = ACTIVITY_ICONS[activity.type];
                 const isSystem = activity.source === "SYSTEM";
 
                 return (
@@ -195,10 +155,8 @@ export function ActivityTimeline({
                               {safeFormat(activity.occurredAt, "hh:mm a")}
                             </time>
                             {" · "}
-                            {PIPELINE_ACTIVITY_TYPE_LABELS[activity.type]}
+                            {CRM_ACTIVITY_TYPE_LABELS[activity.type]}
                             {activity.durationMinutes > 0 && ` · ${activity.durationMinutes} min`}
-                            {activity.endsAt &&
-                              ` · ends ${safeFormat(activity.endsAt, "hh:mm a")}`}
                           </p>
                         </div>
 
@@ -254,6 +212,13 @@ export function ActivityTimeline({
                       )}
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        {showRelated && (
+                          <Badge variant="secondary" className="text-[11px]">
+                            {CRM_ACTIVITY_RELATED_LABELS[activity.relatedType]} ·{" "}
+                            {relatedNameOf(activity)}
+                          </Badge>
+                        )}
+
                         {activity.fromStage && activity.toStage && (
                           <Badge variant="outline" className="gap-1 text-[11px]">
                             <span
@@ -274,7 +239,7 @@ export function ActivityTimeline({
 
                         {activity.outcome !== "NONE" && (
                           <Badge variant="secondary" className="text-[11px]">
-                            {PIPELINE_ACTIVITY_OUTCOME_LABELS[activity.outcome]}
+                            {CRM_ACTIVITY_OUTCOME_LABELS[activity.outcome]}
                           </Badge>
                         )}
 
@@ -315,7 +280,7 @@ export function ActivityTimeline({
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Remove this activity?"
-        description="It disappears from the timeline. The card and its stage history are untouched."
+        description="It disappears from the timeline. The record it sits on is untouched."
         confirmText="Remove"
         variant="destructive"
         isLoading={isDeleting}
