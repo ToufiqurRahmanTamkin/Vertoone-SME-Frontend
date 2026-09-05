@@ -1556,12 +1556,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
             description: "The people and companies you deal with.",
           },
           {
-            title: "Accounts",
-            slug: "accounts",
-            icon: "Building2",
-            description: "The companies your contacts and deals belong to.",
-          },
-          {
             title: "Activities",
             slug: "activities",
             icon: "Activity",
@@ -1847,39 +1841,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
                 slug: "steps",
                 icon: "FileText",
                 description: "The emails, calls and tasks a sequence is made of.",
-              },
-            ],
-          },
-          {
-            title: "Conversations",
-            slug: "conversations",
-            icon: "MessagesSquare",
-            description: "Every inbound conversation, wherever it started.",
-            items: [
-              overview("Unanswered messages and how fast you are replying."),
-              {
-                title: "Shared Inbox",
-                slug: "inbox",
-                icon: "Mail",
-                description: "One mailbox your whole team answers from.",
-              },
-              {
-                title: "Live Chat",
-                slug: "live-chat",
-                icon: "MessageCircle",
-                description: "Chats opened from your website and who took them.",
-              },
-              {
-                title: "Chatbots",
-                slug: "chatbots",
-                icon: "Bot",
-                description: "Automated replies that qualify before a human steps in.",
-              },
-              {
-                title: "Call Logs",
-                slug: "call-logs",
-                icon: "PhoneCall",
-                description: "Inbound and outbound calls, with recordings and outcome.",
               },
             ],
           },
