@@ -1,4 +1,5 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { RecordPaymentDialog } from "@/components/shared/record-payment-dialog";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
@@ -8,7 +9,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount } from "@/lib/amount";
+import { formatAmount, formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useGetContactOptionsQuery } from "@/redux/apis/contactApis";
 import {
@@ -104,6 +105,7 @@ export default function SalesInvoicesPage() {
   });
 
   const { data: summary } = useGetSalesInvoiceSummaryQuery();
+  const currency = summary?.currency ?? "BDT";
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<SalesInvoice | null>(null);
@@ -209,6 +211,7 @@ export default function SalesInvoicesPage() {
       <PageHeader
         title="Invoices"
         description="What you have billed customers, what they have paid and what is overdue."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -226,14 +229,14 @@ export default function SalesInvoicesPage() {
         </Stat>
         <Stat>
           <StatLabel>Owed by customers</StatLabel>
-          <StatValue>{formatAmount(summary?.outstandingReceivable ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.outstandingReceivable ?? 0)}</StatValue>
           <StatDescription>
-            Billed on {formatAmount(summary?.invoicedValue ?? 0)} of invoices
+            Billed on {formatAmountValue(summary?.invoicedValue ?? 0)} of invoices
           </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Overdue</StatLabel>
-          <StatValue>{formatAmount(summary?.overdueValue ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.overdueValue ?? 0)}</StatValue>
           <StatDescription>Across {summary?.overdueCount ?? 0} late invoices</StatDescription>
         </Stat>
       </StatGrid>

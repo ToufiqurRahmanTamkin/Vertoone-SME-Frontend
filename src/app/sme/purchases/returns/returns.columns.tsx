@@ -1,14 +1,7 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
   PURCHASE_RETURN_REASON_LABELS,
@@ -17,20 +10,91 @@ import {
   type PurchaseReturn,
 } from "@/types/domain/purchaseReturn";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Ban, CheckCircle2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react";
+import { Ban, CheckCircle2, FileMinus, Pencil, Trash2, Wallet } from "lucide-react";
 
-export interface PurchaseReturnActions {
+export interface PurchaseReturnColumnActions {
   onEdit: (row: PurchaseReturn) => void;
   onConfirm: (row: PurchaseReturn) => void;
   onSettle: (row: PurchaseReturn) => void;
+  onDebitNote: (row: PurchaseReturn) => void;
   onCancel: (row: PurchaseReturn) => void;
   onDelete: (row: PurchaseReturn) => void;
   canEdit: boolean;
   canDelete: boolean;
+  canRaiseDebitNote: boolean;
+}
+
+export function PurchaseReturnRowActions({
+  purchaseReturn,
+  ...actions
+}: PurchaseReturnColumnActions & { purchaseReturn: PurchaseReturn }) {
+  const isDraft = purchaseReturn.status === "DRAFT";
+  const isConfirmed = purchaseReturn.status === "CONFIRMED";
+
+  return (
+    <RowActions
+      label={`Actions for ${purchaseReturn.returnNumber}`}
+      actions={[
+        isDraft && {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(purchaseReturn),
+        },
+        isDraft && {
+          key: "confirm",
+          label: "Confirm and send back",
+          icon: CheckCircle2,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onConfirm(purchaseReturn),
+        },
+        isConfirmed &&
+          !purchaseReturn.debitNoteId && {
+            key: "debit-note",
+            label: "Raise a debit note",
+            icon: FileMinus,
+            disabled: !actions.canRaiseDebitNote,
+            title: actions.canRaiseDebitNote
+              ? undefined
+              : "You need permission to create debit notes",
+            onSelect: () => actions.onDebitNote(purchaseReturn),
+          },
+        isConfirmed &&
+          purchaseReturn.balanceDue > 0 && {
+            key: "settle",
+            label: "Record settlement",
+            icon: Wallet,
+            disabled: !actions.canEdit,
+            onSelect: () => actions.onSettle(purchaseReturn),
+          },
+        purchaseReturn.status !== "CANCELLED" && {
+          key: "cancel",
+          label: "Cancel",
+          icon: Ban,
+          separated: true,
+          disabled: !actions.canEdit || Boolean(purchaseReturn.debitNoteId),
+          title: purchaseReturn.debitNoteId
+            ? `Cancel ${purchaseReturn.debitNoteNumber} first`
+            : undefined,
+          onSelect: () => actions.onCancel(purchaseReturn),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive" as const,
+          separated: true,
+          disabled: !actions.canDelete || isConfirmed,
+          onSelect: () => actions.onDelete(purchaseReturn),
+        },
+      ]}
+    />
+  );
 }
 
 export const purchaseReturnColumns = (
-  actions: PurchaseReturnActions
+  rowActions: PurchaseReturnColumnActions
 ): ColumnDef<PurchaseReturn>[] => [
   {
     accessorKey: "returnNumber",
@@ -80,11 +144,18 @@ export const purchaseReturnColumns = (
     header: "Value",
     cell: ({ row }) => (
       <div className="text-sm tabular-nums">
-        <p>{formatAmount(row.original.grandTotal)}</p>
-        {row.original.balanceDue > 0 && row.original.status === "CONFIRMED" && (
-          <p className="text-xs text-muted-foreground">
-            {formatAmount(row.original.balanceDue)} owed back
+        <p>{formatAmountValue(row.original.grandTotal)}</p>
+        {row.original.debitNoteNumber ? (
+          <p className="truncate font-mono text-xs uppercase text-muted-foreground">
+            {row.original.debitNoteNumber}
           </p>
+        ) : (
+          row.original.balanceDue > 0 &&
+          row.original.status === "CONFIRMED" && (
+            <p className="text-xs text-muted-foreground">
+              {formatAmountValue(row.original.balanceDue)} owed back
+            </p>
+          )
         )}
       </div>
     ),
@@ -102,62 +173,8 @@ export const purchaseReturnColumns = (
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const purchaseReturn = row.original;
-      const isDraft = purchaseReturn.status === "DRAFT";
-      const isConfirmed = purchaseReturn.status === "CONFIRMED";
-
-      return (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions for {purchaseReturn.returnNumber}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem
-                onClick={() => actions.onEdit(purchaseReturn)}
-                disabled={!actions.canEdit || !isDraft}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => actions.onConfirm(purchaseReturn)}
-                disabled={!actions.canEdit || !isDraft}
-              >
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Confirm and send back
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => actions.onSettle(purchaseReturn)}
-                disabled={!actions.canEdit || !isConfirmed || purchaseReturn.balanceDue <= 0}
-              >
-                <Wallet className="mr-2 h-4 w-4" />
-                Record settlement
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => actions.onCancel(purchaseReturn)}
-                disabled={!actions.canEdit || purchaseReturn.status === "CANCELLED"}
-              >
-                <Ban className="mr-2 h-4 w-4" />
-                Cancel
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => actions.onDelete(purchaseReturn)}
-                disabled={!actions.canDelete || isConfirmed}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <PurchaseReturnRowActions purchaseReturn={row.original} {...rowActions} />
+    ),
   },
 ];

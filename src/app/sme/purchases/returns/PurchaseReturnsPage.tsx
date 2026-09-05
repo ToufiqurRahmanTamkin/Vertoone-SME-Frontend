@@ -1,4 +1,6 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { BackLink } from "@/components/shared/back-link";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { RecordPaymentDialog } from "@/components/shared/record-payment-dialog";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
@@ -8,7 +10,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
   useCancelPurchaseReturnMutation,
@@ -19,6 +21,7 @@ import {
   useSettlePurchaseReturnMutation,
 } from "@/redux/apis/purchaseReturnApis";
 import { useGetSupplierOptionsQuery } from "@/redux/apis/supplierApis";
+import { useGetPublicSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { useGetWarehouseOptionsQuery } from "@/redux/apis/warehouseApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import {
@@ -34,8 +37,9 @@ import {
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { DebitNoteFormModal } from "../debitNotes/components/DebitNoteFormModal";
 import { PurchaseReturnFormModal } from "./components/PurchaseReturnFormModal";
-import { purchaseReturnColumns } from "./returns.columns";
+import { PurchaseReturnRowActions, purchaseReturnColumns } from "./returns.columns";
 
 type PendingAction =
   | { kind: "confirm" | "cancel" | "delete"; row: PurchaseReturn }
@@ -44,7 +48,9 @@ type PendingAction =
 export default function PurchaseReturnsPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
   const access = useModulePermission("/sme/purchases/returns");
+  const debitNoteAccess = useModulePermission("/sme/purchases/debit-notes");
 
+  const { data: systemConfig } = useGetPublicSystemConfigQuery();
   const { data: supplierOptions = [] } = useGetSupplierOptionsQuery();
   const { data: warehouseOptions = [] } = useGetWarehouseOptionsQuery();
 
@@ -105,6 +111,7 @@ export default function PurchaseReturnsPage() {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<PurchaseReturn | null>(null);
   const [settling, setSettling] = React.useState<PurchaseReturn | null>(null);
+  const [claiming, setClaiming] = React.useState<PurchaseReturn | null>(null);
   const [pending, setPending] = React.useState<PendingAction>(null);
 
   const [confirmReturn, { isLoading: isConfirming }] = useConfirmPurchaseReturnMutation();
@@ -124,22 +131,25 @@ export default function PurchaseReturnsPage() {
     }
   };
 
-  const columns = React.useMemo(
-    () =>
-      purchaseReturnColumns({
-        onEdit: (row) => {
-          setEditing(row);
-          setFormOpen(true);
-        },
-        onConfirm: (row) => setPending({ kind: "confirm", row }),
-        onSettle: setSettling,
-        onCancel: (row) => setPending({ kind: "cancel", row }),
-        onDelete: (row) => setPending({ kind: "delete", row }),
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-      }),
-    [access.canEdit, access.canDelete]
+  const rowActions = React.useMemo(
+    () => ({
+      onEdit: (row: PurchaseReturn) => {
+        setEditing(row);
+        setFormOpen(true);
+      },
+      onConfirm: (row: PurchaseReturn) => setPending({ kind: "confirm", row }),
+      onSettle: setSettling,
+      onDebitNote: setClaiming,
+      onCancel: (row: PurchaseReturn) => setPending({ kind: "cancel", row }),
+      onDelete: (row: PurchaseReturn) => setPending({ kind: "delete", row }),
+      canEdit: access.canEdit,
+      canDelete: access.canDelete,
+      canRaiseDebitNote: debitNoteAccess.canCreate,
+    }),
+    [access.canEdit, access.canDelete, debitNoteAccess.canCreate]
   );
+
+  const columns = React.useMemo(() => purchaseReturnColumns(rowActions), [rowActions]);
 
   const confirmPending = async () => {
     if (!pending) return;
@@ -199,30 +209,40 @@ export default function PurchaseReturnsPage() {
       <PageHeader
         title="Purchase returns"
         description="Goods going back to suppliers, and the credits or refunds still owed to you."
+        actions={
+          <>
+            <CurrencyNote currency={systemConfig?.defaultCurrency ?? "BDT"} />
+            <BackLink to="/sme/purchases/overview" label="Purchases overview" />
+          </>
+        }
       />
 
       <StatGrid className="sm:grid-cols-4">
         <Stat>
           <StatLabel>Returns</StatLabel>
-          <StatValue>{used}</StatValue>
+          <StatValue>{formatNumber(used)}</StatValue>
           <StatDescription>
             {limit === null ? "Unlimited on your plan" : `${used} of ${limit} allowed by your plan`}
           </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Draft</StatLabel>
-          <StatValue>{summary?.draftCount ?? 0}</StatValue>
+          <StatValue>{formatNumber(summary?.draftCount ?? 0)}</StatValue>
           <StatDescription>Not confirmed, stock untouched</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Returned value</StatLabel>
-          <StatValue>{formatAmount(summary?.returnedValue ?? 0)}</StatValue>
-          <StatDescription>Across {summary?.confirmedCount ?? 0} confirmed returns</StatDescription>
+          <StatValue>{formatAmountValue(summary?.returnedValue ?? 0)}</StatValue>
+          <StatDescription>
+            Across {formatNumber(summary?.confirmedCount ?? 0)} confirmed returns
+          </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Awaiting settlement</StatLabel>
-          <StatValue>{formatAmount(summary?.awaitingSettlement ?? 0)}</StatValue>
-          <StatDescription>Credit notes and refunds suppliers still owe you</StatDescription>
+          <StatValue>{formatAmountValue(summary?.awaitingSettlement ?? 0)}</StatValue>
+          <StatDescription>
+            {formatNumber(summary?.awaitingDebitNote ?? 0)} confirmed returns have no debit note yet
+          </StatDescription>
         </Stat>
       </StatGrid>
 
@@ -293,9 +313,21 @@ export default function PurchaseReturnsPage() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Value</dt>
-                <dd className="font-medium tabular-nums">{formatAmount(row.grandTotal)}</dd>
+                <dd className="font-medium tabular-nums">
+                  {formatAmountValue(row.grandTotal)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Debit note</dt>
+                <dd className="font-medium">
+                  {row.debitNoteNumber || "Not raised yet"}
+                </dd>
               </div>
             </dl>
+
+            <div className="mt-3 border-t pt-3">
+              <PurchaseReturnRowActions purchaseReturn={row} {...rowActions} />
+            </div>
           </div>
         )}
       />
@@ -304,6 +336,13 @@ export default function PurchaseReturnsPage() {
         open={formOpen}
         onOpenChange={setFormOpen}
         purchaseReturn={editing}
+      />
+
+      <DebitNoteFormModal
+        open={Boolean(claiming)}
+        onOpenChange={(open) => !open && setClaiming(null)}
+        presetSupplierId={claiming?.supplierId ?? null}
+        presetPurchaseReturnId={claiming?._id ?? null}
       />
 
       <RecordPaymentDialog

@@ -1,4 +1,5 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { RecordPaymentDialog } from "@/components/shared/record-payment-dialog";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
@@ -8,7 +9,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmount, formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useGetContactOptionsQuery } from "@/redux/apis/contactApis";
 import {
@@ -102,6 +103,7 @@ export default function SalesReturnsPage() {
   });
 
   const { data: summary } = useGetSalesReturnSummaryQuery();
+  const currency = summary?.currency ?? "BDT";
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<SalesReturn | null>(null);
@@ -201,6 +203,7 @@ export default function SalesReturnsPage() {
       <PageHeader
         title="Sales returns"
         description="Goods customers sent back, what went back on the shelf and what you still owe them."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -218,14 +221,14 @@ export default function SalesReturnsPage() {
         </Stat>
         <Stat>
           <StatLabel>Returned value</StatLabel>
-          <StatValue>{formatAmount(summary?.returnedValue ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.returnedValue ?? 0)}</StatValue>
           <StatDescription>
             Across {summary?.confirmedCount ?? 0} confirmed returns
           </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Awaiting refund</StatLabel>
-          <StatValue>{formatAmount(summary?.awaitingRefund ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.awaitingRefund ?? 0)}</StatValue>
           <StatDescription>Refunds and credit notes you still owe</StatDescription>
         </Stat>
       </StatGrid>

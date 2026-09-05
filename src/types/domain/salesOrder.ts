@@ -94,6 +94,7 @@ export interface SalesOrderSummary {
   deliveredCount: number;
   openValue: number;
   reservedValue: number;
+  currency?: string;
 }
 
 export interface SalesOrderPayload extends TradeChargesPayload {

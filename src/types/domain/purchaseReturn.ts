@@ -75,6 +75,9 @@ export interface PurchaseReturn extends TradeTotals {
   totalQuantity: number;
   amountSettled: number;
   balanceDue: number;
+  debitNoteId: string | null;
+  debitNoteNumber: string;
+  debitNoteAmount: number;
   reference: string;
   notes: string;
   tags: TagRef[];
@@ -100,6 +103,7 @@ export interface PurchaseReturnSummary {
   confirmedCount: number;
   returnedValue: number;
   awaitingSettlement: number;
+  awaitingDebitNote: number;
 }
 
 export interface PurchaseReturnItemPayload {

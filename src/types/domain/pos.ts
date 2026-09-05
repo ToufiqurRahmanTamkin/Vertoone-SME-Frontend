@@ -70,6 +70,7 @@ export interface PosSummary {
   takings: number;
   averageSale: number;
   cashTakings: number;
+  currency?: string;
   since: string;
 }
 

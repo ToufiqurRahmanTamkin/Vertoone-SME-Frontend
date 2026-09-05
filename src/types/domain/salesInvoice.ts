@@ -86,6 +86,7 @@ export interface SalesInvoiceSummary {
   invoicedValue: number;
   outstandingReceivable: number;
   overdueValue: number;
+  currency?: string;
 }
 
 export interface SalesInvoicePayload extends TradeChargesPayload {

@@ -1,3 +1,4 @@
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmount, formatAmountValue, formatNumber } from "@/lib/amount";
 import { roundMoney, toNumber } from "@/lib/trade";
 import { useGetPosCatalogQuery, useGetPosSummaryQuery, usePosCheckoutMutation } from "@/redux/apis/posApis";
 import { useGetWarehouseOptionsQuery } from "@/redux/apis/warehouseApis";
@@ -55,6 +56,7 @@ export default function PosPage() {
   );
 
   const { data: summary } = useGetPosSummaryQuery();
+  const currency = summary?.currency ?? "BDT";
   const [checkout, { isLoading: isCheckingOut }] = usePosCheckoutMutation();
 
   const addProduct = React.useCallback((product: PosProduct) => {
@@ -186,6 +188,7 @@ export default function PosPage() {
       <PageHeader
         title="Point of sale"
         description="Ring up walk-in customers. Each sale issues an invoice and takes the stock off the shelf immediately."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -196,17 +199,17 @@ export default function PosPage() {
         </Stat>
         <Stat>
           <StatLabel>Takings today</StatLabel>
-          <StatValue>{formatAmount(summary?.takings ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.takings ?? 0)}</StatValue>
           <StatDescription>Across every payment method</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Cash taken</StatLabel>
-          <StatValue>{formatAmount(summary?.cashTakings ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.cashTakings ?? 0)}</StatValue>
           <StatDescription>What should be in the drawer</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Average sale</StatLabel>
-          <StatValue>{formatAmount(summary?.averageSale ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.averageSale ?? 0)}</StatValue>
           <StatDescription>Today so far</StatDescription>
         </Stat>
       </StatGrid>

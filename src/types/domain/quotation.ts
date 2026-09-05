@@ -84,6 +84,7 @@ export interface QuotationSummary {
   acceptedCount: number;
   openValue: number;
   acceptedValue: number;
+  currency?: string;
 }
 
 export interface QuotationPayload extends TradeChargesPayload {

@@ -37,6 +37,22 @@ export const PURCHASE_ORDER_STATUS_COLORS: Record<PurchaseOrderStatus, string> =
   CANCELLED: "red",
 };
 
+export const PURCHASE_ORDER_SOURCES = ["MANUAL", "REQUISITION", "RFQ"] as const;
+
+export type PurchaseOrderSource = (typeof PURCHASE_ORDER_SOURCES)[number];
+
+export const PURCHASE_ORDER_SOURCE_LABELS: Record<PurchaseOrderSource, string> = {
+  MANUAL: "Raised by hand",
+  REQUISITION: "From a requisition",
+  RFQ: "Awarded from an RFQ",
+};
+
+export const PURCHASE_ORDER_SOURCE_PATHS: Record<PurchaseOrderSource, string | null> = {
+  MANUAL: null,
+  REQUISITION: "/sme/purchases/requisitions",
+  RFQ: "/sme/purchases/rfq",
+};
+
 export interface PurchaseOrderItem extends TradeItem {
   receivedQuantity: number;
   returnedQuantity: number;
@@ -54,6 +70,9 @@ export interface PurchaseOrder extends TradeTotals {
   orderDate: string;
   expectedDate: string | null;
   status: PurchaseOrderStatus;
+  sourceType: PurchaseOrderSource;
+  sourceId: string | null;
+  sourceNumber: string;
   items: PurchaseOrderItem[];
   totalQuantity: number;
   receivedQuantity: number;
@@ -75,6 +94,7 @@ export interface PurchaseOrder extends TradeTotals {
 
 export interface PurchaseOrderListQuery extends TradeListQuery {
   status?: PurchaseOrderStatus;
+  sourceType?: PurchaseOrderSource;
   paymentStatus?: TradePaymentStatus;
   supplierId?: string;
   warehouseId?: string;

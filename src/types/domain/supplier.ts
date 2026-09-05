@@ -60,6 +60,10 @@ export interface Supplier extends SupplierRef {
   tagIds: string[];
   notes: string;
   isActive: boolean;
+  openOrderCount: number;
+  payableOutstanding: number;
+  overdueValue: number;
+  billedValue: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,6 +90,9 @@ export interface SupplierSummary {
   activeCount: number;
   inactiveCount: number;
   openingBalanceTotal: number;
+  payableOutstanding: number;
+  overdueValue: number;
+  suppliersWithOverdue: number;
 }
 
 export interface SupplierPayload {

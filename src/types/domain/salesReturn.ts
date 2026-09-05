@@ -100,6 +100,7 @@ export interface SalesReturnSummary {
   confirmedCount: number;
   returnedValue: number;
   awaitingRefund: number;
+  currency?: string;
 }
 
 export interface SalesReturnItemPayload {

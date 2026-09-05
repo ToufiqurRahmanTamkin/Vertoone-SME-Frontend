@@ -213,9 +213,23 @@ const StockTransfers = lazy(() => import("@/app/sme/inventory/transfers/StockTra
 const StockAdjustments = lazy(
   () => import("@/app/sme/inventory/adjustments/StockAdjustmentsPage")
 );
+const PurchasesOverview = lazy(
+  () => import("@/app/sme/purchases/overview/PurchasesOverviewPage")
+);
 const Suppliers = lazy(() => import("@/app/sme/purchases/suppliers/SuppliersPage"));
 const PurchaseOrders = lazy(() => import("@/app/sme/purchases/orders/PurchaseOrdersPage"));
 const PurchaseReturns = lazy(() => import("@/app/sme/purchases/returns/PurchaseReturnsPage"));
+const PurchaseRequisitions = lazy(
+  () => import("@/app/sme/purchases/requisitions/RequisitionsPage")
+);
+const RequestsForQuote = lazy(() => import("@/app/sme/purchases/rfq/RequestsForQuotePage"));
+const GoodsReceipts = lazy(
+  () => import("@/app/sme/purchases/goodsReceipts/GoodsReceiptsPage")
+);
+const Bills = lazy(() => import("@/app/sme/purchases/bills/BillsPage"));
+const PaymentsMade = lazy(() => import("@/app/sme/purchases/payments/PaymentsMadePage"));
+const DebitNotes = lazy(() => import("@/app/sme/purchases/debitNotes/DebitNotesPage"));
+const LandedCosts = lazy(() => import("@/app/sme/purchases/landedCosts/LandedCostsPage"));
 const Quotations = lazy(() => import("@/app/sme/sales/quotations/QuotationsPage"));
 const SalesOrders = lazy(() => import("@/app/sme/sales/orders/SalesOrdersPage"));
 const SalesInvoices = lazy(() => import("@/app/sme/sales/invoices/SalesInvoicesPage"));
@@ -367,9 +381,17 @@ const builtRoutes: RouteConfig[] = [
   { path: "sme/inventory/reorder-rules", element: <InventoryReorderRules /> },
   { path: "sme/inventory/valuation", element: <InventoryValuation /> },
   { path: "sme/inventory/bin-locations", element: <InventoryBinLocations /> },
+  { path: "sme/purchases/overview", element: <PurchasesOverview /> },
   { path: "sme/purchases/suppliers", element: <Suppliers /> },
   { path: "sme/purchases/orders", element: <PurchaseOrders /> },
   { path: "sme/purchases/returns", element: <PurchaseReturns /> },
+  { path: "sme/purchases/requisitions", element: <PurchaseRequisitions /> },
+  { path: "sme/purchases/rfq", element: <RequestsForQuote /> },
+  { path: "sme/purchases/goods-receipts", element: <GoodsReceipts /> },
+  { path: "sme/purchases/bills", element: <Bills /> },
+  { path: "sme/purchases/payments", element: <PaymentsMade /> },
+  { path: "sme/purchases/debit-notes", element: <DebitNotes /> },
+  { path: "sme/purchases/landed-costs", element: <LandedCosts /> },
   { path: "sme/sales/quotations", element: <Quotations /> },
   { path: "sme/sales/orders", element: <SalesOrders /> },
   { path: "sme/sales/invoices", element: <SalesInvoices /> },

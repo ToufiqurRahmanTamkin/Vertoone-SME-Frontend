@@ -1,4 +1,5 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -7,7 +8,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount } from "@/lib/amount";
+import { formatAmount, formatAmountValue } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useGetContactOptionsQuery } from "@/redux/apis/contactApis";
 import {
@@ -78,6 +79,7 @@ export default function QuotationsPage() {
   });
 
   const { data: summary } = useGetQuotationSummaryQuery();
+  const currency = summary?.currency ?? "BDT";
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Quotation | null>(null);
@@ -188,6 +190,7 @@ export default function QuotationsPage() {
       <PageHeader
         title="Quotations"
         description="Prices you have offered customers, and which of them turned into orders."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -205,12 +208,12 @@ export default function QuotationsPage() {
         </Stat>
         <Stat>
           <StatLabel>Open value</StatLabel>
-          <StatValue>{formatAmount(summary?.openValue ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.openValue ?? 0)}</StatValue>
           <StatDescription>Sitting with customers right now</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Accepted value</StatLabel>
-          <StatValue>{formatAmount(summary?.acceptedValue ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.acceptedValue ?? 0)}</StatValue>
           <StatDescription>Across {summary?.acceptedCount ?? 0} accepted quotes</StatDescription>
         </Stat>
       </StatGrid>

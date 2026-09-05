@@ -1,4 +1,6 @@
 import { ActionButton } from "@/components/shared/action-button";
+import { BackLink } from "@/components/shared/back-link";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -7,11 +9,13 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import {
   useDeleteSupplierMutation,
   useGetSupplierSummaryQuery,
   useGetSuppliersQuery,
 } from "@/redux/apis/supplierApis";
+import { useGetPublicSystemConfigQuery } from "@/redux/apis/systemConfigApis";
 import { type ApiErrorResponse } from "@/redux/baseApi";
 import {
   PAYMENT_TERM_LABELS,
@@ -21,6 +25,7 @@ import {
 } from "@/types/domain/supplier";
 import { Plus } from "lucide-react";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { SupplierFormModal } from "./components/SupplierFormModal";
 import { SupplierRowActions, supplierColumns } from "./suppliers.columns";
@@ -48,7 +53,12 @@ const FILTERS: FilterConfig[] = [
 
 export default function SuppliersPage() {
   const { filters, setFilter, clearFilters } = useQueryFilters();
+  const navigate = useNavigate();
   const access = useModulePermission("/sme/purchases/suppliers");
+  const orderAccess = useModulePermission("/sme/purchases/orders");
+  const billAccess = useModulePermission("/sme/purchases/bills");
+
+  const { data: systemConfig } = useGetPublicSystemConfigQuery();
 
   const { data, isLoading, isFetching } = useGetSuppliersQuery({
     page: filters.page,
@@ -90,11 +100,18 @@ export default function SuppliersPage() {
   const rowActions = React.useMemo(
     () => ({
       onEdit: openEdit,
+      onViewOrders: (supplier: Supplier) =>
+        navigate(`/sme/purchases/orders?supplierId=${supplier._id}`),
+      onViewBills: (supplier: Supplier) =>
+        navigate(`/sme/purchases/bills?supplierId=${supplier._id}`),
       onDelete: setPendingDelete,
       canEdit: access.canEdit,
       canDelete: access.canDelete,
+      canViewOrders: orderAccess.canView,
+      canViewBills: billAccess.canView,
     }),
-    [access.canEdit, access.canDelete]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [access.canEdit, access.canDelete, orderAccess.canView, billAccess.canView]
   );
 
   const columns = React.useMemo(() => supplierColumns(rowActions), [rowActions]);
@@ -110,25 +127,41 @@ export default function SuppliersPage() {
       <PageHeader
         title="Suppliers"
         description="Who you buy from. Purchase orders, returns and payables all point back here."
+        actions={
+          <>
+            <CurrencyNote currency={systemConfig?.defaultCurrency ?? "BDT"} />
+            <BackLink to="/sme/purchases/overview" label="Purchases overview" />
+          </>
+        }
       />
 
-      <StatGrid className="sm:grid-cols-3">
+      <StatGrid className="sm:grid-cols-2 xl:grid-cols-4">
         <Stat>
           <StatLabel>Suppliers</StatLabel>
-          <StatValue>{used}</StatValue>
+          <StatValue>{formatNumber(used)}</StatValue>
           <StatDescription>
             {limit === null ? "Unlimited on your plan" : `${used} of ${limit} allowed by your plan`}
           </StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Active</StatLabel>
-          <StatValue>{summary?.activeCount ?? 0}</StatValue>
+          <StatValue>{formatNumber(summary?.activeCount ?? 0)}</StatValue>
           <StatDescription>Offered when raising a purchase order</StatDescription>
         </Stat>
         <Stat>
-          <StatLabel>Opening balance</StatLabel>
-          <StatValue>{(summary?.openingBalanceTotal ?? 0).toLocaleString()}</StatValue>
-          <StatDescription>Owed to suppliers before tracking started</StatDescription>
+          <StatLabel>Owed to suppliers</StatLabel>
+          <StatValue>{formatAmountValue(summary?.payableOutstanding ?? 0)}</StatValue>
+          <StatDescription>
+            Still unpaid on posted bills, on top of{" "}
+            {formatAmountValue(summary?.openingBalanceTotal ?? 0)} carried in
+          </StatDescription>
+        </Stat>
+        <Stat>
+          <StatLabel>Overdue</StatLabel>
+          <StatValue>{formatAmountValue(summary?.overdueValue ?? 0)}</StatValue>
+          <StatDescription>
+            Across {formatNumber(summary?.suppliersWithOverdue ?? 0)} suppliers past their due date
+          </StatDescription>
         </Stat>
       </StatGrid>
 
@@ -206,9 +239,15 @@ export default function SuppliersPage() {
                 <dd className="font-medium">{PAYMENT_TERM_LABELS[supplier.paymentTerms]}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Opening balance</dt>
+                <dt className="text-muted-foreground">Open orders</dt>
                 <dd className="font-medium tabular-nums">
-                  {supplier.openingBalance.toLocaleString()}
+                  {formatNumber(supplier.openOrderCount)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Owed to them</dt>
+                <dd className="font-medium tabular-nums">
+                  {formatAmountValue(supplier.payableOutstanding)}
                 </dd>
               </div>
             </dl>

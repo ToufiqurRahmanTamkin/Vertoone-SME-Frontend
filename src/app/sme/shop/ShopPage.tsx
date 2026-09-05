@@ -1,9 +1,10 @@
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import {
   useGetShopSettingsQuery,
   useGetShopSummaryQuery,
@@ -21,6 +22,7 @@ export default function ShopPage() {
 
   const { data: shop, isLoading } = useGetShopSettingsQuery();
   const { data: summary } = useGetShopSummaryQuery();
+  const currency = summary?.currency ?? "BDT";
   const [updateShop, { isLoading: isSaving }] = useUpdateShopSettingsMutation();
 
   const save = async (patch: { isPublished?: boolean; acceptsOrders?: boolean }) => {
@@ -54,6 +56,7 @@ export default function ShopPage() {
       <PageHeader
         title="Shop"
         description="Your online storefront. List products, share the link and orders land in your sales pipeline."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -78,7 +81,7 @@ export default function ShopPage() {
         </Stat>
         <Stat>
           <StatLabel>Revenue (30 days)</StatLabel>
-          <StatValue>{formatAmount(summary?.revenueLast30Days ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.revenueLast30Days ?? 0)}</StatValue>
           <StatDescription>Excluding cancelled orders</StatDescription>
         </Stat>
       </StatGrid>

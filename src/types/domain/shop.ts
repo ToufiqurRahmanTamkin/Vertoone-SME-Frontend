@@ -59,4 +59,5 @@ export interface ShopSummary {
   pendingOrders: number;
   ordersLast30Days: number;
   revenueLast30Days: number;
+  currency?: string;
 }

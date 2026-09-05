@@ -41,7 +41,7 @@ interface DocumentItemsProps {
   emptyHint?: string;
 }
 
-const ProductPicker = ({
+export const ProductPicker = ({
   value,
   products,
   disabled,

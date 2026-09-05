@@ -1,5 +1,6 @@
 import { ActionButton } from "@/components/shared/action-button";
 import { FulfilmentDialog, type FulfilmentRow } from "@/components/shared/fulfilment-dialog";
+import { CurrencyNote } from "@/components/shared/currency-note";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -8,7 +9,7 @@ import { DataTableToolbar, type FilterConfig } from "@/components/ui/data-table-
 import { Stat, StatDescription, StatGrid, StatLabel, StatValue } from "@/components/ui/stat";
 import { useModulePermission } from "@/hooks/use-permission";
 import { useQueryFilters } from "@/hooks/use-query-filters";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmount, formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import { useGetContactOptionsQuery } from "@/redux/apis/contactApis";
 import { useInvoiceSalesOrderMutation } from "@/redux/apis/salesInvoiceApis";
@@ -92,6 +93,7 @@ export default function SalesOrdersPage() {
   });
 
   const { data: summary } = useGetSalesOrderSummaryQuery();
+  const currency = summary?.currency ?? "BDT";
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<SalesOrder | null>(null);
@@ -224,6 +226,7 @@ export default function SalesOrdersPage() {
       <PageHeader
         title="Sales orders"
         description="What customers have committed to buy, what has shipped and what is still reserved."
+        actions={<CurrencyNote currency={currency} />}
       />
 
       <StatGrid className="sm:grid-cols-4">
@@ -241,12 +244,12 @@ export default function SalesOrdersPage() {
         </Stat>
         <Stat>
           <StatLabel>Open value</StatLabel>
-          <StatValue>{formatAmount(summary?.openValue ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.openValue ?? 0)}</StatValue>
           <StatDescription>Committed but not yet closed</StatDescription>
         </Stat>
         <Stat>
           <StatLabel>Reserved stock</StatLabel>
-          <StatValue>{formatAmount(summary?.reservedValue ?? 0)}</StatValue>
+          <StatValue>{formatAmountValue(summary?.reservedValue ?? 0)}</StatValue>
           <StatDescription>Held for confirmed orders</StatDescription>
         </Stat>
       </StatGrid>

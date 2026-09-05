@@ -1,15 +1,9 @@
+import { RowActions } from "@/components/shared/row-actions";
 import { StatusBadge, type StatusColor } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { formatAmount, formatNumber } from "@/lib/amount";
+import { formatAmountValue, formatNumber } from "@/lib/amount";
 import { formatDate } from "@/lib/date";
 import {
+  PURCHASE_ORDER_SOURCE_LABELS,
   PURCHASE_ORDER_STATUS_COLORS,
   PURCHASE_ORDER_STATUS_LABELS,
   type PurchaseOrder,
@@ -21,27 +15,122 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   Ban,
-  MoreHorizontal,
+  ClipboardList,
   PackageCheck,
   Pencil,
+  ScrollText,
   Send,
   Trash2,
+  Truck,
   Wallet,
 } from "lucide-react";
 
-export interface PurchaseOrderActions {
+export interface PurchaseOrderColumnActions {
   onEdit: (order: PurchaseOrder) => void;
   onPlace: (order: PurchaseOrder) => void;
   onReceive: (order: PurchaseOrder) => void;
+  onViewReceipts: (order: PurchaseOrder) => void;
+  onViewBills: (order: PurchaseOrder) => void;
+  onViewSource: (order: PurchaseOrder) => void;
   onPay: (order: PurchaseOrder) => void;
   onCancel: (order: PurchaseOrder) => void;
   onDelete: (order: PurchaseOrder) => void;
   canEdit: boolean;
   canDelete: boolean;
+  canReceive: boolean;
+  canViewBills: boolean;
+  canViewSource: boolean;
+}
+
+export function PurchaseOrderRowActions({
+  order,
+  ...actions
+}: PurchaseOrderColumnActions & { order: PurchaseOrder }) {
+  const isDraft = order.status === "DRAFT";
+  const isOpen = order.status === "ORDERED" || order.status === "PARTIALLY_RECEIVED";
+  const isClosed = order.status === "CANCELLED" || order.status === "RECEIVED";
+
+  return (
+    <RowActions
+      label={`Actions for ${order.orderNumber}`}
+      actions={[
+        !isClosed && {
+          key: "edit",
+          label: "Edit",
+          icon: Pencil,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onEdit(order),
+        },
+        isDraft && {
+          key: "place",
+          label: "Place with supplier",
+          icon: Send,
+          disabled: !actions.canEdit,
+          onSelect: () => actions.onPlace(order),
+        },
+        isOpen && {
+          key: "receive",
+          label: "Book in a delivery",
+          icon: PackageCheck,
+          disabled: !actions.canReceive,
+          title: actions.canReceive ? undefined : "You need permission to book in goods receipts",
+          onSelect: () => actions.onReceive(order),
+        },
+        order.receivedQuantity > 0 && {
+          key: "receipts",
+          label: "Goods receipts",
+          icon: Truck,
+          onSelect: () => actions.onViewReceipts(order),
+        },
+        actions.canViewBills &&
+          !isDraft && {
+            key: "bills",
+            label: "Bills against this order",
+            icon: ScrollText,
+            onSelect: () => actions.onViewBills(order),
+          },
+        actions.canViewSource &&
+          order.sourceType !== "MANUAL" &&
+          Boolean(order.sourceNumber) && {
+            key: "source",
+            label: PURCHASE_ORDER_SOURCE_LABELS[order.sourceType],
+            icon: ClipboardList,
+            onSelect: () => actions.onViewSource(order),
+          },
+        !isDraft &&
+          order.status !== "CANCELLED" &&
+          order.balanceDue > 0 && {
+            key: "pay",
+            label: "Record payment",
+            icon: Wallet,
+            disabled: !actions.canEdit,
+            onSelect: () => actions.onPay(order),
+          },
+        order.status !== "CANCELLED" && {
+          key: "cancel",
+          label: "Cancel",
+          icon: Ban,
+          separated: true,
+          disabled: !actions.canEdit || order.receivedQuantity > 0,
+          title: order.receivedQuantity > 0 ? "Cancel the goods receipts first" : undefined,
+          onSelect: () => actions.onCancel(order),
+        },
+        {
+          key: "delete",
+          label: "Delete",
+          icon: Trash2,
+          variant: "destructive" as const,
+          separated: true,
+          disabled: !actions.canDelete || order.receivedQuantity > 0 || order.amountPaid > 0,
+          onSelect: () => actions.onDelete(order),
+        },
+      ]}
+    />
+  );
 }
 
 export const purchaseOrderColumns = (
-  actions: PurchaseOrderActions
+  rowActions: PurchaseOrderColumnActions
 ): ColumnDef<PurchaseOrder>[] => [
   {
     accessorKey: "orderNumber",
@@ -53,6 +142,7 @@ export const purchaseOrderColumns = (
         </p>
         <p className="truncate text-xs text-muted-foreground">
           {formatDate(row.original.orderDate)}
+          {row.original.sourceNumber ? ` · ${row.original.sourceNumber}` : ""}
         </p>
       </div>
     ),
@@ -83,10 +173,10 @@ export const purchaseOrderColumns = (
     header: "Total",
     cell: ({ row }) => (
       <div className="text-sm tabular-nums">
-        <p>{formatAmount(row.original.grandTotal)}</p>
+        <p>{formatAmountValue(row.original.grandTotal)}</p>
         {row.original.balanceDue > 0 && (
           <p className="text-xs text-muted-foreground">
-            {formatAmount(row.original.balanceDue)} due
+            {formatAmountValue(row.original.balanceDue)} due
           </p>
         )}
       </div>
@@ -115,75 +205,6 @@ export const purchaseOrderColumns = (
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const order = row.original;
-      const isDraft = order.status === "DRAFT";
-      const isOpen = order.status === "ORDERED" || order.status === "PARTIALLY_RECEIVED";
-      const isClosed = order.status === "CANCELLED" || order.status === "RECEIVED";
-
-      return (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions for {order.orderNumber}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem
-                onClick={() => actions.onEdit(order)}
-                disabled={!actions.canEdit || isClosed}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => actions.onPlace(order)}
-                disabled={!actions.canEdit || !isDraft}
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Place with supplier
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => actions.onReceive(order)}
-                disabled={!actions.canEdit || !isOpen}
-              >
-                <PackageCheck className="mr-2 h-4 w-4" />
-                Receive stock
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => actions.onPay(order)}
-                disabled={
-                  !actions.canEdit ||
-                  isDraft ||
-                  order.status === "CANCELLED" ||
-                  order.balanceDue <= 0
-                }
-              >
-                <Wallet className="mr-2 h-4 w-4" />
-                Record payment
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => actions.onCancel(order)}
-                disabled={!actions.canEdit || order.status === "CANCELLED"}
-              >
-                <Ban className="mr-2 h-4 w-4" />
-                Cancel
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => actions.onDelete(order)}
-                disabled={!actions.canDelete || order.receivedQuantity > 0}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    cell: ({ row }) => <PurchaseOrderRowActions order={row.original} {...rowActions} />,
   },
 ];
