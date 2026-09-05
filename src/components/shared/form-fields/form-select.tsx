@@ -35,6 +35,8 @@ export function FormSelect<TFieldValues extends FieldValues>({
   searchable,
   clearable = false,
   clearLabel = "Clear selection",
+  emptyText = "No results found.",
+  labelAction,
 }: BaseProps<TFieldValues> & {
   options: { label: string; value: string }[];
   disabled?: boolean;
@@ -42,6 +44,8 @@ export function FormSelect<TFieldValues extends FieldValues>({
   searchable?: boolean;
   clearable?: boolean;
   clearLabel?: string;
+  emptyText?: string;
+  labelAction?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const showSearch = searchable ?? options.length > 10;
@@ -52,7 +56,10 @@ export function FormSelect<TFieldValues extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem className={cn("min-w-0", className)}>
-          <FormLabel>{label}</FormLabel>
+          <div className="flex min-w-0 items-center gap-1">
+            <FormLabel className="min-w-0">{label}</FormLabel>
+            {labelAction}
+          </div>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild disabled={disabled}>
               <FormControl>
@@ -81,7 +88,7 @@ export function FormSelect<TFieldValues extends FieldValues>({
                   <CommandInput placeholder={`Search ${String(label).toLowerCase()}...`} />
                 )}
                 <CommandList>
-                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandEmpty>{emptyText}</CommandEmpty>
                   <CommandGroup>
                     {clearable && field.value && (
                       <CommandItem
