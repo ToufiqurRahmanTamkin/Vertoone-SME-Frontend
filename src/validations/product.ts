@@ -20,6 +20,7 @@ export const ProductSchema = z
     categoryId: z.string().trim().min(1, "Pick a category"),
     subCategoryId: z.string().trim(),
     brandId: z.string().trim(),
+    unitId: z.string().trim(),
     description: z.string().trim().max(2000),
     purchasePrice: amount,
     sellingPrice: amount,

@@ -171,7 +171,35 @@ const PayrollSettings = lazy(
 const EmployeeRoles = lazy(
   () => import("@/app/hrms/settings/employeeRoles/EmployeeRolesPage")
 );
+const ProductsOverview = lazy(
+  () => import("@/app/sme/products/overview/ProductsOverviewPage")
+);
 const Products = lazy(() => import("@/app/sme/products/list/ProductsPage"));
+const ProductVariants = lazy(() => import("@/app/sme/products/variants/VariantsPage"));
+const ProductUnits = lazy(() => import("@/app/sme/products/units/UnitsPage"));
+const ProductBundles = lazy(() => import("@/app/sme/products/bundles/BundlesPage"));
+const ProductPriceLists = lazy(
+  () => import("@/app/sme/products/priceLists/PriceListsPage")
+);
+const ProductPromotions = lazy(
+  () => import("@/app/sme/products/promotions/PromotionsPage")
+);
+const ProductBarcodes = lazy(() => import("@/app/sme/products/barcodes/BarcodesPage"));
+const InventoryOverview = lazy(
+  () => import("@/app/sme/inventory/overview/InventoryOverviewPage")
+);
+const InventoryBatches = lazy(() => import("@/app/sme/inventory/batches/BatchesPage"));
+const InventorySerials = lazy(() => import("@/app/sme/inventory/serials/SerialsPage"));
+const InventoryStockCounts = lazy(
+  () => import("@/app/sme/inventory/stockCounts/StockCountsPage")
+);
+const InventoryReorderRules = lazy(
+  () => import("@/app/sme/inventory/reorderRules/ReorderRulesPage")
+);
+const InventoryValuation = lazy(() => import("@/app/sme/inventory/valuation/ValuationPage"));
+const InventoryBinLocations = lazy(
+  () => import("@/app/sme/inventory/binLocations/BinLocationsPage")
+);
 const ProductCategories = lazy(
   () => import("@/app/sme/products/categories/ProductCategoriesPage")
 );
@@ -317,14 +345,28 @@ const builtRoutes: RouteConfig[] = [
   { path: "crm/business-tools/form-builder/:formId/responses", element: <FormResponses /> },
   { path: "crm/business-tools/settings", element: <BusinessToolsSettings /> },
 
+  { path: "sme/products/overview", element: <ProductsOverview /> },
   { path: "sme/products/all-products", element: <Products /> },
   { path: "sme/products/categories", element: <ProductCategories /> },
   { path: "sme/products/subcategories", element: <ProductSubCategories /> },
   { path: "sme/products/brands", element: <Brands /> },
+  { path: "sme/products/variants", element: <ProductVariants /> },
+  { path: "sme/products/units", element: <ProductUnits /> },
+  { path: "sme/products/bundles", element: <ProductBundles /> },
+  { path: "sme/products/price-lists", element: <ProductPriceLists /> },
+  { path: "sme/products/promotions", element: <ProductPromotions /> },
+  { path: "sme/products/barcodes", element: <ProductBarcodes /> },
+  { path: "sme/inventory/overview", element: <InventoryOverview /> },
   { path: "sme/inventory/stock", element: <Stock /> },
   { path: "sme/inventory/warehouses", element: <Warehouses /> },
   { path: "sme/inventory/stock-transfers", element: <StockTransfers /> },
   { path: "sme/inventory/stock-adjustments", element: <StockAdjustments /> },
+  { path: "sme/inventory/batches", element: <InventoryBatches /> },
+  { path: "sme/inventory/serials", element: <InventorySerials /> },
+  { path: "sme/inventory/stock-counts", element: <InventoryStockCounts /> },
+  { path: "sme/inventory/reorder-rules", element: <InventoryReorderRules /> },
+  { path: "sme/inventory/valuation", element: <InventoryValuation /> },
+  { path: "sme/inventory/bin-locations", element: <InventoryBinLocations /> },
   { path: "sme/purchases/suppliers", element: <Suppliers /> },
   { path: "sme/purchases/orders", element: <PurchaseOrders /> },
   { path: "sme/purchases/returns", element: <PurchaseReturns /> },

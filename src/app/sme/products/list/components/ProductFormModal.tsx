@@ -21,6 +21,7 @@ import { Form } from "@/components/ui/form";
 import { Stepper, type StepperStep } from "@/components/ui/stepper";
 import { useCreateProductMutation, useUpdateProductMutation } from "@/redux/apis/productApis";
 import { useGetBrandOptionsQuery } from "@/redux/apis/brandApis";
+import { useGetUnitOptionsQuery } from "@/redux/apis/unitOfMeasureApis";
 import { useGetProductCategoryOptionsQuery } from "@/redux/apis/productCategoryApis";
 import { useGetProductSubCategoryOptionsQuery } from "@/redux/apis/productSubCategoryApis";
 import { useGetTagOptionsQuery } from "@/redux/apis/tagApis";
@@ -52,7 +53,17 @@ const STEPS: readonly StepperStep[] = [
 ];
 
 const STEP_FIELDS: readonly (keyof ProductFormValues)[][] = [
-  ["name", "sku", "barcode", "type", "categoryId", "subCategoryId", "brandId", "description"],
+  [
+    "name",
+    "sku",
+    "barcode",
+    "type",
+    "categoryId",
+    "subCategoryId",
+    "brandId",
+    "unitId",
+    "description",
+  ],
   ["purchasePrice", "sellingPrice", "taxRate", "openingStock", "lowStockAlert"],
   ["posEnabled", "shopEnabled", "imageUrl", "tagIds", "notes", "isActive"],
   [],
@@ -78,6 +89,7 @@ const emptyValues = (): ProductFormValues => ({
   categoryId: "",
   subCategoryId: "",
   brandId: "",
+  unitId: "",
   description: "",
   purchasePrice: "",
   sellingPrice: "",
@@ -101,6 +113,7 @@ const toFormValues = (product: Product): ProductFormValues => ({
   categoryId: product.categoryId,
   subCategoryId: product.subCategoryId ?? "",
   brandId: product.brandId ?? "",
+  unitId: product.unitId ?? "",
   description: product.description,
   purchasePrice: product.purchasePrice || "",
   sellingPrice: product.sellingPrice || "",
@@ -124,6 +137,7 @@ const toPayload = (values: ProductFormValues): ProductPayload => ({
   categoryId: values.categoryId,
   subCategoryId: values.subCategoryId || null,
   brandId: values.brandId || null,
+  unitId: values.unitId || null,
   description: values.description,
   purchasePrice: values.purchasePrice === "" ? 0 : values.purchasePrice,
   sellingPrice: values.sellingPrice === "" ? 0 : values.sellingPrice,
@@ -170,6 +184,7 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
 
   const { data: categoryOptions = [] } = useGetProductCategoryOptionsQuery();
   const { data: brandOptions = [] } = useGetBrandOptionsQuery();
+  const { data: unitOptions = [] } = useGetUnitOptionsQuery();
   const { data: tagOptions = [] } = useGetTagOptionsQuery();
   const { data: subCategoryOptions = [] } = useGetProductSubCategoryOptionsQuery(
     { categoryId },
@@ -195,6 +210,14 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
       ...brandOptions.map((brand) => ({ label: brand.name, value: brand._id })),
     ],
     [brandOptions]
+  );
+
+  const unitChoices = React.useMemo(
+    () => [
+      { label: "No unit", value: "" },
+      ...unitOptions.map((unit) => ({ label: `${unit.name} (${unit.code})`, value: unit._id })),
+    ],
+    [unitOptions]
   );
 
   const tagChoices = React.useMemo<MultiSelectOption[]>(
@@ -337,6 +360,18 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                         categoryId && subCategoryOptions.length === 0
                           ? "This category has no sub categories yet."
                           : undefined
+                      }
+                    />
+                    <FormSelect
+                      control={form.control}
+                      name="unitId"
+                      label="Unit of measure"
+                      placeholder="No unit"
+                      options={unitChoices}
+                      description={
+                        unitOptions.length === 0
+                          ? "No units yet. Create them under Products · Units of Measure."
+                          : "How this product is counted, priced and stocked."
                       }
                     />
                   </div>
@@ -485,6 +520,13 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                       <dt className="text-xs text-muted-foreground">Brand</dt>
                       <dd className="truncate font-medium">
                         {brandChoices.find((option) => option.value === summary.brandId)?.label ??
+                          "—"}
+                      </dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Unit</dt>
+                      <dd className="truncate font-medium">
+                        {unitChoices.find((option) => option.value === summary.unitId)?.label ??
                           "—"}
                       </dd>
                     </div>

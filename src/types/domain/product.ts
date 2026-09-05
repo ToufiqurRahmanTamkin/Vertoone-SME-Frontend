@@ -2,6 +2,7 @@ import type { BrandRef } from "./brand";
 import type { ProductCategoryRef } from "./productCategory";
 import type { ProductSubCategoryRef } from "./productSubCategory";
 import type { TagRef } from "./tag";
+import type { UnitOfMeasureRef } from "./unitOfMeasure";
 
 export const PRODUCT_TYPES = ["STOCKED", "SERVICE", "DIGITAL"] as const;
 
@@ -40,6 +41,8 @@ export interface Product extends ProductRef {
   subCategory: ProductSubCategoryRef | null;
   brandId: string | null;
   brand: BrandRef | null;
+  unitId: string | null;
+  unit: UnitOfMeasureRef | null;
   description: string;
   purchasePrice: number;
   sellingPrice: number;
@@ -75,6 +78,7 @@ export interface ProductListQuery {
   categoryId?: string;
   subCategoryId?: string;
   brandId?: string;
+  unitId?: string;
   type?: ProductType;
   channel?: ProductChannel;
   isActive?: boolean;
@@ -103,6 +107,7 @@ export interface ProductPayload {
   categoryId: string;
   subCategoryId?: string | null;
   brandId?: string | null;
+  unitId?: string | null;
   description?: string;
   purchasePrice?: number;
   sellingPrice?: number;
