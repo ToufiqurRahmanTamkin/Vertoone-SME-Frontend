@@ -1225,33 +1225,6 @@ const WORKSPACE_INPUTS: WorkspaceInput[] = [
               },
             ],
           },
-          {
-            title: "Taxes",
-            slug: "taxes",
-            icon: "Percent",
-            description: "What you collected, what you paid and what is due.",
-            items: [
-              overview("Tax collected, tax paid and what falls due this period."),
-              {
-                title: "Tax Rates",
-                slug: "tax-rates",
-                icon: "Percent",
-                description: "The rates applied to products, customers and documents.",
-              },
-              {
-                title: "Tax Returns",
-                slug: "tax-returns",
-                icon: "FileText",
-                description: "Periodic returns and the figures behind each one.",
-              },
-              {
-                title: "Withholding Tax",
-                slug: "withholding",
-                icon: "Percent",
-                description: "Tax deducted at source on payments in and out.",
-              },
-            ],
-          },
         ],
       },
       {
